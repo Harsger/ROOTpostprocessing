@@ -2,7 +2,7 @@ evaluation and plotting software for ROOT histograms
 
 format of standard parameter-files is :
 
-FILE /path/to .eding
+FILE /path/to .ending
 HIST prefix suffix
 file1 hist1
 file2 hist2
@@ -25,9 +25,11 @@ LOG logarithmicX logarithmicY
  peak-fit-center difference to nominal 
  is stored in ROOT::TGraphs
  required options per histogram
-file1 hist1 peakPosition lowRangeFit highRangeFit
+file1 hist1 peakPosition lowFitLimit highFitLimit
  additional options per histogram
 additionalFunctionPart startParameter
+ the additional function part should be specified as ROOT::TFormula
+ addable to the standard gaussian
 
 -drawer: /path/to/file.root histname
  shows specified 2D-histogram (ROOT::TH2 e.g. heat-maps) from file
