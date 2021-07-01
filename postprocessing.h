@@ -7,6 +7,7 @@
 #include <TPad.h> 
 #include <TCanvas.h>
 #include <TLegend.h> 
+#include <TLegendEntry.h>
 #include <TFile.h>
 #include <TString.h>
 #include <TText.h>

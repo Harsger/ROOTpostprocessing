@@ -52,6 +52,17 @@ file1 hist1 value error(optional)
 RANGE ylow yhigh
 SKIP listOfValuesToBeSkipped <lowLimit >highLimit
  (low and high limit have to have '<' '>' preceding, respectivly)
+ 
+-superimposer: standard parameter-file (except HIST=GRAPH) ->
+ takes ROOT::TGraphs and superimposes them in one plot
+ stores result in canvas (.root-file) and as PDF
+ required options per graph
+file1 graph1 title1
+  additional options:
+AXIS xAxisTitle yAxisTitle
+RANGE xlow xhigh ylow yhigh
+LOG logarithmicX logarithmicY 
+ (specified by '0' [->false] or '1' [->true], without quotes)
 
 -housekeeper: /path/to/files(.dat) (specifierList)
  stores data from text-files in root tree 
