@@ -29,6 +29,7 @@ int main(int argc, char *argv[]){
                             };
                             
     vector< vector<string> > filesNhists ;
+    vector<SpecifiedNumber> plotPosition ;
     vector< vector<double> > peakNrange ;
     vector<string> fitAddFunctions ;
     vector< vector<SpecifiedNumber> > fitStartParameter ;
@@ -55,19 +56,27 @@ int main(int argc, char *argv[]){
             continue ;
         }
 
-        if( parameter.at(r).size() > 4 ){
+        if( parameter.at(r).size() > 5 ){
             strVecDummy.push_back( parameter.at(r).at(0) );
             strVecDummy.push_back( parameter.at(r).at(1) );
             filesNhists.push_back( strVecDummy ) ;
             strVecDummy.clear() ;
-            doVecDummy.push_back( atof( parameter.at(r).at(2).c_str() ) );
+            if( parameter.at(r).at(2).compare( "%" ) != 0 )
+                plotPosition.push_back( 
+                    SpecifiedNumber(
+                        atof( parameter.at(r).at(2).c_str() )
+                    )
+                ) ;
+            else
+                plotPosition.push_back( SpecifiedNumber() ) ;
             doVecDummy.push_back( atof( parameter.at(r).at(3).c_str() ) );
             doVecDummy.push_back( atof( parameter.at(r).at(4).c_str() ) );
+            doVecDummy.push_back( atof( parameter.at(r).at(5).c_str() ) );
             peakNrange.push_back( doVecDummy ) ;
             doVecDummy.clear() ;
-            if( parameter.at(r).size() > 5 ){
-                fitAddFunctions.push_back( parameter.at(r).at(5).c_str() ) ;
-                for(unsigned int c=6; c<parameter.at(r).size(); c++){
+            if( parameter.at(r).size() > 6 ){
+                fitAddFunctions.push_back( parameter.at(r).at(6).c_str() ) ;
+                for(unsigned int c=7; c<parameter.at(r).size(); c++){
                     if( parameter.at(r).at(c).compare( "%" ) != 0 )
                         specVecDummy.push_back( 
                             SpecifiedNumber(
@@ -375,9 +384,16 @@ int main(int argc, char *argv[]){
             continue ;
         }
         
+        double position = plotPosition.at(h).number ;
+        double posError = 0 ;
+        if( ! plotPosition.at(h).setting ){
+            position = fitfunction->GetParameter( 1 ) ;
+            posError = fitfunction->GetParError( 1 ) ;
+        }
+        
         g_width->SetPoint(
             g_width->GetN() ,
-            fitfunction->GetParameter( 1 ) ,
+            position ,
             abs( 
                 fitfunction->GetParameter( 2 ) 
                 * fwhmFactor 
@@ -386,13 +402,13 @@ int main(int argc, char *argv[]){
         
         g_width->SetPointError(
             g_width->GetN()-1 ,
-            fitfunction->GetParError( 1 ) ,
+            posError ,
             fitfunction->GetParError( 2 ) * fwhmFactor
         ) ;
         
         g_fwhm->SetPoint(
             g_fwhm->GetN() ,
-            fitfunction->GetParameter( 1 ) ,
+            position ,
             getFWHM(
                         hists[h] ,
                         fitfunction->GetParameter( 0 ) ,
@@ -401,16 +417,25 @@ int main(int argc, char *argv[]){
                     )
         );
         
+        g_fwhm->SetPointError(
+            g_fwhm->GetN()-1 ,
+            posError ,
+            hists[h]->GetBinWidth(1) 
+        );
+        
+        if( ! plotPosition.at(h).setting )
+            position = peakNrange.at(h).at(0) ;
+        
         g_centerDifference->SetPoint(
             g_centerDifference->GetN() ,
-            peakNrange.at(h).at(0) ,
+            position ,
             fitfunction->GetParameter( 1 )
              - peakNrange.at(h).at(0) 
         ) ;
         
         g_centerDifference->SetPointError(
             g_centerDifference->GetN()-1 ,
-            0. ,
+            posError ,
             fitfunction->GetParError( 1 ) 
         ) ;
     
