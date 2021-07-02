@@ -71,3 +71,15 @@ LOG logarithmicX logarithmicY
  and plots TGraphs of values with specifier from list
  format of text-files has to be:
 unixtime quantity specifier value unit
+
+-textTOtree: parameter-file
+ stores columns of textfiles in specified leafs of ROOT:TTree
+ format of parameter-file
+FILE /path/to specifier .ending
+columnIndex1 variableName1 variableType1
+columnIndex2 variableName2 variableType2
+columnIndex3 variableName3 variableType3
+...
+ variableType should be 'int' , 'double' , 'string' without quotes
+ 'string's are stored as ROOT::TString (for postprocessing)
+
