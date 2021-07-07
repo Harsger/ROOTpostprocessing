@@ -18,6 +18,7 @@ int main(int argc, char *argv[]){
 
     vector< vector<string> > filesNhists ;
     vector<string> strVecDummy ;
+    vector<TString> histIdentifier ;
 
     for(unsigned int r=0; r<parameter.size(); r++){
 
@@ -40,6 +41,10 @@ int main(int argc, char *argv[]){
         if( parameter.at(r).size() > 1 ){
             strVecDummy.push_back( parameter.at(r).at(0) );
             strVecDummy.push_back( parameter.at(r).at(1) );
+            if( parameter.at(r).size() > 2 )
+                histIdentifier.push_back( parameter.at(r).at(2) ) ;
+            else
+                histIdentifier.push_back( "" ) ;
         }
 
         filesNhists.push_back( strVecDummy ) ;
@@ -120,7 +125,7 @@ int main(int argc, char *argv[]){
 
     if( rowsNcolumns[1] == 0 && rowsNcolumns[0] == 0 ){
         cout << " ERROR : empty histograms " << endl ;
-        return 1 ;
+        return 2 ;
     }
 
     unsigned int nToUse = nHists - notFound ;
@@ -138,37 +143,42 @@ int main(int argc, char *argv[]){
     name = filename ;
     if( name.Contains(".") ) name = name( 0 , name.Last('.') ) ;
     name += ".root" ;
+    if( name.Contains("/") ) name = name( name.Last('/')+1 , name.Sizeof() ) ;
     TFile * outfile = new TFile( name , "RECREATE" ) ;
 
-    vector<TString> histIdentifier ;
     bool tooManyDefault = false ;
     for(unsigned int h=0; h<nHists; h++){
         name = "" ;
-        bool bothSpecified = true ;
-        if( 
-            filesNhists.at(h).at(0).empty() 
-            ||
-            filesNhists.at(h).at(1).empty() 
-        )
-            bothSpecified = false ;
-        if( bothSpecified ) name += "file_" ;
-        name += filesNhists.at(h).at(0) ;
-        if( bothSpecified ) name += "_hist_" ;
-        name += filesNhists.at(h).at(1) ;
+        if( histIdentifier.at(h).Length() < 1 ){ 
+            bool bothSpecified = true ;
+            if( 
+                filesNhists.at(h).at(0).empty() 
+                ||
+                filesNhists.at(h).at(1).empty() 
+            )
+                bothSpecified = false ;
+            if( bothSpecified ) name += "file_" ;
+            name += filesNhists.at(h).at(0) ;
+            if( bothSpecified ) name += "_hist_" ;
+            name += filesNhists.at(h).at(1) ;
+        }
+        else
+            name = histIdentifier.at(h) ;
         name = name.ReplaceAll( "."  , "" ) ;
         name = name.ReplaceAll( "-"  , "" ) ;
+        name = name.ReplaceAll( "/"  , "" ) ;
         if( name == "" ){
             name = "default" ;
             if( tooManyDefault ){
                 cout << " ERROR : " 
                      << "histnames can not be properly specified " << endl ;
-                return 1 ;
+                return 3 ;
             }
             else tooManyDefault = true ;
         }
         TString test = name(0,1) ;
         if( test.IsDec() ) name = "h"+name ;
-        histIdentifier.push_back( name ) ;
+        histIdentifier.at(h) = name ;
     }
 
     outfile->cd() ;
