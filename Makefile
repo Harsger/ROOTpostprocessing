@@ -1,6 +1,6 @@
 .PHONY : all clean
 
-COMPILER=g++ -Ofast 
+COMPILER=g++ -std=c++11 -Ofast 
 FLAGS=`root-config --glibs --cflags`
 
 SRCS := $(wildcard *.cpp)

@@ -74,6 +74,11 @@ std::vector< std::vector<std::string> > getInput( std::string filename ){
     
 }
 
+bool toDiscard( double d ){
+    if( (d==0.) && ((d+1)!=0.) ) return false ;
+    else return ( !( std::isnormal( d ) ) ) ;
+}
+
 class SpecifiedNumber{
     
     public :
