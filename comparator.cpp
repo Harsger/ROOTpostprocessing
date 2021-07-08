@@ -71,6 +71,9 @@ int main(int argc, char *argv[]){
     }
 
     unsigned int nHists = filesNhists.size() ;
+    
+    if( nHists < 2 ) return 2 ;
+    
     TH2D** hists = new TH2D*[nHists] ;
     TString name ;
     unsigned int rowsNcolumns[2] = { 0 , 0 } ;
@@ -125,7 +128,7 @@ int main(int argc, char *argv[]){
 
     if( rowsNcolumns[1] == 0 && rowsNcolumns[0] == 0 ){
         cout << " ERROR : empty histograms " << endl ;
-        return 2 ;
+        return 3 ;
     }
 
     unsigned int nToUse = nHists - notFound ;
@@ -172,7 +175,7 @@ int main(int argc, char *argv[]){
             if( tooManyDefault ){
                 cout << " ERROR : " 
                      << "histnames can not be properly specified " << endl ;
-                return 3 ;
+                return 4 ;
             }
             else tooManyDefault = true ;
         }
@@ -211,62 +214,82 @@ int main(int argc, char *argv[]){
                             2000 , 0. , 1.
                         ) ;
 
-    double mean , stdv , minMax[2][2] , content , reference , difference ; 
-    bool setMinMax[2] = { true , true } ;
+    double mean , stdv , minMax[3][2] , content , reference , difference ; 
+    unsigned int number ;
+    bool setMinMax[3] = { true , true , true } ;
 
     for(unsigned int r=1; r<=rowsNcolumns[0]; r++){
         for(unsigned int c=1; c<=rowsNcolumns[1]; c++){
             for(unsigned int h=0; h<nHists; h++){
                 if( ! useable[h] ) continue ;
                 content = hists[h]->GetBinContent( c , r ) ;
+                if( toDiscard( content ) ) continue ;
+                if( setMinMax[0] ){
+                    minMax[0][0] = content ;
+                    minMax[0][1] = content ;
+                    setMinMax[0] = false ;
+                }
+                if( minMax[0][0] > content ) minMax[0][0] = content ;
+                if( minMax[0][1] < content ) minMax[0][1] = content ;
                 mean = 0. ;
                 stdv = 0. ;
+                number = 0 ;
                 for(unsigned int o=0; o<nHists; o++){
                     if( ! useable[o] ) continue ;
                     if( h == o ) continue ;
                     reference = hists[o]->GetBinContent( c , r ) ;
+                    if( toDiscard( reference ) ) continue ;
                     difference = content - reference ;
                     mean += reference ;
                     stdv += ( reference * reference ) ;
+                    number++ ;
                     if( reference == 0. ) reference = 1. ;
                     differenceTOeach[0][h]->Fill( o+1 , difference/abs(reference) ) ;
-                    if( setMinMax[0] ){
-                        minMax[0][0] = difference ;
-                        minMax[0][1] = difference ;
-                        setMinMax[0] = false ;
+                    if( setMinMax[1] ){
+                        minMax[1][0] = difference ;
+                        minMax[1][1] = difference ;
+                        setMinMax[1] = false ;
                     }
-                    if( minMax[0][0] > difference ) minMax[0][0] = difference ;
-                    if( minMax[0][1] < difference ) minMax[0][1] = difference ;
+                    if( minMax[1][0] > difference ) minMax[1][0] = difference ;
+                    if( minMax[1][1] < difference ) minMax[1][1] = difference ;
                 }
-                mean /= ( nToUse - 1. ) ;
+                if( number != nToUse-1 ) continue ;
+                mean /= number ;
                 stdv = sqrt( 
-                                ( stdv - mean * mean * ( nToUse - 1. ) ) 
+                                ( stdv - mean * mean * number ) 
                                 / 
-                                ( ( nToUse - 1. ) -1. ) 
+                                ( number - 1. ) 
                             ) ; 
                 difference = content - mean ;
                 if( mean == 0. ) mean = 1. ;
                 differenceTOmean[0]->Fill( h+1 , difference/abs(mean) ) ;
                 variation[0]->Fill( h+1 , stdv/abs(mean) ) ;
-                if( setMinMax[1] ){
-                    minMax[1][0] = stdv ;
-                    minMax[1][1] = stdv ;
-                    setMinMax[1] = false ;
+                if( setMinMax[2] ){
+                    minMax[2][0] = stdv ;
+                    minMax[2][1] = stdv ;
+                    setMinMax[2] = false ;
                 }
-                if( minMax[1][0] > stdv ) minMax[1][0] = stdv ;
-                if( minMax[1][1] < stdv ) minMax[1][1] = stdv ;
+                if( minMax[2][0] > stdv ) minMax[2][0] = stdv ;
+                if( minMax[2][1] < stdv ) minMax[2][1] = stdv ;
             }
         }
     }
 
-    cout << " diffrange " << minMax[0][0] << " to " << minMax[0][1] 
-         << " STDVrange " << minMax[1][0] << " to " << minMax[1][1] << endl ;
+    cout << " value range " << minMax[0][0] << " to " << minMax[0][1] << endl ;
+    cout << " diff. range " << minMax[1][0] << " to " << minMax[1][1] << endl ;
+    cout << " STDV  range " << minMax[2][0] << " to " << minMax[2][1] << endl ;
+         
+    TH2I * spectra = new TH2I( 
+                                "spectra" , "spectra" ,  
+                                nHists , 0.5 , nHists+0.5 ,
+                                2000 , minMax[0][0] , minMax[0][1]
+                             );
 
     differenceTOmean[1] = new TH2I( 
                                     "differenceTOmean_absolute" ,
                                     "differenceTOmean_absolute" ,
                                     nHists , 0.5 , nHists+0.5 ,
-                                    2000 , minMax[0][0] , minMax[0][1]
+                                    2000 , minMax[1][0] , minMax[1][1]
                                 );
 
     differenceTOeach[1] = new TH2I*[nHists] ;
@@ -276,7 +299,7 @@ int main(int argc, char *argv[]){
         differenceTOeach[1][h] = new TH2I(
                                             name , name ,
                                             nHists , 0.5 , nHists+0.5 ,
-                                            2000 , minMax[0][0] , minMax[0][1]
+                                            2000 , minMax[1][0] , minMax[1][1]
                                         );
     }
 
@@ -284,7 +307,7 @@ int main(int argc, char *argv[]){
                             "variation_absolute" ,
                             "variation_absolute" ,
                             nHists , 0.5 , nHists+0.5 ,
-                            2000 , minMax[1][0] , minMax[1][1]
+                            2000 , minMax[2][0] , minMax[2][1]
                         ) ;
 
     for(unsigned int r=1; r<=rowsNcolumns[0]; r++){
@@ -292,23 +315,29 @@ int main(int argc, char *argv[]){
             for(unsigned int h=0; h<nHists; h++){
                 if( ! useable[h] ) continue ;
                 content = hists[h]->GetBinContent( c , r ) ;
+                if( toDiscard( content ) ) continue ;
+                spectra->Fill( h+1 , content ) ; 
                 mean = 0. ;
                 stdv = 0. ;
+                number = 0 ;
                 for(unsigned int o=0; o<nHists; o++){
                     if( ! useable[o] ) continue ;
                     if( h == o ) continue ;
                     reference = hists[o]->GetBinContent( c , r ) ;
+                    if( toDiscard( reference ) ) continue ;
                     difference = content - reference ;
                     mean += reference ;
                     stdv += ( reference * reference ) ;
+                    number++ ;
                     if( reference == 0. ) reference = 1. ;
                     differenceTOeach[1][h]->Fill( o+1 , difference ) ;
                 }
-                mean /= ( nToUse - 1. ) ;
+                if( number != nToUse-1 ) continue ;
+                mean /= number ;
                 stdv = sqrt( 
-                                ( stdv - mean * mean * ( nToUse - 1. ) ) 
+                                ( stdv - mean * mean * number ) 
                                 / 
-                                ( ( nToUse - 1. ) -1. ) 
+                                ( number  - 1. ) 
                             ) ; 
                 difference = content - mean ;
                 if( mean == 0. ) mean = 1. ;
@@ -338,9 +367,17 @@ int main(int argc, char *argv[]){
             diffHist->SetName(name);
             diffHist->Add( hists[h] , hists[o] , 1. , -1. ) ;
             diffHist->Draw("COLZ");
-            diffHist->GetZaxis()->SetRangeUser( minMax[0][0] , minMax[0][1] );
+            diffHist->GetZaxis()->SetRangeUser( minMax[1][0] , minMax[1][1] );
         }
     }
+
+    for(unsigned int h=0; h<nHists; h++) hists[h]->Delete() ;
+
+    cout << " writing ... " << flush ;
+
+    outfile->Write() ;
+
+    cout << " plotting ... " << flush ;
 
     gPad->Modified() ;
     gPad->Update() ;
@@ -350,11 +387,8 @@ int main(int argc, char *argv[]){
     name += ".pdf" ;
     can->Print(name) ;
 
-    for(unsigned int h=0; h<nHists; h++) hists[h]->Delete() ;
-
-    cout << " writing ... " ;
-
-    outfile->Write() ;
+    cout << " closing ... " << flush ;
+    
     outfile->Close() ;
 
     cout << " done " << endl ;
