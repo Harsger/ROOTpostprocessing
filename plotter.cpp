@@ -199,6 +199,7 @@ int main(int argc, char *argv[]){
             continue ;
         }
 
+        number = 1 ;
         useable[h] = getStats(
                                 readhist ,
                                 mean , stdv , min , max , median , number ,
@@ -208,6 +209,10 @@ int main(int argc, char *argv[]){
         if( ! useable[h] ){ 
             cout << " WARNING : getStats " << name 
                  << " in " << input->GetName() << endl ;
+            if( number != 1 )
+                g_number->SetPoint(
+                    g_number->GetN() , valueNerror.at(h).at(0) , 0
+                ) ;
             notFound++ ;
             readhist->Delete() ;
             continue ;
