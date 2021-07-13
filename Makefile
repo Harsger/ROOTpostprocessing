@@ -8,7 +8,7 @@ BINS := $(SRCS:%.cpp=%)
 
 all: ${BINS}
 
-%: %.cpp postprocessing.h
+%: %.cpp postprocessing.h useful.h
 	${COMPILER} $< -o $@ ${FLAGS}
 
 clean:
