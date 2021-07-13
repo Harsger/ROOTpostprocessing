@@ -288,11 +288,10 @@ int main(int argc, char *argv[]){
     TFile * outfile = new TFile( name , "RECREATE" ) ;
     
     outfile->cd() ;
-        
-    gStyle->SetPalette(55);
-    gStyle->SetOptTitle(0) ;
+                     
+    plotOptions() ;
+    
     gStyle->SetOptStat(0) ;
-    gStyle->SetOptFit(0) ;
 
     gStyle->SetPadTopMargin(    0.05 ) ;
     gStyle->SetPadRightMargin(  0.05 ) ;
@@ -301,23 +300,6 @@ int main(int argc, char *argv[]){
 
     gStyle->SetTitleOffset( 1.1 , "x" ) ;
     gStyle->SetTitleOffset( 1.4 , "y" ) ;
-    
-    double text_size = 0.05 ;
-    int font = 42 ;
-
-    gStyle->SetLabelFont(font,"x");
-    gStyle->SetTitleFont(font,"x");
-    gStyle->SetLabelFont(font,"y");
-    gStyle->SetTitleFont(font,"y");
-    gStyle->SetLabelFont(font,"z");
-    gStyle->SetTitleFont(font,"z");
-
-    gStyle->SetLabelSize(text_size,"x") ;
-    gStyle->SetTitleSize(text_size,"x") ;
-    gStyle->SetLabelSize(text_size,"y") ;
-    gStyle->SetTitleSize(text_size,"y") ;
-    gStyle->SetLabelSize(text_size,"z") ;
-    gStyle->SetTitleSize(text_size,"z") ;
     
     TApplication app("app", &argc, argv) ;     
     
@@ -515,28 +497,8 @@ int main(int argc, char *argv[]){
         else g_overflow->Delete() ;
         
     }
-    
-    bool toBeEdited = true ;
-    
-    while( toBeEdited ){
         
-        gPad->Modified() ;
-        gPad->Update() ;
-        gPad->WaitPrimitive() ;
-        
-        gPad->Modified() ;
-        gPad->Update() ;
-        gPad->WaitPrimitive() ;
-        
-        cout << " plot OK ? (y/n) : " ;
-        string answer ;
-        cin >> answer ;
-        if( answer.compare("y") == 0 ){
-            toBeEdited = false ;
-            break ;
-        }
-        
-    }
+    showing() ;
         
     name = can->GetName() ;
     name += ".pdf" ;

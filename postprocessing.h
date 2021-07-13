@@ -25,6 +25,9 @@
 #include <TGaxis.h>
 
 #include "useful.h"
+    
+double text_size = 0.05 ;
+int font = 42 ;
 
 bool getStats(
     TH2D * hist ,
@@ -184,9 +187,6 @@ void plotOptions(){
     gStyle->SetTitleOffset( 1.3 , "x" ) ;
     gStyle->SetTitleOffset( 0.7 , "y" ) ;
     gStyle->SetTitleOffset( 2.0 , "z" ) ;
-    
-    double text_size = 0.05 ;
-    int font = 42 ;
 
     gStyle->SetLabelFont(font,"x");
     gStyle->SetTitleFont(font,"x");

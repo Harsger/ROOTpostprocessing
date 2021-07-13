@@ -26,11 +26,10 @@ int main(int argc, char *argv[]){
     TH2D * hist = (TH2D*)input->Get(histname) ;
     hist->SetDirectory(0) ;
     input->Close() ;
-        
-    gStyle->SetPalette(55);
-    gStyle->SetOptTitle(0) ;
+                     
+    plotOptions() ;
+    
     gStyle->SetOptStat(1000000) ;
-    gStyle->SetOptFit(0) ;
 
     gStyle->SetPadTopMargin(    0.03 ) ;
     gStyle->SetPadRightMargin(  0.15 ) ;
@@ -41,31 +40,12 @@ int main(int argc, char *argv[]){
     gStyle->SetTitleOffset( 0.7 , "y" ) ;
     gStyle->SetTitleOffset( 2.0 , "z" ) ;
     
-    double text_size = 0.05 ;
-    int font = 42 ;
-
-    gStyle->SetLabelFont(font,"x");
-    gStyle->SetTitleFont(font,"x");
-    gStyle->SetLabelFont(font,"y");
-    gStyle->SetTitleFont(font,"y");
-    gStyle->SetLabelFont(font,"z");
-    gStyle->SetTitleFont(font,"z");
-
-    gStyle->SetLabelSize(text_size,"x") ;
-    gStyle->SetTitleSize(text_size,"x") ;
-    gStyle->SetLabelSize(text_size,"y") ;
-    gStyle->SetTitleSize(text_size,"y") ;
-    gStyle->SetLabelSize(text_size,"z") ;
-    gStyle->SetTitleSize(text_size,"z") ;
-    
     TApplication app("app", &argc, argv) ; 
     TCanvas * can = new TCanvas( histname , histname , 700 , 600 ) ;
     
     hist->Draw("COLZ") ;
         
-    gPad->Modified() ;
-    gPad->Update() ;
-    gPad->WaitPrimitive() ;
+    showing() ;
 
     hist->Delete() ;
 

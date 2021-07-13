@@ -18,7 +18,7 @@ int main(int argc, char *argv[]){
 
     vector< vector<string> > filesNgraphsNtitles ;
     vector<string> strVecDummy ;
-    vector< vector<SpecifiedNumber> > plotOptions ;
+    vector< vector<SpecifiedNumber> > markerNcolorNline ;
     vector<SpecifiedNumber> specVecDummy ;
     string axisTitles[2] = { neverUse , neverUse } ;
     SpecifiedNumber plotRanges[2][2] ;
@@ -129,7 +129,7 @@ int main(int argc, char *argv[]){
                     atof( parameter.at(r).at(5).c_str() )
                 ) ) ;
             else specVecDummy.push_back( SpecifiedNumber() ) ;
-            plotOptions.push_back( specVecDummy ) ;
+            markerNcolorNline.push_back( specVecDummy ) ;
             specVecDummy.clear() ;
                 
         }
@@ -288,11 +288,9 @@ int main(int argc, char *argv[]){
                         plotRanges[1][0].number 
                      ) ;
     
-        
-    gStyle->SetPalette(55);
-    gStyle->SetOptTitle(0) ;
+    plotOptions() ;
+    
     gStyle->SetOptStat(0) ;
-    gStyle->SetOptFit(0) ;
 
     gStyle->SetPadTopMargin(    0.03 ) ;
     gStyle->SetPadRightMargin(  0.11 ) ;
@@ -301,23 +299,6 @@ int main(int argc, char *argv[]){
 
     gStyle->SetTitleOffset( 1.2 , "x" ) ;
     gStyle->SetTitleOffset( 0.6 , "y" ) ;
-    
-    double text_size = 0.05 ;
-    int font = 42 ;
-
-    gStyle->SetLabelFont(font,"x");
-    gStyle->SetTitleFont(font,"x");
-    gStyle->SetLabelFont(font,"y");
-    gStyle->SetTitleFont(font,"y");
-    gStyle->SetLabelFont(font,"z");
-    gStyle->SetTitleFont(font,"z");
-
-    gStyle->SetLabelSize(text_size,"x") ;
-    gStyle->SetTitleSize(text_size,"x") ;
-    gStyle->SetLabelSize(text_size,"y") ;
-    gStyle->SetTitleSize(text_size,"y") ;
-    gStyle->SetLabelSize(text_size,"z") ;
-    gStyle->SetTitleSize(text_size,"z") ;
     
     TApplication app("app", &argc, argv) ; 
     
@@ -357,25 +338,25 @@ int main(int argc, char *argv[]){
         
         TString toAdd = "" ;
         
-        if( plotOptions.at(g).at(0).setting )
+        if( markerNcolorNline.at(g).at(0).setting )
             graphs[g]->SetMarkerStyle( 
-                (unsigned int)plotOptions.at(g).at(0).number 
+                (unsigned int)markerNcolorNline.at(g).at(0).number 
             ) ;
         else graphs[g]->SetMarkerStyle( 20 ) ;
         
-        if( plotOptions.at(g).at(1).setting ){
+        if( markerNcolorNline.at(g).at(1).setting ){
             graphs[g]->SetMarkerColor( 
-                (unsigned int)plotOptions.at(g).at(1).number 
+                (unsigned int)markerNcolorNline.at(g).at(1).number 
             ) ;
             graphs[g]->SetLineColor( 
-                (unsigned int)plotOptions.at(g).at(1).number 
+                (unsigned int)markerNcolorNline.at(g).at(1).number 
             ) ;
         }
         else toAdd += " PMC PLC " ;
         
-        if( plotOptions.at(g).at(2).setting ){ 
+        if( markerNcolorNline.at(g).at(2).setting ){ 
             graphs[g]->SetLineStyle( 
-                (unsigned int)plotOptions.at(g).at(2).number 
+                (unsigned int)markerNcolorNline.at(g).at(2).number 
             ) ;
             name = "PLsame" ;
         }
@@ -405,28 +386,8 @@ int main(int argc, char *argv[]){
         if( name.CompareTo("extrema") == 0 )
             legendEntries->RemoveAt( legendEntries->IndexOf( obj ) ) ;
     }
-    
-    bool toBeEdited = true ;
-    
-    while( toBeEdited ){
         
-        gPad->Modified() ;
-        gPad->Update() ;
-        gPad->WaitPrimitive() ;
-        
-        gPad->Modified() ;
-        gPad->Update() ;
-        gPad->WaitPrimitive() ;
-        
-        cout << " plot OK ? (y/n) : " ;
-        string answer ;
-        cin >> answer ;
-        if( answer.compare("y") == 0 ){
-            toBeEdited = false ;
-            break ;
-        }
-        
-    }
+    showing() ;
 
     cout << " writing ... " ;
     

@@ -378,10 +378,8 @@ int main(int argc, char *argv[]){
     outfile->Write() ;
 
     cout << " plotting ... " << flush ;
-
-    gPad->Modified() ;
-    gPad->Update() ;
-    gPad->WaitPrimitive() ;
+        
+    showing() ;
 
     name = can->GetName() ;
     name += ".pdf" ;
