@@ -316,3 +316,64 @@ double getFWHM(
     
 }
 
+void plotOptions(){
+        
+    gStyle->SetPalette(55);
+    gStyle->SetOptTitle(0) ;
+    gStyle->SetOptStat(11110) ;
+    gStyle->SetOptFit(0) ;
+
+    gStyle->SetPadTopMargin(    0.05 ) ;
+    gStyle->SetPadRightMargin(  0.16 ) ;
+    gStyle->SetPadBottomMargin( 0.10 ) ;
+    gStyle->SetPadLeftMargin(   0.12 ) ;
+
+    gStyle->SetTitleOffset( 1.3 , "x" ) ;
+    gStyle->SetTitleOffset( 0.7 , "y" ) ;
+    gStyle->SetTitleOffset( 2.0 , "z" ) ;
+    
+    double text_size = 0.05 ;
+    int font = 42 ;
+
+    gStyle->SetLabelFont(font,"x");
+    gStyle->SetTitleFont(font,"x");
+    gStyle->SetLabelFont(font,"y");
+    gStyle->SetTitleFont(font,"y");
+    gStyle->SetLabelFont(font,"z");
+    gStyle->SetTitleFont(font,"z");
+
+    gStyle->SetLabelSize(text_size,"x") ;
+    gStyle->SetTitleSize(text_size,"x") ;
+    gStyle->SetLabelSize(text_size,"y") ;
+    gStyle->SetTitleSize(text_size,"y") ;
+    gStyle->SetLabelSize(text_size,"z") ;
+    gStyle->SetTitleSize(text_size,"z") ;
+    
+}
+
+void showing(){
+    
+    bool toBeEdited = true ;
+    
+    while( toBeEdited ){
+        
+        gPad->Modified() ;
+        gPad->Update() ;
+        gPad->WaitPrimitive() ;
+        
+        gPad->Modified() ;
+        gPad->Update() ;
+        gPad->WaitPrimitive() ;
+        
+        std::cout << " plot OK ? (y/n) : " ;
+        std::string answer ;
+        std::cin >> answer ;
+        if( answer.compare("y") == 0 ){
+            toBeEdited = false ;
+            break ;
+        }
+        
+    }
+    
+}
+
