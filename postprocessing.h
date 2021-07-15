@@ -64,7 +64,7 @@ bool getStats(
     
     for(unsigned int r=0; r<rowsNcolumns[0]; r++){
         for(unsigned int c=0; c<rowsNcolumns[1]; c++){
-            double content = hist->GetBinContent( r , c ) ;
+            double content = hist->GetBinContent( r+1 , c+1 ) ;
             if( toDiscard( content ) ) continue ;
             if( 
                 lowLimit.setting 
