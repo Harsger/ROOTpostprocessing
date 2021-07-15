@@ -224,12 +224,21 @@ int main(int argc, char *argv[]){
 
     gStyle->SetTitleOffset( 1.2 , "x" ) ;
     gStyle->SetTitleOffset( 0.6 , "y" ) ;
+            
+    if( ! plotRanges[0][0].setting ) 
+        plotRanges[0][0].number = range[0] ;
+    if( ! plotRanges[0][1].setting ) 
+        plotRanges[0][1].number = range[1] ;
+    if( ! plotRanges[1][0].setting ) 
+        plotRanges[1][0].number = 0. ;
+    if( ! plotRanges[1][1].setting ) 
+        plotRanges[1][1].number = 1. ;
     
     TApplication app("app", &argc, argv) ; 
     
     TCanvas * can = new TCanvas( "overlay" , "overlay" , 2000 , 500 ) ; 
-    if(useLogScale[0]) can->SetLogx() ; 
-    if(useLogScale[1]) can->SetLogy() ; 
+    if(useLogScale[0] && !( plotRanges[0][0].number <= 0. ) ) can->SetLogx() ; 
+    if(useLogScale[1] && !( plotRanges[1][0].number <= 0. ) ) can->SetLogy() ; 
     
     bool firstTOdraw = true ;
     
@@ -268,15 +277,6 @@ int main(int argc, char *argv[]){
         if( firstTOdraw ){ 
             
             normalized[h]->Draw("P PLC PMC") ;
-            
-            if( ! plotRanges[0][0].setting ) 
-                plotRanges[0][0].number = 0. ;
-            if( ! plotRanges[0][1].setting ) 
-                plotRanges[0][1].number = 1. ;
-            if( ! plotRanges[1][0].setting ) 
-                plotRanges[1][0].number = range[0] ;
-            if( ! plotRanges[1][1].setting ) 
-                plotRanges[1][1].number = range[1] ;
                 
             normalized[h]->GetXaxis()->SetRangeUser( 
                 plotRanges[0][0].number , plotRanges[0][1].number
