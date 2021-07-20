@@ -31,8 +31,13 @@ additionalFunctionPart startParameter
  the additional function part should be specified as ROOT::TFormula
  addable to the standard gaussian
 
--drawer: /path/to/file.root histname
- shows specified 2D-histogram (ROOT::TH2 e.g. heat-maps) from file
+-drawer: /path/to/file.root histname (thresholdfactor)
+ shows specified 2D-histogram (ROOT::TH2 e.g. heat-maps) from file,
+ if thresholdfactor is specified both projections (onto X and Y)
+ are calculated (average over column or row, respectivly)
+ and shown as canvases
+ bins, columns and rows deviationg the standard-devation times
+ thresholdfactor from mean are written to text-files
 
 -comparator: standard parameter-file ->
  takes 2D-histograms 
