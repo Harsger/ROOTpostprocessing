@@ -29,6 +29,10 @@
 double text_size = 0.05 ;
 int font = 42 ;
 
+std::vector<TString> badCharsForNames = {
+    "/" , "\\" , "+" , "-" , "=" , "." , ":" , "\"" , " " , "\t" , "," , ";"
+} ;
+
 bool getStats(
     TH2D * hist ,
     double &mean ,
@@ -174,6 +178,8 @@ double getFWHM(
 
 void plotOptions(){
         
+    gROOT->SetStyle("Plain") ;
+    
     gStyle->SetPalette(55);
     gStyle->SetOptTitle(0) ;
     gStyle->SetOptStat(11110) ;
@@ -202,6 +208,8 @@ void plotOptions(){
     gStyle->SetLabelSize(text_size,"z") ;
     gStyle->SetTitleSize(text_size,"z") ;
     
+    gROOT->ForceStyle() ;
+    
 }
 
 void showing(){
@@ -228,5 +236,14 @@ void showing(){
         
     }
     
+}
+
+TString replaceBadChars( TString input ){
+    TString output = input ;
+    for( auto c : badCharsForNames ){
+        if( output.Contains(c) )
+            output.ReplaceAll( c , "" ) ;
+    }
+    return output ;
 }
 
