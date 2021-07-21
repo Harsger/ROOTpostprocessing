@@ -113,7 +113,11 @@ int main(int argc, char *argv[]){
                     ||
                     content > highThreshold
                 ){
-                    outfile << x+1 << " " << y+1 << " " << content << endl ;
+                    double center[2] = {
+                        hist->GetXaxis()->GetBinCenter(x+1) ,
+                        hist->GetYaxis()->GetBinCenter(y+1) ,
+                    } ;
+                    outfile << center[0] << " " << center[1] << " " << content << endl ;
                 }
             }
         }
@@ -149,7 +153,8 @@ int main(int argc, char *argv[]){
                     ||
                     content > highThreshold
                 ){
-                    outfile << b+1 << " " << content << endl ;
+                    outfile << projection->GetXaxis()->GetBinCenter( b+1 ) 
+                            << " " << content << endl ;
                 }
             }
             
