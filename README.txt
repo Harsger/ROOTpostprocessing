@@ -18,6 +18,10 @@ AXIS xAxisTitle yAxisTitle
 RANGE xlow xhigh ylow yhigh
 LOG logarithmicX logarithmicY 
  (specified by '0' [->false] or '1' [->true], without quotes)
+SCALEMODE mode
+ mode can be: bare, max, integral (default)
+ addtional 'ranged' (added without withspace etc.) can be specified
+ in order to enable maximum or integral calculation within ylow,yhigh
 
 -peakFitter: standard parameter-file ->
  takes 1D-histograms and fit specified peaks
