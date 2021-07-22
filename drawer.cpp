@@ -13,13 +13,23 @@ int main(int argc, char *argv[]){
     TString histname = argv[2] ;
     
     SpecifiedNumber threshold ;
+    SpecifiedNumber lowThreshold ;
+    SpecifiedNumber highThreshold ;
     
-    if( argc > 3 ){
+    if( argc == 4 ){
         TString threshString = argv[3] ;
         TString tester = threshString( 0 , 1 ) ;
         if( tester.IsDec() ){
             threshold = SpecifiedNumber( atof( threshString.Data() ) ) ;
         }
+    }
+    else if( argc > 4 ){
+        TString tester = argv[3] ;
+        if( tester != "%" )
+            lowThreshold = SpecifiedNumber( atof( tester.Data() ) ) ;
+        tester = argv[4] ;
+        if( tester != "%" )
+            highThreshold = SpecifiedNumber( atof( tester.Data() ) ) ;
     }
                   
     TApplication app("app", &argc, argv) ;    
@@ -27,7 +37,13 @@ int main(int argc, char *argv[]){
     
     gStyle->SetOptStat(0) ;
     
-    if( threshold.setting ){
+    if( 
+        threshold.setting 
+        || 
+        lowThreshold.setting
+        ||
+        highThreshold.setting
+    ){
 
         gStyle->SetPadTopMargin(    0.04 ) ;
         gStyle->SetPadRightMargin(  0.03 ) ;
@@ -72,7 +88,13 @@ int main(int argc, char *argv[]){
     name += histname ;
     name = replaceBadChars( name );
     
-    if( threshold.setting ){
+    if( 
+        threshold.setting 
+        || 
+        lowThreshold.setting
+        ||
+        highThreshold.setting
+    ){
         
         double mean , stdv , min , max , median ;
         unsigned int number ;
@@ -88,12 +110,21 @@ int main(int argc, char *argv[]){
                 
         cout << " mean " << mean << " \t stdv " << stdv << endl ;
         
-        double
-                lowThreshold  = mean - threshold.number * stdv ,
-                highThreshold = mean + threshold.number * stdv ;
+        if(
+            !( lowThreshold.setting )
+            &&
+            !( highThreshold.setting )
+        ){
+                lowThreshold  
+                    = SpecifiedNumber( mean - threshold.number * stdv ) ;
+                highThreshold 
+                    = SpecifiedNumber( mean + threshold.number * stdv ) ;
+        }
                 
-        cout << " low " << lowThreshold 
-             << " \t high " << highThreshold << endl ;
+        if( lowThreshold.setting ) 
+            cout << " lowThreshold " << lowThreshold.number << endl;
+        if( highThreshold.setting ) 
+            cout << " highThreshold " << highThreshold.number << endl;
         
         unsigned int bins[2] = {
             (unsigned int)hist->GetNbinsX() ,
@@ -109,9 +140,17 @@ int main(int argc, char *argv[]){
             for(unsigned int y=0; y<bins[1]; y++){
                 double content = hist->GetBinContent( x+1 , y+1 ) ;
                 if( 
-                    content < lowThreshold
+                    (
+                        lowThreshold.setting
+                        &&
+                        content < lowThreshold.number
+                    )
                     ||
-                    content > highThreshold
+                    (
+                        highThreshold.setting
+                        &&
+                        content > highThreshold.number
+                    )
                 ){
                     double center[2] = {
                         hist->GetXaxis()->GetBinCenter(x+1) ,
@@ -149,9 +188,17 @@ int main(int argc, char *argv[]){
             for(unsigned int b=0; b<bins[c]; b++){
                 double content = projection->GetBinContent( b+1 ) ;
                 if( 
-                    content < lowThreshold
+                    (
+                        lowThreshold.setting
+                        &&
+                        content < lowThreshold.number
+                    )
                     ||
-                    content > highThreshold
+                    (
+                        highThreshold.setting
+                        &&
+                        content > highThreshold.number
+                    )
                 ){
                     outfile << projection->GetXaxis()->GetBinCenter( b+1 ) 
                             << " " << content << endl ;
