@@ -2,26 +2,27 @@ evaluation and plotting software for ROOT histograms
 
 format of standard parameter-files is :
 
-FILE /path/to .ending
-HIST prefix suffix
-file1 hist1
-file2 hist2
-file3 hist3
+FILE </path/to> <.ending>
+HIST <prefix> <suffix>
+<file1> <hist1>
+<file2> <hist2>
+<file3> <hist3>
 ...
 
+(strings or values without <> , uppercase words are specific)
 values can be omitted using '%' (without quotes)
 
 -overlayer: standard parameter-file -> 
  takes 1D-histograms (ROOT::TH1 e.g. spectrums) and superimposes them
  additional options:
-AXIS xAxisTitle yAxisTitle
-RANGE xlow xhigh ylow yhigh
-LOG logarithmicX logarithmicY 
+AXIS <xAxisTitle> <yAxisTitle>
+RANGE <xlow> <xhigh> <ylow> <yhigh>
+LOG <logarithmicX> <logarithmicY> 
  (specified by '0' [->false] or '1' [->true], without quotes)
-SCALEMODE mode
- mode can be: bare, max, integral (default)
+SCALEMODE <mode>
+ mode can be: 'bare', 'max', 'integral' (default) (all without quotes)
  addtional 'ranged' (added without withspace etc.) can be specified
- in order to enable maximum or integral calculation within ylow,yhigh
+ in order to enable maximum or integral calculation within [<ylow>,<yhigh>]
 
 -peakFitter: standard parameter-file ->
  takes 1D-histograms and fit specified peaks
@@ -29,19 +30,22 @@ SCALEMODE mode
  peak-fit-center difference to nominal 
  is stored in ROOT::TGraphs
  required options per histogram
-file1 hist1 peakPosition lowFitLimit highFitLimit
+<file1> <hist1> <peakPosition> <lowFitLimit> <highFitLimit>
  additional options per histogram
-additionalFunctionPart startParameter
+<additionalFunctionPart> <startParameter>
  the additional function part should be specified as ROOT::TFormula
  addable to the standard gaussian
+ <startParameter> should be a list with size of additional parameter
 
--drawer: /path/to/file.root histname (thresholdfactor)
+-drawer: /path/to/file.root histname (<thresholdfactor> / <lowThresh> <highThresh>)
  shows specified 2D-histogram (ROOT::TH2 e.g. heat-maps) from file,
- if thresholdfactor is specified both projections (onto X and Y)
+ if <thresholdfactor> or <lowThresh> <highThresh> 
+ is specified both projections (onto X and Y)
  are calculated (average over column or row, respectivly)
  and shown as canvases
- bins, columns and rows deviationg the standard-devation times
- thresholdfactor from mean are written to text-files
+ bins, columns and rows deviating the standard-devation times
+ <thresholdfactor> from mean are written to text-files
+ or exceeding the <lowThresh> <highThresh> (one or both can be omitted using %)
 
 -comparator: standard parameter-file ->
  takes 2D-histograms 
@@ -69,24 +73,24 @@ additionalFunctionPart startParameter
  stores results in TGraphs as function of specified values
  and plots combined graphs
  required options per histogram
-file1 hist1 value error(optional)
+<file1> <hist1> <value> <error(optional)>
  additional options:
-RANGE ylow yhigh
-SKIP listOfValuesToBeSkipped <lowLimit >highLimit
+RANGE <ylow> <yhigh>
+SKIP <listOfValuesToBeSkipped> <<lowLimit> ><highLimit>
  (low and high limit have to have '<' '>' preceding, respectivly)
  
 -superimposer: standard parameter-file (except HIST=GRAPH) ->
  takes ROOT::TGraphs and superimposes them in one plot
  stores result in canvas (.root-file) and as PDF
  required options per graph
-file1 graph1 title1
+<file1> <graph1> <title1>
   additional options:
-AXIS xAxisTitle yAxisTitle
-RANGE xlow xhigh ylow yhigh
-LOG logarithmicX logarithmicY 
+AXIS <xAxisTitle> <yAxisTitle>
+RANGE <xlow> <xhigh> <ylow> <yhigh>
+LOG <logarithmicX> <logarithmicY> 
  (specified by '0' [->false] or '1' [->true], without quotes)
 
--housekeeper: /path/to/files(.dat) (specifierList)
+-housekeeper: /path/to/files(.dat) (<specifierList>)
  stores data from text-files in root tree 
  and plots TGraphs of values with specifier from list
  format of text-files has to be:
@@ -95,10 +99,10 @@ unixtime quantity specifier value unit
 -textTOtree: parameter-file
  stores columns of textfiles in specified leafs of ROOT:TTree
  format of parameter-file
-FILE /path/to specifier .ending
-columnIndex1 variableName1 variableType1
-columnIndex2 variableName2 variableType2
-columnIndex3 variableName3 variableType3
+FILE </path/to> <specifier> <.ending>
+<columnIndex1> <variableName1> <variableType1>
+<columnIndex2> <variableName2> <variableType2>
+<columnIndex3> <variableName3> <variableType3>
 ...
  variableType should be 'int' , 'double' , 'string' without quotes
  'string's are stored as ROOT::TString (for postprocessing)
