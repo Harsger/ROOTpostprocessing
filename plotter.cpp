@@ -22,7 +22,7 @@ int main(int argc, char *argv[]){
     vector< vector<double> > valueNerror ;
     vector<double> doVecDummy ;
     vector<double> toSkip ;
-    SpecifiedNumber lowLimit , highLimit , plotRange[2] ;
+    SpecifiedNumber lowLimit , highLimit , plotRange[2][2] ;
 
     for(unsigned int r=0; r<parameter.size(); r++){
 
@@ -48,12 +48,28 @@ int main(int argc, char *argv[]){
                 axisTitles[1] = parameter.at(r).at(2) ;
             }
             else if( specifier == 3 ){
-                plotRange[0].number = atof( parameter.at(r).at(1).c_str() ) ;
-                plotRange[0].specifier = "low" ;
-                plotRange[0].setting = true ;
-                plotRange[1].number = atof( parameter.at(r).at(2).c_str() ) ;
-                plotRange[1].specifier = "high" ;
-                plotRange[1].setting = true ;
+                if( parameter.at(r).size() == 3 ){
+                    plotRange[1][0] = SpecifiedNumber( 
+                                        atof( parameter.at(r).at(1).c_str() ) 
+                                    );
+                    plotRange[1][1] = SpecifiedNumber( 
+                                        atof( parameter.at(r).at(2).c_str() ) 
+                                    );
+                }
+                else if( parameter.at(r).size() > 4 ){
+                    plotRange[0][0] = SpecifiedNumber( 
+                                        atof( parameter.at(r).at(1).c_str() ) 
+                                    );
+                    plotRange[0][1] = SpecifiedNumber( 
+                                        atof( parameter.at(r).at(2).c_str() ) 
+                                    );
+                    plotRange[1][0] = SpecifiedNumber( 
+                                        atof( parameter.at(r).at(3).c_str() ) 
+                                    );
+                    plotRange[1][1] = SpecifiedNumber( 
+                                        atof( parameter.at(r).at(4).c_str() ) 
+                                    );
+                }
             }
             continue ;
         }
@@ -343,16 +359,38 @@ int main(int argc, char *argv[]){
                             extrema[0][1] + 0.1 * ranges[0] , 
                             extrema[1][1] + 0.1 * ranges[1] 
                        ) ;
+    if( 
+        plotRange[0][0].setting 
+        && 
+        plotRange[0][1].setting 
+        &&
+        plotRange[1][0].setting 
+        && 
+        plotRange[1][1].setting 
+    ){
+        for(unsigned int e=0; e<2; e++)
+            g_extrema->SetPoint( 
+                            g_extrema->GetN() , 
+                            plotRange[0][e].number , 
+                            plotRange[1][e].number 
+                       ) ;
+            
+    }
     g_extrema->SetMarkerStyle( 1 ) ;
     g_extrema->SetMarkerColor( 0 ) ;
     g_extrema->SetLineColor( 0 ) ;
     g_extrema->Draw( "AP" ) ;
     g_extrema->GetXaxis()->SetTitle( axisTitles[0].c_str() ) ;
     g_extrema->GetYaxis()->SetTitle( axisTitles[1].c_str() ) ;
-    if( plotRange[0].setting && plotRange[1].setting )
+    if( plotRange[0][0].setting && plotRange[0][1].setting )
+        g_extrema->GetXaxis()->SetRangeUser( 
+                                                plotRange[0][0].number , 
+                                                plotRange[0][1].number 
+                                           ) ;
+    if( plotRange[1][0].setting && plotRange[1][1].setting )
         g_extrema->GetYaxis()->SetRangeUser( 
-                                                plotRange[0].number , 
-                                                plotRange[1].number 
+                                                plotRange[1][0].number , 
+                                                plotRange[1][1].number 
                                            ) ;
     
     g_mean->SetName("mean") ;
@@ -402,9 +440,9 @@ int main(int argc, char *argv[]){
     
     TGraphErrors * g_underflow ;
     if( 
-        plotRange[0].setting 
+        plotRange[1][0].setting 
         &&  
-        extrema[1][0] < plotRange[0].number 
+        extrema[1][0] < plotRange[1][0].number 
     ){
         
         g_underflow = new TGraphErrors() ;
@@ -414,18 +452,18 @@ int main(int argc, char *argv[]){
         double x , y ;
         for(unsigned int p=0; p<g_min->GetN(); p++){
             g_min->GetPoint( p , x , y ) ;
-            if( y < plotRange[0].number ){
+            if( y < plotRange[1][0].number ){
                 g_underflow->SetPoint(
                     g_underflow->GetN() ,
-                    x , plotRange[0].number
+                    x , plotRange[1][0].number
                 ) ;
                 name = "" ;
                 if( abs(y) < 1000. && abs(y) > 1. ) name.Form( "%2.1f" , y ) ;
                 else name.Form( "%.1e" , y ) ;
                 TText * t = new TText( 
                     x , 
-                    plotRange[0].number 
-                    + 0.02 * ( plotRange[1].number - plotRange[0].number ) , 
+                    plotRange[1][0].number + 0.02 
+                    * ( plotRange[1][1].number - plotRange[1][0].number ) , 
                     name 
                 ) ;
                 t->SetTextColor(4);
@@ -451,9 +489,9 @@ int main(int argc, char *argv[]){
     
     TGraphErrors * g_overflow ;
     if( 
-        plotRange[1].setting 
+        plotRange[1][1].setting 
         &&  
-        extrema[1][1] > plotRange[1].number 
+        extrema[1][1] > plotRange[1][1].number 
     ){
         
         g_overflow = new TGraphErrors() ;
@@ -463,18 +501,18 @@ int main(int argc, char *argv[]){
         double x , y ;
         for(unsigned int p=0; p<g_max->GetN(); p++){
             g_max->GetPoint( p , x , y ) ;
-            if( y > plotRange[1].number ){
+            if( y > plotRange[1][1].number ){
                 g_overflow->SetPoint(
                     g_overflow->GetN() ,
-                    x , plotRange[1].number
+                    x , plotRange[1][1].number
                 ) ;
                 name = "" ;
                 if( abs(y) < 1000. && abs(y) > 1. ) name.Form( "%2.1f" , y ) ;
                 else name.Form( "%.1e" , y ) ;
                 TText * t = new TText( 
                     x , 
-                    plotRange[1].number 
-                    - 0.02 * ( plotRange[1].number - plotRange[0].number ) , 
+                    plotRange[1][1].number - 0.02 
+                    * ( plotRange[1][1].number - plotRange[1][0].number ) , 
                     name 
                 ) ;
                 t->SetTextColor(2);

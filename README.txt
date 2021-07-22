@@ -75,7 +75,8 @@ SCALEMODE <mode>
  required options per histogram
 <file1> <hist1> <value> <error(optional)>
  additional options:
-RANGE <ylow> <yhigh>
+RANGE <ylow> <yhigh> / <xlow> <xhigh> <ylow> <yhigh>
+ (either only ylow and yhigh or all four)
 SKIP <listOfValuesToBeSkipped> <<lowLimit> ><highLimit>
  (low and high limit have to have '<' '>' preceding, respectivly)
  
