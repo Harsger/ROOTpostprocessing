@@ -163,6 +163,18 @@ int main(int argc, char *argv[]){
         
         outfile.close() ;
         
+        TF1 * lowLine , * highLine ;
+        if( lowThreshold.setting ){
+            lowLine = new TF1( "lowThreshold" , "[0]" ) ;
+            lowLine->SetParameter( 0 , lowThreshold.number ) ;
+            lowLine->SetLineColor(kBlue) ;
+        }
+        if( highThreshold.setting ){
+            highLine = new TF1( "highThreshold" , "[0]" ) ;
+            highLine->SetParameter( 0 , highThreshold.number ) ;
+            highLine->SetLineColor(kRed) ;
+        }
+        
         TString zTitle = hist->GetZaxis()->GetTitle() ;
         
         TH1D * projection ;
@@ -216,6 +228,21 @@ int main(int argc, char *argv[]){
             
             projection->GetYaxis()->SetTitle( zTitle ) ;
             projection->Draw("HIST") ;
+            
+            if( lowThreshold.setting ){ 
+                lowLine->SetRange(
+                    projection->GetXaxis()->GetXmin() ,
+                    projection->GetXaxis()->GetXmax() 
+                ) ;
+                lowLine->Draw("same") ;
+            }
+            if( highThreshold.setting ){
+                highLine->SetRange(
+                    projection->GetXaxis()->GetXmin() ,
+                    projection->GetXaxis()->GetXmax() 
+                ) ;
+                highLine->Draw("same") ;
+            }
             
             showing() ;
             
