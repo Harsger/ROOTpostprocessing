@@ -57,18 +57,20 @@ int main(int argc, char *argv[]){
                                     );
                 }
                 else if( parameter.at(r).size() > 4 ){
-                    plotRange[0][0] = SpecifiedNumber( 
-                                        atof( parameter.at(r).at(1).c_str() ) 
-                                    );
-                    plotRange[0][1] = SpecifiedNumber( 
-                                        atof( parameter.at(r).at(2).c_str() ) 
-                                    );
-                    plotRange[1][0] = SpecifiedNumber( 
-                                        atof( parameter.at(r).at(3).c_str() ) 
-                                    );
-                    plotRange[1][1] = SpecifiedNumber( 
-                                        atof( parameter.at(r).at(4).c_str() ) 
-                                    );
+                    for(unsigned int a=0; a<2; a++){
+                        for(unsigned int l=0; l<2; l++){
+                            unsigned int column = 1 + l + a * 2 ;
+                            if( 
+                                parameter.at(r)
+                                         .at(column)
+                                         .compare( "%" ) == 0 
+                            ) continue ;
+                            plotRange[a][l] 
+                                = SpecifiedNumber( 
+                                    atof( parameter.at(r).at(column).c_str() ) 
+                                );
+                        }
+                    }
                 }
             }
             continue ;
