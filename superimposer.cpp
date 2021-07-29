@@ -293,19 +293,19 @@ int main(int argc, char *argv[]){
     gStyle->SetOptStat(0) ;
 
     gStyle->SetPadTopMargin(    0.03 ) ;
-    gStyle->SetPadRightMargin(  0.11 ) ;
+    gStyle->SetPadRightMargin(  0.14 ) ;
     gStyle->SetPadBottomMargin( 0.12 ) ;
-    gStyle->SetPadLeftMargin(   0.06 ) ;
+    gStyle->SetPadLeftMargin(   0.13 ) ;
 
-    gStyle->SetTitleOffset( 1.2 , "x" ) ;
-    gStyle->SetTitleOffset( 0.6 , "y" ) ;
+    gStyle->SetTitleOffset( 1.1 , "x" ) ;
+    gStyle->SetTitleOffset( 1.4 , "y" ) ;
     
     TApplication app("app", &argc, argv) ; 
     
     name = outfile->GetName() ;
     name = name.ReplaceAll( ".root" , "_canvas" ) ;
     
-    TCanvas * can = new TCanvas( name , name , 1500 , 500 ) ; 
+    TCanvas * can = new TCanvas( name , name , 900 , 600 ) ; 
     if(useLogScale[0]) can->SetLogx() ; 
     if(useLogScale[1]) can->SetLogy() ; 
     
@@ -371,7 +371,7 @@ int main(int argc, char *argv[]){
 //     gPad->SetGridx() ;
     gPad->SetGridy() ;
     
-    TLegend * legend = can->BuildLegend( 0.90 , 0.15 , 0.995 , 0.95 ) ;
+    TLegend * legend = can->BuildLegend( 0.87 , 0.15 , 0.995 , 0.95 ) ;
 //     legend->RecursiveRemove( extrema );
 //     legend->Draw() ;
 
