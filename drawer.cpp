@@ -136,9 +136,21 @@ int main(int argc, char *argv[]){
         
         ofstream outfile( name.Data() , std::ofstream::out ) ;
         
+        TString proName = name ;
+        proName = proName.ReplaceAll( "_noisyBins.txt" , "" ) ;
+        
+        TCanvas * can = new TCanvas( proName , proName , 1000 , 500 ) ; 
+        
+        TH1I * binSpectrum = new TH1I( 
+                                        "binSpectrum" , "binSpectrum" , 
+                                        number/10. , 
+                                        min , max+(max-min)/(double)number
+                                    ) ;
+        
         for(unsigned int x=0; x<bins[0]; x++){
             for(unsigned int y=0; y<bins[1]; y++){
                 double content = hist->GetBinContent( x+1 , y+1 ) ;
+                binSpectrum->Fill( content ) ;
                 if( 
                     (
                         lowThreshold.setting
@@ -156,12 +168,44 @@ int main(int argc, char *argv[]){
                         hist->GetXaxis()->GetBinCenter(x+1) ,
                         hist->GetYaxis()->GetBinCenter(y+1) ,
                     } ;
-                    outfile << center[0] << " " << center[1] << " " << content << endl ;
+                    outfile 
+                            << center[0] << " " 
+                            << center[1] << " " 
+                            << content << endl ;
                 }
             }
         }
         
         outfile.close() ;
+        
+        binSpectrum->Draw("HIST") ;
+        
+        TLine * lineLow , * lineHigh ;
+        if( lowThreshold.setting ){
+            lineLow = new TLine( 
+                                    lowThreshold.number , 
+                                    0. , 
+                                    lowThreshold.number , 
+                                    binSpectrum->GetMaximum() 
+                               ) ;
+            lineLow->SetLineColor(kBlue) ;
+            lineLow->Draw() ;
+        }
+        if( highThreshold.setting ){
+            lineHigh = new TLine( 
+                                    highThreshold.number , 
+                                    0. , 
+                                    highThreshold.number , 
+                                    binSpectrum->GetMaximum() 
+                                ) ;
+            lineHigh->SetLineColor(kRed) ;
+            lineHigh->Draw() ;
+        }
+        
+        showing() ;
+        
+        proName += "_binSpectrum.pdf" ;
+        can->Print( proName ) ;
         
         TF1 * lowLine , * highLine ;
         if( lowThreshold.setting ){
@@ -181,7 +225,7 @@ int main(int argc, char *argv[]){
         
         for(unsigned int c=0; c<2; c++){
             
-            TString proName = name ;
+            proName = name ;
             TString replacement = "noisyColumns.txt" ;
             
             if( c == 0 ){
@@ -223,8 +267,7 @@ int main(int argc, char *argv[]){
             proName = proName.ReplaceAll( "noisy" , "" ) ;
             proName = proName.ReplaceAll( ".txt" , "" ) ;
             
-            TCanvas * can 
-                = new TCanvas( proName , proName , 1000 , 500 ) ; 
+            can = new TCanvas( proName , proName , 1000 , 500 ) ; 
             
             projection->GetYaxis()->SetTitle( zTitle ) ;
             projection->Draw("HIST") ;
