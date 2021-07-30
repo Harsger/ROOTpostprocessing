@@ -180,7 +180,7 @@ void plotOptions(){
         
     gROOT->SetStyle("Plain") ;
     
-    gStyle->SetPalette(55);
+    gStyle->SetPalette(kRainBow);
     gStyle->SetOptTitle(0) ;
     gStyle->SetOptStat(11110) ;
     gStyle->SetOptFit(0) ;

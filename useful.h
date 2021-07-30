@@ -6,6 +6,16 @@
 #include <string>
 #include <cmath>
 
+std::map< std::string , unsigned int > secondsPER = {
+    { ""  ,        1 } ,
+    { "s" ,        1 } ,
+    { "m" ,       60 } , 
+    { "h" ,     3600 } , // 60 * 60
+    { "d" ,    86400 } , // 24 * 60 * 60
+    { "w" ,   604800 } , // 7 * 24 * 60 * 60
+    { "y" , 31536000 }   // 365 * 24 * 60 * 60
+} ;
+
 std::vector< std::vector<std::string> > getInput( std::string filename ){
     
     std::vector< std::vector<std::string> > input;
@@ -51,6 +61,38 @@ std::vector< std::vector<std::string> > getInput( std::string filename ){
 bool toDiscard( double d ){
     if( (d==0.) && ((d+1)!=0.) ) return false ;
     else return ( !( std::isnormal( d ) ) ) ;
+}
+
+double getNumberWithUnit( std::string s , std::string &unit ){
+    
+    unit = "" ;
+
+    if( s.length() < 1 ) return nan("") ;
+
+    std::string worker = s ;
+    char tester = s[ s.length() - 1 ] ;
+    
+    while(
+        !( 
+            isdigit( tester ) 
+            ||
+            tester == '.'
+        )
+    ){
+        
+        unit = tester + unit ;
+        worker.resize( worker.length() - 1 ) ;
+
+        if( worker.length() < 1 ) break ;
+
+        tester = worker[ worker.length() - 1  ] ;
+    
+    }    
+
+    if( worker.length() < 1 ) return nan("") ;
+
+    return atof( worker.c_str() ) ;
+    
 }
 
 class SpecifiedNumber{

@@ -97,6 +97,19 @@ LOG <logarithmicX> <logarithmicY>
  format of text-files has to be:
 unixtime quantity specifier value unit
 
+-logTOplot: /path/to/file.dat (<timeOffset> <duration> <specifierListFile>)
+ stores data from text-files in graphs and plots these in canvas against time
+ format of text-files has to be the same as for housekeeper
+ each row of in the specifier-list-file has be a specifier
+ and its corresponding unit, e.g. :
+<specifier1> <unit1>
+<specifier2> <unit1>
+<specifier3> <unit2>
+<specifier4> <unit2>
+...
+ specifier with the same unit are plotted in the same pad
+ (only specifier-unit-combinations are plotted, which are found in data)
+
 -textTOtree: parameter-file
  stores columns of textfiles in specified leafs of ROOT:TTree
  format of parameter-file
