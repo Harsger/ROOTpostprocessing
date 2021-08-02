@@ -98,9 +98,10 @@ LOG <logarithmicX> <logarithmicY>
 unixtime quantity specifier value unit
 
 -logTOplot: /path/to/file.dat (<timeOffset> <duration> <specifierListFile>)
- stores data from text-files in graphs and plots these in canvas against time
+ stores data from text-files or root-trees in graphs 
+ and plots these in canvas against time
  format of text-files has to be the same as for housekeeper
- each row of in the specifier-list-file has be a specifier
+ each row of in the specifier-list-file has to be a specifier
  and its corresponding unit, e.g. :
 <specifier1> <unit1>
 <specifier2> <unit1>

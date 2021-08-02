@@ -20,6 +20,9 @@ int main(int argc, char *argv[]){
 
     TString filename = argv[1] ;
     
+    bool rootData = false ;
+    if( filename.EndsWith(".root") ) rootData = true ;
+    
     SpecifiedNumber plotTime , duration ;
     
     if( argc > 3 ){
@@ -72,15 +75,28 @@ int main(int argc, char *argv[]){
     TString name = filename ;
     if( name.Contains(".") ) name = name( 0 , name.Last('.') ) ;
     if( name.Contains("/") ) name = name( name.Last('/')+1 , name.Sizeof() ) ;
-    name += ".root" ;
+    name += "_plots.root" ;
     
     TFile * outfile = new TFile( name , "RECREATE" ) ;
     
     map< TString , map< TString , TGraphErrors * > > plots ;
     map< TString , SpecifiedNumber > extrema[2] ;
     SpecifiedNumber firstTime , lastTime ;
-    
     map< string , string > quantityUnits ;
+    TString worker ;
+    unsigned int rows ;
+    
+    vector< vector<string> > textData ;
+    
+    TFile * infile ;
+    
+    TTree * data ;
+    
+    TBranch * b_unixtime ;
+    TBranch * b_quantity ;
+    TBranch * b_specifier ;
+    TBranch * b_value ;
+    TBranch * b_unit ;
     
     unsigned int unixtime ;
     TString      quantity ;
@@ -88,23 +104,143 @@ int main(int argc, char *argv[]){
     double       value ;
     TString      unit ;
     
-    TString worker ;
+    TString  * p_quantity  = 0 ;
+    TString  * p_specifier = 0 ;
+    TString  * p_unit      = 0 ;
+    
+    if( rootData ){
         
-    vector< vector<string> > textData = getInput( filename.Data() ) ;
+        infile = new TFile( filename , "READ" ) ;
         
-    unsigned int rows = textData.size() ;
+        if( !( infile->IsOpen() ) ){
+            cout << " ERROR: could not open file \"" 
+                 << filename << "\"" << endl;
+            return 3 ;
+        }
+        
+        infile->GetObject( "data" , data ) ;
+        
+        if( data == NULL ){
+            cout << " ERROR: not tree found " << endl ;
+            return 4 ;
+        }
+        
+        data->SetBranchAddress( "unixtime"  , &unixtime    , &b_unixtime  );
+        data->SetBranchAddress( "quantity"  , &p_quantity  , &b_quantity  );
+        data->SetBranchAddress( "specifier" , &p_specifier , &b_specifier );
+        data->SetBranchAddress( "value"     , &value       , &b_value     );
+        data->SetBranchAddress( "unit"      , &p_unit      , &b_unit      );
+        
+        rows = data->GetEntries() ;
+    
+    }
+    else{
+        textData = getInput( filename.Data() ) ;
+        rows = textData.size() ;
+    }
+        
+    if( rows < 1 ){
+        cout << " WARNING : no data found " << endl ;
+        return 5 ;
+    }
         
     cout << " => # rows : " << rows << endl ;
+    cout << " first iteration  : " ;
+    
+    unsigned int moduloFactor = rows / 100 ;
         
     for(unsigned int r=0; r<rows; r++){
         
-        if( textData.at(r).size() < 5 ) continue;
+        if( r % moduloFactor == 0 ) cout << "*" << flush ;
         
-        unixtime = (unsigned int)( atof( textData.at(r).at(0).c_str() ) );
-        quantity = textData.at(r).at(1) ;
-        specifier = textData.at(r).at(2) ;
-        value = atof( textData.at(r).at(3).c_str() ) ;
-        unit = textData.at(r).at(4) ;
+        if(rootData){
+            data->GetEntry( r ) ;
+        }
+        else{
+            if( textData.at(r).size() < 5 ) continue;
+            unixtime = (unsigned int)( atof( textData.at(r).at(0).c_str() ) );
+        }
+        
+        if( !( firstTime.setting ) ){
+            firstTime = SpecifiedNumber( unixtime ) ;
+            lastTime = SpecifiedNumber( unixtime ) ;
+        }
+        
+        if( firstTime.number > unixtime )
+            firstTime.number = unixtime ;
+        if( lastTime.number < unixtime )
+            lastTime.number = unixtime ;
+        
+    }
+    
+    cout << endl ;
+        
+    double startTime = firstTime.number ;
+    if( plotTime.setting ) 
+        startTime += ( 
+                        plotTime.number 
+                        * 
+                        secondsPER[ plotTime.specifier ] 
+                     ) ;
+    double endTime = lastTime.number ;
+    if( duration.setting )
+        endTime = 
+                    startTime 
+                    + 
+                    duration.number 
+                    * 
+                    secondsPER[ duration.specifier ] ;
+    
+    SpecifiedNumber dateString ;
+    
+    time_t startingTime = (unsigned int)( startTime ) ;
+    char dateArray[11] ;
+    const char * dateFormat ;
+    string formatDate = "%d.%m.%Y" ;
+    if( 
+        duration.setting 
+        && 
+        duration.number * secondsPER[ duration.specifier ] 
+        >
+        2. * secondsPER["d"]
+    )
+        formatDate = "%Y" ;
+    dateFormat = formatDate.c_str() ;
+    strftime( 
+                dateArray , 
+                sizeof( dateArray ) , 
+                dateFormat , 
+                gmtime( &startingTime ) 
+            ) ;
+    dateString = SpecifiedNumber( startingTime ) ;
+    dateString.specifier = dateArray ;
+                    
+    cout << " second iteration : " ;
+        
+    for(unsigned int r=0; r<rows; r++){
+        
+        if( r % moduloFactor == 0 ) cout << "*" << flush ;
+        
+        if(rootData){
+            
+            data->GetEntry( r ) ;
+            
+            quantity  = *p_quantity ;
+            specifier = *p_specifier ;
+            unit      = *p_unit ;
+            
+        }
+        else{
+        
+            if( textData.at(r).size() < 5 ) continue;
+            
+            unixtime = (unsigned int)( atof( textData.at(r).at(0).c_str() ) );
+            quantity = textData.at(r).at(1) ;
+            specifier = textData.at(r).at(2) ;
+            value = atof( textData.at(r).at(3).c_str() ) ;
+            unit = textData.at(r).at(4) ;
+            
+        }
         
         if( 
             plots.find( quantity ) == plots.end()  
@@ -160,6 +296,8 @@ int main(int argc, char *argv[]){
                  << endl ;
         }
         
+        if( unixtime < startTime || unixtime > endTime ) continue ;
+        
         if( extrema[0].find( quantity ) == extrema[0].end() ){
             extrema[0][quantity] = SpecifiedNumber( value ) ;
             extrema[1][quantity] = SpecifiedNumber( value ) ;
@@ -170,53 +308,13 @@ int main(int argc, char *argv[]){
         if( extrema[1][quantity].number < value )
             extrema[1][quantity].number = value ;
         
-        if( !( firstTime.setting ) ){
-            firstTime = SpecifiedNumber( unixtime ) ;
-            lastTime = SpecifiedNumber( unixtime ) ;
-        }
-        
-        if( firstTime.number > unixtime )
-            firstTime.number = unixtime ;
-        if( lastTime.number < unixtime )
-            lastTime.number = unixtime ;
-        
     }
+    
+    cout << endl ;
+    
+    if( rootData ) infile->Close() ;
     
     nQuant = quantities.size() ;
-    
-    SpecifiedNumber dateString ;
-        
-    double startTime = firstTime.number ;
-    if( plotTime.setting ) 
-        startTime += ( 
-                        plotTime.number 
-                        * 
-                        secondsPER[ plotTime.specifier ] 
-                     ) ;
-    double endTime = lastTime.number ;
-    if( duration.setting )
-        endTime = 
-                    startTime 
-                    + 
-                    duration.number 
-                    * 
-                    secondsPER[ duration.specifier ] ;
-
-    if( firstTime.setting ){
-    
-        time_t startingTime = (unsigned int)( firstTime.number ) ;
-        char dateArray[11] ;
-        char dateFormat[] = "%d.%m.%Y" ;
-        strftime( 
-                    dateArray , 
-                    sizeof( dateArray ) , 
-                    dateFormat , 
-                    gmtime( &startingTime ) 
-                ) ;
-        dateString = SpecifiedNumber( startingTime ) ;
-        dateString.specifier = dateArray ;
-    
-    }
     
     outfile->cd();
     
@@ -275,7 +373,17 @@ int main(int argc, char *argv[]){
         g_extrem[q]->SetLineColor(0) ;
         g_extrem[q]->GetXaxis()->SetTimeDisplay(1) ;
         g_extrem[q]->GetXaxis()->SetTimeFormat("%H:%M%F1970-01-01 00:00:00") ;
-        g_extrem[q]->GetXaxis()->SetNdivisions(515) ;
+        if( 
+            duration.setting 
+            && 
+            duration.number * secondsPER[ duration.specifier ] 
+            >
+            2. * secondsPER["d"]
+        )
+            g_extrem[q]->GetXaxis()->SetTimeFormat(
+                "%d.%m.%F1970-01-01 00:00:00"
+            ) ;
+        g_extrem[q]->GetXaxis()->SetNdivisions(525) ;
         g_extrem[q]->GetXaxis()->SetTitle( dateString.specifier.c_str() ) ;
         g_extrem[q]->GetXaxis()->SetRangeUser( startTime , endTime ) ;
         g_extrem[q]->GetYaxis()->CenterTitle() ;
