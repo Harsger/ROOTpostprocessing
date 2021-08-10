@@ -16,6 +16,8 @@ int main(int argc, char *argv[]){
     SpecifiedNumber lowThreshold ;
     SpecifiedNumber highThreshold ;
     
+    bool show = true ;
+    
     if( argc == 4 ){
         TString threshString = argv[3] ;
         TString tester = threshString( 0 , 1 ) ;
@@ -30,6 +32,7 @@ int main(int argc, char *argv[]){
         tester = argv[4] ;
         if( tester != "%" )
             highThreshold = SpecifiedNumber( atof( tester.Data() ) ) ;
+        if( argc > 5 ) show = false ;
     }
                   
     TApplication app("app", &argc, argv) ;    
@@ -96,6 +99,10 @@ int main(int argc, char *argv[]){
         highThreshold.setting
     ){
         
+        name += ".root" ;
+        TFile * outfile = new TFile( name , "RECREATE" );
+        name = name.ReplaceAll( ".root" , "" ) ;
+        
         double mean , stdv , min , max , median ;
         unsigned int number ;
         vector<double> toSkip ;
@@ -134,7 +141,7 @@ int main(int argc, char *argv[]){
         name += "_" ;
         name += "noisyBins.txt" ;
         
-        ofstream outfile( name.Data() , std::ofstream::out ) ;
+        ofstream textout( name.Data() , std::ofstream::out ) ;
         
         TString proName = name ;
         proName = proName.ReplaceAll( "_noisyBins.txt" , "" ) ;
@@ -168,7 +175,7 @@ int main(int argc, char *argv[]){
                         hist->GetXaxis()->GetBinCenter(x+1) ,
                         hist->GetYaxis()->GetBinCenter(y+1) ,
                     } ;
-                    outfile 
+                    textout 
                             << center[0] << " " 
                             << center[1] << " " 
                             << content << endl ;
@@ -176,7 +183,7 @@ int main(int argc, char *argv[]){
             }
         }
         
-        outfile.close() ;
+        textout.close() ;
         
         binSpectrum->Draw("HIST") ;
         
@@ -202,7 +209,7 @@ int main(int argc, char *argv[]){
             lineHigh->Draw() ;
         }
         
-        showing() ;
+        if( show ) showing() ;
         
         proName += "_binSpectrum.pdf" ;
         can->Print( proName ) ;
@@ -236,10 +243,16 @@ int main(int argc, char *argv[]){
                 replacement = "noisyRows.txt" ;
             }
             
+            TString nameHist = replacement ;
+            nameHist = nameHist.ReplaceAll( "noisy" , "" ) ;
+            nameHist = nameHist.ReplaceAll( ".txt" , "" ) ;
+            projection->SetName( nameHist ) ;
+            projection->SetTitle( nameHist ) ;
+            
             projection->Scale(1./bins[(c+1)%2]) ; 
             
             proName = proName.ReplaceAll( "noisyBins.txt" , replacement ) ;
-            outfile.open( proName.Data() , std::ofstream::out ) ;
+            textout.open( proName.Data() , std::ofstream::out ) ;
             
             for(unsigned int b=0; b<bins[c]; b++){
                 double content = projection->GetBinContent( b+1 ) ;
@@ -256,12 +269,12 @@ int main(int argc, char *argv[]){
                         content > highThreshold.number
                     )
                 ){
-                    outfile << projection->GetXaxis()->GetBinCenter( b+1 ) 
+                    textout << projection->GetXaxis()->GetBinCenter( b+1 ) 
                             << " " << content << endl ;
                 }
             }
             
-            outfile.close() ;
+            textout.close() ;
             
             proName = replacement ;
             proName = proName.ReplaceAll( "noisy" , "" ) ;
@@ -287,7 +300,7 @@ int main(int argc, char *argv[]){
                 highLine->Draw("same") ;
             }
             
-            showing() ;
+            if( show ) showing() ;
             
             replacement = proName ;
             proName = name ;
@@ -296,11 +309,12 @@ int main(int argc, char *argv[]){
             
             can->Print( proName ) ;
             
-            projection->Delete() ;
-            
             can->Close() ;
             
         }
+        
+        outfile->Write() ;
+        outfile->Close() ;
         
     }
     else{
