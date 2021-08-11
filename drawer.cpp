@@ -24,6 +24,7 @@ int main(int argc, char *argv[]){
         if( tester.IsDec() ){
             threshold = SpecifiedNumber( atof( threshString.Data() ) ) ;
         }
+        else show = false ;
     }
     else if( argc > 4 ){
         TString tester = argv[3] ;
@@ -323,7 +324,7 @@ int main(int argc, char *argv[]){
         
         hist->Draw("COLZ") ;
             
-        showing() ;
+        if( show ) showing() ;
         
         name += ".pdf" ;
             
