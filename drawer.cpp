@@ -12,61 +12,39 @@ int main(int argc, char *argv[]){
     TString filename = argv[1] ;
     TString histname = argv[2] ;
     
-    SpecifiedNumber threshold ;
-    SpecifiedNumber lowThreshold ;
-    SpecifiedNumber highThreshold ;
+    SpecifiedNumber lowLimit ;
+    SpecifiedNumber highLimit ;
+    SpecifiedNumber nContours ;
     
     bool show = true ;
     
-    if( argc == 4 ){
-        TString threshString = argv[3] ;
-        TString tester = threshString( 0 , 1 ) ;
-        if( tester.IsDec() ){
-            threshold = SpecifiedNumber( atof( threshString.Data() ) ) ;
-        }
-        else show = false ;
-    }
+    if( argc == 4 ) show = false ;
     else if( argc > 4 ){
         TString tester = argv[3] ;
         if( tester != "%" )
-            lowThreshold = SpecifiedNumber( atof( tester.Data() ) ) ;
+            lowLimit = SpecifiedNumber( atof( tester.Data() ) ) ;
         tester = argv[4] ;
         if( tester != "%" )
-            highThreshold = SpecifiedNumber( atof( tester.Data() ) ) ;
-        if( argc > 5 ) show = false ;
+            highLimit = SpecifiedNumber( atof( tester.Data() ) ) ;
+        if( argc > 5 ){ 
+            tester = argv[5] ;
+            if( tester.IsDec() )
+                nContours = SpecifiedNumber( atoi( tester.Data() ) ) ;
+            else show = false ;
+            if( argc > 6 ) show = false ;
+        }
     }
                   
     TApplication app("app", &argc, argv) ;    
     plotOptions() ;
     
     gStyle->SetOptStat(0) ;
-    
-    if( 
-        threshold.setting 
-        || 
-        lowThreshold.setting
-        ||
-        highThreshold.setting
-    ){
-
-        gStyle->SetPadTopMargin(    0.04 ) ;
-        gStyle->SetPadRightMargin(  0.03 ) ;
-        gStyle->SetPadBottomMargin( 0.10 ) ;
-        gStyle->SetPadLeftMargin(   0.08 ) ;
-
-        gStyle->SetTitleOffset( 1.0 , "x" ) ;
-        gStyle->SetTitleOffset( 0.8 , "y" ) ;
         
-    }
-    else{
-        
-        gStyle->SetPadRightMargin(  0.18 ) ;
+    gStyle->SetPadRightMargin(  0.18 ) ;
 
-        gStyle->SetTitleOffset( 1.0 , "x" ) ;
-        gStyle->SetTitleOffset( 1.2 , "y" ) ;
-        gStyle->SetTitleOffset( 1.4 , "z" ) ;
-        
-    }
+    gStyle->SetTitleOffset( 1.0 , "x" ) ;
+    gStyle->SetTitleOffset( 1.2 , "y" ) ;
+    gStyle->SetTitleOffset( 1.4 , "z" ) ;
     
     TFile * input = new TFile(filename,"READ") ;
     if( input->IsZombie() ){
@@ -91,248 +69,30 @@ int main(int argc, char *argv[]){
     name += "_" ;
     name += histname ;
     name = replaceBadChars( name );
+        
+    TCanvas * can = new TCanvas( histname , histname , 700 , 600 ) ;
     
-    if( 
-        threshold.setting 
-        || 
-        lowThreshold.setting
-        ||
-        highThreshold.setting
-    ){
+    double minimum = hist->GetMinimum() ;
+    double maximum = hist->GetMaximum() ;
+    
+    if( lowLimit.setting ) minimum = lowLimit.number ;
+    if( highLimit.setting ) maximum = highLimit.number ;
+    
+    if( lowLimit.setting || highLimit.setting )
+        hist->GetZaxis()->SetRangeUser( minimum , maximum ) ;
+    
+    if( nContours.setting ) 
+        gStyle->SetNumberContours( (unsigned int)( nContours.number ) ) ; 
+    
+    hist->Draw("COLZ") ;
         
-        name += ".root" ;
-        TFile * outfile = new TFile( name , "RECREATE" );
-        name = name.ReplaceAll( ".root" , "" ) ;
+    if( show ) showing() ;
+    
+    name += ".pdf" ;
         
-        double mean , stdv , min , max , median ;
-        unsigned int number ;
-        vector<double> toSkip ;
-        SpecifiedNumber lowLimit , highLimit ;
-        
-        bool working = getStats(
-            hist , mean , stdv , min , max , median , number ,
-            toSkip , lowLimit , highLimit
-        ) ;
-        
-        if( ! working ) return 4 ;
-                
-        cout << " mean " << mean << " \t stdv " << stdv << endl ;
-        
-        if(
-            !( lowThreshold.setting )
-            &&
-            !( highThreshold.setting )
-        ){
-                lowThreshold  
-                    = SpecifiedNumber( mean - threshold.number * stdv ) ;
-                highThreshold 
-                    = SpecifiedNumber( mean + threshold.number * stdv ) ;
-        }
-                
-        if( lowThreshold.setting ) 
-            cout << " lowThreshold " << lowThreshold.number << endl;
-        if( highThreshold.setting ) 
-            cout << " highThreshold " << highThreshold.number << endl;
-        
-        unsigned int bins[2] = {
-            (unsigned int)hist->GetNbinsX() ,
-            (unsigned int)hist->GetNbinsY() 
-        } ;
-        
-        name += "_" ;
-        name += "noisyBins.txt" ;
-        
-        ofstream textout( name.Data() , std::ofstream::out ) ;
-        
-        TString proName = name ;
-        proName = proName.ReplaceAll( "_noisyBins.txt" , "" ) ;
-        
-        TCanvas * can = new TCanvas( proName , proName , 1000 , 500 ) ; 
-        
-        TH1I * binSpectrum = new TH1I( 
-                                        "binSpectrum" , "binSpectrum" , 
-                                        number/10. , 
-                                        min , max+(max-min)/(double)number
-                                    ) ;
-        
-        for(unsigned int x=0; x<bins[0]; x++){
-            for(unsigned int y=0; y<bins[1]; y++){
-                double content = hist->GetBinContent( x+1 , y+1 ) ;
-                binSpectrum->Fill( content ) ;
-                if( 
-                    (
-                        lowThreshold.setting
-                        &&
-                        content < lowThreshold.number
-                    )
-                    ||
-                    (
-                        highThreshold.setting
-                        &&
-                        content > highThreshold.number
-                    )
-                ){
-                    double center[2] = {
-                        hist->GetXaxis()->GetBinCenter(x+1) ,
-                        hist->GetYaxis()->GetBinCenter(y+1) ,
-                    } ;
-                    textout 
-                            << center[0] << " " 
-                            << center[1] << " " 
-                            << content << endl ;
-                }
-            }
-        }
-        
-        textout.close() ;
-        
-        binSpectrum->Draw("HIST") ;
-        
-        TLine * lineLow , * lineHigh ;
-        if( lowThreshold.setting ){
-            lineLow = new TLine( 
-                                    lowThreshold.number , 
-                                    0. , 
-                                    lowThreshold.number , 
-                                    binSpectrum->GetMaximum() 
-                               ) ;
-            lineLow->SetLineColor(kBlue) ;
-            lineLow->Draw() ;
-        }
-        if( highThreshold.setting ){
-            lineHigh = new TLine( 
-                                    highThreshold.number , 
-                                    0. , 
-                                    highThreshold.number , 
-                                    binSpectrum->GetMaximum() 
-                                ) ;
-            lineHigh->SetLineColor(kRed) ;
-            lineHigh->Draw() ;
-        }
-        
-        if( show ) showing() ;
-        
-        proName += "_binSpectrum.pdf" ;
-        can->Print( proName ) ;
-        
-        TF1 * lowLine , * highLine ;
-        if( lowThreshold.setting ){
-            lowLine = new TF1( "lowThreshold" , "[0]" ) ;
-            lowLine->SetParameter( 0 , lowThreshold.number ) ;
-            lowLine->SetLineColor(kBlue) ;
-        }
-        if( highThreshold.setting ){
-            highLine = new TF1( "highThreshold" , "[0]" ) ;
-            highLine->SetParameter( 0 , highThreshold.number ) ;
-            highLine->SetLineColor(kRed) ;
-        }
-        
-        TString zTitle = hist->GetZaxis()->GetTitle() ;
-        
-        TH1D * projection ;
-        
-        for(unsigned int c=0; c<2; c++){
-            
-            proName = name ;
-            TString replacement = "noisyColumns.txt" ;
-            
-            if( c == 0 ){
-                projection = hist->ProjectionX() ;
-            }
-            else{
-                projection = hist->ProjectionY() ;
-                replacement = "noisyRows.txt" ;
-            }
-            
-            TString nameHist = replacement ;
-            nameHist = nameHist.ReplaceAll( "noisy" , "" ) ;
-            nameHist = nameHist.ReplaceAll( ".txt" , "" ) ;
-            projection->SetName( nameHist ) ;
-            projection->SetTitle( nameHist ) ;
-            
-            projection->Scale(1./bins[(c+1)%2]) ; 
-            
-            proName = proName.ReplaceAll( "noisyBins.txt" , replacement ) ;
-            textout.open( proName.Data() , std::ofstream::out ) ;
-            
-            for(unsigned int b=0; b<bins[c]; b++){
-                double content = projection->GetBinContent( b+1 ) ;
-                if( 
-                    (
-                        lowThreshold.setting
-                        &&
-                        content < lowThreshold.number
-                    )
-                    ||
-                    (
-                        highThreshold.setting
-                        &&
-                        content > highThreshold.number
-                    )
-                ){
-                    textout << projection->GetXaxis()->GetBinCenter( b+1 ) 
-                            << " " << content << endl ;
-                }
-            }
-            
-            textout.close() ;
-            
-            proName = replacement ;
-            proName = proName.ReplaceAll( "noisy" , "" ) ;
-            proName = proName.ReplaceAll( ".txt" , "" ) ;
-            
-            can = new TCanvas( proName , proName , 1000 , 500 ) ; 
-            
-            projection->GetYaxis()->SetTitle( zTitle ) ;
-            projection->Draw("HIST") ;
-            
-            if( lowThreshold.setting ){ 
-                lowLine->SetRange(
-                    projection->GetXaxis()->GetXmin() ,
-                    projection->GetXaxis()->GetXmax() 
-                ) ;
-                lowLine->Draw("same") ;
-            }
-            if( highThreshold.setting ){
-                highLine->SetRange(
-                    projection->GetXaxis()->GetXmin() ,
-                    projection->GetXaxis()->GetXmax() 
-                ) ;
-                highLine->Draw("same") ;
-            }
-            
-            if( show ) showing() ;
-            
-            replacement = proName ;
-            proName = name ;
-            proName = proName.ReplaceAll( "noisyBins.txt" , replacement ) ;
-            proName += ".pdf" ;
-            
-            can->Print( proName ) ;
-            
-            can->Close() ;
-            
-        }
-        
-        outfile->Write() ;
-        outfile->Close() ;
-        
-    }
-    else{
-        
-        TCanvas * can = new TCanvas( histname , histname , 700 , 600 ) ;
-        
-        hist->Draw("COLZ") ;
-            
-        if( show ) showing() ;
-        
-        name += ".pdf" ;
-            
-        can->Print( name ) ;
-        
-        can->Close() ;
-        
-    }
+    can->Print( name ) ;
+    
+    can->Close() ;
 
     hist->Delete() ;
 
