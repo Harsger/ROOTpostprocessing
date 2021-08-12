@@ -23,6 +23,7 @@ int main(int argc, char *argv[]){
     string axisTitles[2] = { neverUse , neverUse } ;
     SpecifiedNumber plotRanges[2][2] ;
     bool useLogScale[2] = { false , false } ;
+    bool skipErrors = false ;
 
     for(unsigned int r=0; r<parameter.size(); r++){
 
@@ -93,6 +94,11 @@ int main(int argc, char *argv[]){
                 useLogScale[0] = true ;
             if( parameter.at(r).at(2).compare("1") == 0 )
                 useLogScale[1] = true ;
+            continue ;
+        }
+        
+        if( parameter.at(r).at(0).compare("NOERRORS") == 0 ){
+            skipErrors = true ;
             continue ;
         }
 
@@ -363,6 +369,7 @@ int main(int argc, char *argv[]){
         else name = "Psame" ;
         
         name += toAdd ;
+        if( skipErrors ) name += " X " ;
         
         graphs[g]->Draw( name ) ;
         

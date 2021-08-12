@@ -97,6 +97,8 @@ AXIS <xAxisTitle> <yAxisTitle>
 RANGE <xlow> <xhigh> <ylow> <yhigh>
 LOG <logarithmicX> <logarithmicY> 
  (specified by '0' [->false] or '1' [->true], without quotes)
+NOERRORS
+ omits error-bars (during drawing)
 
 -housekeeper: /path/to/files(.dat) (<specifierList>)
  stores data from text-files in root tree 
