@@ -22,6 +22,7 @@ int main(int argc, char *argv[]){
     string axisTitles[2] = { neverUse , neverUse } ;
     SpecifiedNumber plotRange[2][2] ;
     bool useLogScale[2] = { false , false } ;
+    bool drawPoints = false ;
     
     TString scaleMode = "integral" ;
 
@@ -104,6 +105,9 @@ int main(int argc, char *argv[]){
             scaleMode = parameter.at(r).at(1) ;
             continue ;
         }
+        
+        if( parameter.at(r).at(0).compare("POINTS") == 0 )
+            drawPoints = true ;
 
         if( parameter.at(r).size() > 2 ){
             strVecDummy.push_back( parameter.at(r).at(0) );
@@ -341,8 +345,9 @@ int main(int argc, char *argv[]){
         
         if( firstTOdraw ){ 
             
-            hists[h]->Draw("PLC PMC") ;
-                
+            if( drawPoints ) hists[h]->Draw("P PLC PMC") ;
+            else  hists[h]->Draw("PLC PMC") ;    
+            
             hists[h]->GetXaxis()->SetRangeUser( 
                 plotRange[0][0].number , plotRange[0][1].number
             );
@@ -360,7 +365,8 @@ int main(int argc, char *argv[]){
             
         }
         else{ 
-            hists[h]->Draw("same PLC PMC") ;
+            if( drawPoints ) hists[h]->Draw("Psame PLC PMC") ;
+            else  hists[h]->Draw("same PLC PMC") ;
         }
         
     }
