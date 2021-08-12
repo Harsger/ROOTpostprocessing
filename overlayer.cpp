@@ -106,8 +106,10 @@ int main(int argc, char *argv[]){
             continue ;
         }
         
-        if( parameter.at(r).at(0).compare("POINTS") == 0 )
+        if( parameter.at(r).at(0).compare("POINTS") == 0 ){
             drawPoints = true ;
+            continue ;
+        }
 
         if( parameter.at(r).size() > 2 ){
             strVecDummy.push_back( parameter.at(r).at(0) );
