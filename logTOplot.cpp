@@ -197,13 +197,7 @@ int main(int argc, char *argv[]){
     char dateArray[11] ;
     const char * dateFormat ;
     string formatDate = "%d.%m.%Y" ;
-    if( 
-        duration.setting 
-        && 
-        duration.number * secondsPER[ duration.specifier ] 
-        >
-        2. * secondsPER["d"]
-    )
+    if( ( endTime - startTime ) > 2. * secondsPER["d"] )
         formatDate = "%Y" ;
     dateFormat = formatDate.c_str() ;
     strftime( 
@@ -373,13 +367,7 @@ int main(int argc, char *argv[]){
         g_extrem[q]->SetLineColor(0) ;
         g_extrem[q]->GetXaxis()->SetTimeDisplay(1) ;
         g_extrem[q]->GetXaxis()->SetTimeFormat("%H:%M%F1970-01-01 00:00:00") ;
-        if( 
-            duration.setting 
-            && 
-            duration.number * secondsPER[ duration.specifier ] 
-            >
-            2. * secondsPER["d"]
-        )
+        if( ( endTime - startTime ) > 2. * secondsPER["d"] )
             g_extrem[q]->GetXaxis()->SetTimeFormat(
                 "%d.%m.%F1970-01-01 00:00:00"
             ) ;
@@ -387,7 +375,8 @@ int main(int argc, char *argv[]){
         g_extrem[q]->GetXaxis()->SetTitle( dateString.specifier.c_str() ) ;
         g_extrem[q]->GetXaxis()->SetRangeUser( startTime , endTime ) ;
         g_extrem[q]->GetYaxis()->CenterTitle() ;
-        TGaxis::SetExponentOffset( -0.045 , -0.05 , "y" ) ;
+        TGaxis::SetExponentOffset( -0.05 , -0.05 , "y" ) ;
+        TGaxis::SetMaxDigits( 3 ) ;
         
         title = quantities.at(q) ;
         title += " [ " ;
