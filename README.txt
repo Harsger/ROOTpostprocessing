@@ -46,13 +46,14 @@ SCALEMODE <mode>
  plot is not shown but only saved as PDF
  
 -projector: /path/to/file.root histname 
- options : <thresholdfactor> / <lowThresh> <highThresh> <skipPlotting>
+ options : <thresholdfactor> / <lowThresh> <highThresh> <nBins> (<skipPlotting>)
  bin-values from specified 2D-histogram (ROOT::TH2 e.g. heat-maps) in the file,
  are shown and histogram is projected
  onto X and Y axis (column and row average, respectivly)
  bins, columns and rows deviating the standard-devation times
  <thresholdfactor> from mean are written to text-files
  or exceeding the <lowThresh> <highThresh> (one or both can be omitted using %)
+ if <nBins> is specified bin-value-spectrum is ranged to lowThresh to highThresh
 
 -comparator: standard parameter-file ->
  takes 2D-histograms 

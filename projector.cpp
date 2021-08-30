@@ -12,6 +12,7 @@ int main(int argc, char *argv[]){
     SpecifiedNumber threshold ;
     SpecifiedNumber lowThreshold ;
     SpecifiedNumber highThreshold ;
+    SpecifiedNumber nBins ;
     
     bool show = true ;
     
@@ -30,14 +31,21 @@ int main(int argc, char *argv[]){
         tester = argv[4] ;
         if( tester != "%" )
             highThreshold = SpecifiedNumber( atof( tester.Data() ) ) ;
-        if( argc > 5 ) show = false ;
+        if( argc > 5 ){ 
+            tester = argv[5] ;
+            TString firstChar = tester( 0 , 1 ) ;
+            if( !( firstChar.IsDec() ) ) show = false ;
+            else nBins = SpecifiedNumber( atof( tester.Data() ) ) ;
+            if( argc > 6 ) show = false ;
+        }
     }
                   
     TApplication app("app", &argc, argv) ;    
     plotOptions() ;
     
-    gStyle->SetOptStat(0) ;
-
+    if( show ) gStyle->SetOptStat(1110) ;
+    else gStyle->SetOptStat(0) ;
+    
     gStyle->SetPadTopMargin(    0.04 ) ;
     gStyle->SetPadRightMargin(  0.03 ) ;
     gStyle->SetPadBottomMargin( 0.10 ) ;
@@ -120,6 +128,16 @@ int main(int argc, char *argv[]){
                                     number/10. , 
                                     min , max+(max-min)/(double)number
                                 ) ;
+                                
+    if( nBins.setting ){
+        binSpectrum->Delete() ;
+        binSpectrum = new TH1I( 
+                                    "binSpectrum" , "binSpectrum" , 
+                                    nBins.number , 
+                                    lowThreshold.number , 
+                                    highThreshold.number
+                                ) ;
+    }
     
     for(unsigned int x=0; x<bins[0]; x++){
         for(unsigned int y=0; y<bins[1]; y++){
