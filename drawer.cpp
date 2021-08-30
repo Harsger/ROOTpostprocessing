@@ -81,8 +81,10 @@ int main(int argc, char *argv[]){
     if( lowLimit.setting || highLimit.setting )
         hist->GetZaxis()->SetRangeUser( minimum , maximum ) ;
     
-    if( nContours.setting ) 
+    if( nContours.setting ){
         gStyle->SetNumberContours( (unsigned int)( nContours.number ) ) ; 
+        hist->GetZaxis()->SetNdivisions(515) ;
+    }
     
     hist->Draw("COLZ") ;
         
