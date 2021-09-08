@@ -83,7 +83,7 @@ int main(int argc, char *argv[]){
     
     if( nContours.setting ){
         gStyle->SetNumberContours( (unsigned int)( nContours.number ) ) ; 
-        hist->GetZaxis()->SetNdivisions(515) ;
+        hist->GetZaxis()->SetNdivisions(520) ;
     }
     
     hist->Draw("COLZ") ;
