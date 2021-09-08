@@ -99,6 +99,7 @@ int main(int argc, char *argv[]){
                 else
                     toSkip.push_back( atof( parameter.at(r).at(c).c_str() ) ) ;
             }
+            continue ;
         }
 
         if( parameter.at(r).size() > 2 ){
