@@ -92,6 +92,7 @@ int main(int argc, char *argv[]){
     
     count = 0 ; 
     
+    map< string , map< unsigned int , bool > > useRowsNcolumns ;
     TH2D ** hists = new TH2D*[2] ;
     
     for(unsigned int h=0; h<2; h++){
@@ -128,7 +129,8 @@ int main(int argc, char *argv[]){
                                     number ,
                                     toSkip ,
                                     SpecifiedNumber() ,
-                                    SpecifiedNumber()
+                                    SpecifiedNumber() ,
+                                    useRowsNcolumns
                                 );
         
         if(working){

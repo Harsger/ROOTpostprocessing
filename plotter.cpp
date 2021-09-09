@@ -23,6 +23,8 @@ int main(int argc, char *argv[]){
     vector<double> doVecDummy ;
     vector<double> toSkip ;
     SpecifiedNumber lowLimit , highLimit , plotRange[2][2] ;
+    map< string , map< unsigned int , bool > > useRowsNcolumns ;
+    map< string , vector<int> > givenRowsNcolumns ;
 
     for(unsigned int r=0; r<parameter.size(); r++){
 
@@ -101,7 +103,40 @@ int main(int argc, char *argv[]){
             }
             continue ;
         }
-
+        
+        if( 
+            (
+                parameter.at(r).at(0).compare("ROWS") == 0  
+                ||
+                parameter.at(r).at(0).compare("COLUMNS") == 0  
+            )
+            &&
+            parameter.at(r).size() > 1
+        ){
+            
+            for(unsigned int c=1; c<parameter.at(r).size(); c++){
+                
+                TString tester = parameter.at(r).at(c) ;
+                if( tester.EndsWith(".txt") ){
+                    vector< vector<string> > numberStrings = 
+                        getInput( tester.Data() ) ;
+                    for(unsigned int n=0; n<numberStrings.size(); n++){
+                        givenRowsNcolumns[parameter.at(r).at(0)].push_back(
+                            atoi( numberStrings.at(n).at(0).c_str() )
+                        );
+                    }
+                }
+                else if( tester == "%" ) break ;
+                else
+                    givenRowsNcolumns[parameter.at(r).at(0)].push_back(
+                        atoi( parameter.at(r).at(c).c_str() )
+                    );
+            }
+            
+            continue ;
+            
+        }
+        
         if( parameter.at(r).size() > 2 ){
             strVecDummy.push_back( parameter.at(r).at(0) );
             strVecDummy.push_back( parameter.at(r).at(1) );
@@ -202,8 +237,38 @@ int main(int argc, char *argv[]){
         input->Close() ;
 
         if( rowsNcolumns[1] == 0 ){
+            
             rowsNcolumns[1] = readhist->GetNbinsX() ;
             rowsNcolumns[0] = readhist->GetNbinsY() ;
+            
+            for(unsigned int i=0; i<2; i++){
+                string toUse = "ROWS" ;
+                if( i == 1 ) toUse = "COLUMNS" ;
+                bool overwrite = true ;
+                if( 
+                    givenRowsNcolumns.find( toUse ) 
+                    == 
+                    givenRowsNcolumns.end() 
+                ) 
+                    overwrite = false ;
+                bool toSet = true ;
+                if( overwrite && givenRowsNcolumns[toUse].at(0) > 0 ) 
+                    toSet = false ;
+                for(unsigned int b=0; b<rowsNcolumns[i]; b++)
+                    useRowsNcolumns[toUse][b+1] = toSet ;
+                if( overwrite ){
+                    unsigned int nSpecifiedLines = 
+                        givenRowsNcolumns[toUse].size() ;
+                    for(unsigned int s=0; s<nSpecifiedLines; s++)
+                        useRowsNcolumns[toUse][
+                            abs( givenRowsNcolumns[toUse].at(s) )
+                        ] = !( toSet ) ;
+                }
+            }
+            
+            if( givenRowsNcolumns.size() < 1 )
+                useRowsNcolumns.clear() ;
+            
         }        
         else if(  
             rowsNcolumns[1] != readhist->GetNbinsX()
@@ -222,7 +287,7 @@ int main(int argc, char *argv[]){
         useable[h] = getStats(
                                 readhist ,
                                 mean , stdv , min , max , median , number ,
-                                toSkip , lowLimit , highLimit
+                                toSkip , lowLimit , highLimit , useRowsNcolumns
                             ) ;
         
         if( ! useable[h] ){ 

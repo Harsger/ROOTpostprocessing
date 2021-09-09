@@ -86,10 +86,11 @@ int main(int argc, char *argv[]){
     unsigned int number ;
     vector<double> toSkip ;
     SpecifiedNumber lowLimit , highLimit ;
+    map< string , map< unsigned int , bool > > useRowsNcolumns ;
     
     bool working = getStats(
         hist , mean , stdv , min , max , median , number ,
-        toSkip , lowLimit , highLimit
+        toSkip , lowLimit , highLimit , useRowsNcolumns
     ) ;
     
     if( ! working ) return 4 ;

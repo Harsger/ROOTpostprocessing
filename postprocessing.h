@@ -43,14 +43,15 @@ bool getStats(
     unsigned int &number ,
     std::vector<double> toSkip ,
     SpecifiedNumber lowLimit ,
-    SpecifiedNumber highLimit
+    SpecifiedNumber highLimit , 
+    std::map< std::string , std::map< unsigned int , bool > > useRowsNcolumns
 ){
     
     bool allGood = true ;
     
     unsigned int rowsNcolumns[2] = { 
-        (unsigned int)hist->GetNbinsX() ,
-        (unsigned int)hist->GetNbinsY() 
+        (unsigned int)hist->GetNbinsY() ,
+        (unsigned int)hist->GetNbinsX() 
     } ;
     
     if(
@@ -66,9 +67,19 @@ bool getStats(
     std::vector<double> values ;
     number = 0 ;
     
+    bool discardRowsOrColumns[2] = { false , false } ;
+    if( useRowsNcolumns.find("ROWS") != useRowsNcolumns.end() )
+        discardRowsOrColumns[0] = true ;
+    if( useRowsNcolumns.find("COLUMNS") != useRowsNcolumns.end() )
+        discardRowsOrColumns[1] = true ;
+    
     for(unsigned int r=0; r<rowsNcolumns[0]; r++){
         for(unsigned int c=0; c<rowsNcolumns[1]; c++){
-            double content = hist->GetBinContent( r+1 , c+1 ) ;
+            if( discardRowsOrColumns[0] && !( useRowsNcolumns["ROWS"][r+1] ) )
+                continue ;
+            if( discardRowsOrColumns[1] && !( useRowsNcolumns["COLUMNS"][c+1] ) )
+                continue ;
+            double content = hist->GetBinContent( c+1 , r+1 ) ;
             if( toDiscard( content ) ) continue ;
             if( 
                 lowLimit.setting 
