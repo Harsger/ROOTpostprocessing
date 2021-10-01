@@ -118,6 +118,9 @@ int main(int argc, char *argv[]){
                 
                 TString tester = parameter.at(r).at(c) ;
                 if( tester.EndsWith(".txt") ){
+                    tester = filename ;
+                    tester = tester( 0 , tester.Last('/')+1 ) ;
+                    tester += parameter.at(r).at(c) ;
                     vector< vector<string> > numberStrings = 
                         getInput( tester.Data() ) ;
                     for(unsigned int n=0; n<numberStrings.size(); n++){
@@ -447,6 +450,7 @@ int main(int argc, char *argv[]){
     g_extrema->SetMarkerStyle( 1 ) ;
     g_extrema->SetMarkerColor( 0 ) ;
     g_extrema->SetLineColor( 0 ) ;
+    g_extrema->GetYaxis()->SetNdivisions(520) ;
     g_extrema->Draw( "AP" ) ;
     g_extrema->GetXaxis()->SetTitle( axisTitles[0].c_str() ) ;
     g_extrema->GetYaxis()->SetTitle( axisTitles[1].c_str() ) ;
