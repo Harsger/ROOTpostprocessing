@@ -221,8 +221,7 @@ int main(int argc, char *argv[]){
         
         proName = name ;
         TString replacement = "noisyColumns.txt" ;
-        
-        if( c == 0 ){
+        if( c == 0 ){ 
             projection = hist->ProjectionX() ;
         }
         else{
@@ -230,13 +229,15 @@ int main(int argc, char *argv[]){
             replacement = "noisyRows.txt" ;
         }
         
+        project( hist , projection , c ) ;
+        
         TString nameHist = replacement ;
         nameHist = nameHist.ReplaceAll( "noisy" , "" ) ;
         nameHist = nameHist.ReplaceAll( ".txt" , "" ) ;
         projection->SetName( nameHist ) ;
         projection->SetTitle( nameHist ) ;
         
-        projection->Scale(1./bins[(c+1)%2]) ; 
+//         projection->Scale(1./bins[(c+1)%2]) ; 
         
         proName = proName.ReplaceAll( "noisyBins.txt" , replacement ) ;
         textout.open( proName.Data() , std::ofstream::out ) ;

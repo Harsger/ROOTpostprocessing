@@ -187,6 +187,50 @@ double getFWHM(
     
 }
 
+void project( TH2D * hist , TH1D * projection , unsigned int axis = 0 ){
+    
+    if( axis == 1 ){
+        if( projection->GetNbinsX() != hist->GetNbinsY() ) return ;
+    }
+    else{
+        if( projection->GetNbinsX() != hist->GetNbinsX() ) return ;
+    }
+    
+    double value , mean = 0. , error = 0. ;
+    unsigned int number = 0 ;
+    
+    unsigned int bins[2] = { 
+        (unsigned int)hist->GetNbinsX() , 
+        (unsigned int)hist->GetNbinsY() 
+    } ;
+    unsigned int other = 1 , x , y ;
+    if( axis == 1 ) other = 0 ;
+    
+    for(unsigned int b=1; b<=bins[axis]; b++){
+        mean = 0. ;
+        error = 0. ;
+        number = 0 ;
+        for(unsigned int o=1; o<=bins[other]; o++){
+            x = b ;
+            y = o ;
+            if( axis == 1 ){
+                x = o ;
+                y = b ;
+            }
+            value = hist->GetBinContent( x , y ) ;
+            if( toDiscard( value ) ) continue ;
+            mean += value ;
+            error += hist->GetBinError( x , y ) ;
+            number++ ;
+        }
+        mean /= (double)number ;
+        projection->SetBinContent( b , mean ) ;
+        error /= (double)number ;
+        projection->SetBinError( b , error ) ;
+    }
+    
+}
+
 void plotOptions(){
         
     gROOT->SetStyle("Plain") ;
