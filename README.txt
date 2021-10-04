@@ -23,6 +23,9 @@ SCALEMODE <mode>
  mode can be: 'bare', 'max', 'integral' (default) (all without quotes)
  addtional 'ranged' (added without withspace etc.) can be specified
  in order to enable maximum or integral calculation within [<ylow>,<yhigh>]
+PALETTE <number> (inverted)
+ number of ROOT color palette which should be chosen for plotting
+ optional 'inverted' (high/low color)
 
 -peakFitter: standard parameter-file ->
  takes 1D-histograms and fit specified peaks

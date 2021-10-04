@@ -25,6 +25,8 @@ int main(int argc, char *argv[]){
     bool drawPoints = false ;
     
     TString scaleMode = "integral" ;
+    
+    SpecifiedNumber colorPalette ;
 
     for(unsigned int r=0; r<parameter.size(); r++){
 
@@ -98,7 +100,8 @@ int main(int argc, char *argv[]){
             continue ;
         }
         
-        if( parameter.at(r).at(0).compare("SCALEMODE") == 0 
+        if( 
+            parameter.at(r).at(0).compare("SCALEMODE") == 0 
             &&
             parameter.at(r).size() > 1
         ){
@@ -108,6 +111,25 @@ int main(int argc, char *argv[]){
         
         if( parameter.at(r).at(0).compare("POINTS") == 0 ){
             drawPoints = true ;
+            continue ;
+        }
+        
+        if( 
+            parameter.at(r).at(0).compare("PALETTE") == 0 
+            &&
+            parameter.at(r).size() > 1
+        ){
+            if( TString(parameter.at(r).at(1)).IsDec() )
+                colorPalette = 
+                    SpecifiedNumber( atoi( parameter.at(r).at(1).c_str() ) ) ;
+            else 
+                colorPalette = SpecifiedNumber( kRainBow ) ;
+            if( 
+                parameter.at(r).size() > 2 
+                && 
+                parameter.at(r).at(2).compare("inverted") == 0
+            )
+                colorPalette.specifier = "inverted" ;
             continue ;
         }
 
@@ -149,6 +171,12 @@ int main(int argc, char *argv[]){
     TApplication app("app", &argc, argv) ; 
     
     plotOptions() ;
+    
+    if( colorPalette.setting ){
+        gStyle->SetPalette( colorPalette.number ) ;
+        if( colorPalette.specifier.compare("inverted") == 0 )
+            TColor::InvertPalette();
+    }
         
     gStyle->SetOptStat(0) ;
 
