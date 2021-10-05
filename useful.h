@@ -1,10 +1,12 @@
 #include <vector>
-#include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <iomanip>
 #include <sstream>
 #include <string>
 #include <cmath>
+#include <cstdlib>
+#include <map>
 
 std::map< std::string , unsigned int > secondsPER = {
     { ""  ,        1 } ,
@@ -186,5 +188,185 @@ double interpolate(
     double intercept = ( y1 * x2 - y2 * x1 ) / ( x2 - x1 ) ;
     
     return slope * v + intercept ;
+    
+}
+
+int getPower( double value ){
+    if( value == 0. ) return 0 ;
+    return (int)std::floor( std::log10( std::fabs( value ) ) ) ;
+}
+
+bool almostEqual( double a , double b ){
+    return std::abs( ( a - b ) / 0.5 / ( a + b )  ) < 1e-8 ;
+}
+
+// double approach( double limit , double start , double step , bool higher ){
+//     
+//     step = std::abs( step ) ;
+//     
+//     double value = start ;
+//     
+//     if( higher ){
+//         
+//         if( almostEqual( start , limit ) )
+//             value += step ;
+//         else if( start > limit ){
+//             while( 
+//                 value - step > limit 
+//                 &&
+//                 ! almostEqual( value - step , limit )
+//             ){
+//                 value -= step ;
+//             }
+//         }
+//         else{ 
+//             while( 
+//                 value + step < limit 
+//                 ||
+//                 almostEqual( value + step , limit )
+//             ){
+//                 value += step ;
+//             }
+//             value += step ;
+//         }
+//         
+//     }
+//     else{
+//         
+//         if( almostEqual( start , limit ) )
+//             value -= step ;
+//         else if( start > limit ){
+//             while( 
+//                 value - step > limit 
+//                 ||
+//                 almostEqual( value - step , limit )
+//             ){
+//                 value -= step ;
+//             }
+//             value -= step ;
+//         }
+//         else{ 
+//             while( 
+//                 value + step < limit 
+//                 &&
+//                 ! almostEqual( value + step , limit )
+//             ){
+//                 value += step ;
+//             }
+//         }
+//         
+//     }
+//     
+//     return value ;
+//     
+// }
+
+double approach( double limit , double start , double step , bool higher ){
+    
+    step = std::abs( step ) ;
+    
+    double value = start ;
+    
+    if( almostEqual( start , limit ) ){
+        if( higher ) value += step ;
+        else         value -= step ;
+    }
+    else{
+        
+        int sign = 1 ;
+        if( start > limit ) sign = -1 ;
+        
+        double difference = std::abs( value - limit ) ;
+        
+        while( 
+            difference > step 
+            || 
+            almostEqual( difference , step )
+        ){
+            value += ( sign * step ) ;
+            difference = std::abs( value - limit ) ;
+        }
+        
+        sign = -1 ;
+        if( higher ) sign = 1 ;
+        
+        if( almostEqual( value , limit ) )
+            value += ( sign * step ) ;
+        
+        if( sign * value < sign * limit ) 
+            value += ( sign * step ) ;
+        
+    }
+    
+    return value ;
+    
+}
+
+void getLimits( double min , double max , double &low , double &high ){
+    
+    double difference = max - min ;
+    
+    low = min ;
+    high = max ;
+    
+    int secondDigit = getPower( difference ) - 1 ;
+    double step = std::pow( 10. , secondDigit ) ;
+    
+    if( almostEqual( min , max ) ){
+        secondDigit = getPower( min ) - 1 ;
+        step = std::pow( 10. , secondDigit ) ;
+        low  = min - step ;
+        high = max + step ;
+        return ;
+    }
+    
+    std::stringstream numberStream ;
+    unsigned int highPrecision = 2 ;
+    
+    if( min >= 0. ){
+    
+        if( min * 10. < difference ){ 
+            low = 0. ;
+            highPrecision = 1 ;
+            secondDigit++ ;
+            step = std::pow( 10. , secondDigit ) ;
+        }
+        else{
+            numberStream << std::setprecision(2) << min ;
+            numberStream >> low ;
+            low -= step ;
+            low  = approach( min , low  , step , false ) ;
+        }
+        
+        numberStream.clear() ;
+        numberStream.str(std::string()) ;
+        numberStream << std::setprecision(highPrecision) << max ;
+        numberStream >> high ;
+        high += step ;
+        high = approach( max , high , step , true ) ;
+        
+    }
+    else if( max <= 0. ){
+    
+        if( abs( max ) * 10. < difference ){ 
+            high = 0. ;
+            highPrecision = 1 ;
+            secondDigit++ ;
+            step = std::pow( 10. , secondDigit ) ;
+        }
+        else{
+            numberStream << std::setprecision(2) << max ;
+            numberStream >> high ;
+            high += step ;
+            high  = approach( max , high  , step , true ) ;
+        }
+        
+        numberStream.clear() ;
+        numberStream.str(std::string()) ;
+        numberStream << std::setprecision(highPrecision) << min ;
+        numberStream >> low ;
+        low -= step ;
+        low  = approach( min , low , step , false ) ;
+    }
     
 }

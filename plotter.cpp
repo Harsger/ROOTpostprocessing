@@ -454,16 +454,26 @@ int main(int argc, char *argv[]){
     g_extrema->Draw( "AP" ) ;
     g_extrema->GetXaxis()->SetTitle( axisTitles[0].c_str() ) ;
     g_extrema->GetYaxis()->SetTitle( axisTitles[1].c_str() ) ;
-    if( plotRange[0][0].setting && plotRange[0][1].setting )
-        g_extrema->GetXaxis()->SetRangeUser( 
-                                                plotRange[0][0].number , 
-                                                plotRange[0][1].number 
-                                           ) ;
-    if( plotRange[1][0].setting && plotRange[1][1].setting )
-        g_extrema->GetYaxis()->SetRangeUser( 
-                                                plotRange[1][0].number , 
-                                                plotRange[1][1].number 
-                                           ) ;
+    
+    double low , high ;
+    
+    if( plotRange[0][0].setting && plotRange[0][1].setting ){
+        low  = plotRange[0][0].number ;
+        high = plotRange[0][1].number ;
+    }
+    else
+        getLimits( extrema[0][0] , extrema[0][1] , low , high ) ;
+    
+    g_extrema->GetXaxis()->SetRangeUser( low , high ) ;
+    
+    if( plotRange[1][0].setting && plotRange[1][1].setting ){
+        low  = plotRange[1][0].number ; 
+        high = plotRange[1][1].number ;
+    }
+    else
+        getLimits( extrema[1][0] , extrema[1][1] , low , high ) ;
+    
+    g_extrema->GetYaxis()->SetRangeUser( low , high ) ;
     
     g_mean->SetName("mean") ;
     g_mean->SetTitle("mean+/-std.dev.") ;
