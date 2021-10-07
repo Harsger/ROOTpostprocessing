@@ -14,11 +14,29 @@ int main(int argc, char *argv[]){
     
     plotOptions() ;
 
+    gStyle->SetPadTopMargin(    0.055 ) ;
+    gStyle->SetPadRightMargin(  0.16 ) ;
+    gStyle->SetPadBottomMargin( 0.10 ) ;
+    gStyle->SetPadLeftMargin(   0.14 ) ;
+
+    gStyle->SetTitleOffset( 1.0 , "x" ) ;
+    gStyle->SetTitleOffset( 1.4 , "y" ) ;
+
     TString filename = argv[1] ;
     TString filesNhists[2][2] ;
     SpecifiedNumber ranges[2][2] ;
     SpecifiedNumber divisions[2] ;
     TString outname ;
+    TString name ;
+
+    string neverUse = "neverUseThisPhrase" ;
+    string preNsuffix[2][2] = { 
+                                { neverUse , neverUse } ,
+                                { neverUse , neverUse }
+                            };
+    string axisTitles[2] = { neverUse , neverUse } ;
+    map< string , map< unsigned int , bool > > useRowsNcolumns ;
+    map< string , vector<int> > givenRowsNcolumns ;
 
     unsigned int count = 0 ;
     
@@ -71,6 +89,63 @@ int main(int argc, char *argv[]){
 //                 cout << " comment line " << r << endl ;
                 continue ;
             }
+
+            int specifier = -1 ;
+
+            if( parameter.at(r).at(0).compare("FILE") == 0  ) 
+                specifier = 0 ;
+            else if( parameter.at(r).at(0).compare("HIST") == 0  ) 
+                specifier = 1 ;
+            else if( parameter.at(r).at(0).compare("AXIS") == 0  ) 
+                specifier = 2 ;
+
+            if( specifier > -1 && parameter.at(r).size() > 2 ){
+                if( specifier < 2 ){
+                    preNsuffix[specifier][0] = parameter.at(r).at(1) ;
+                    preNsuffix[specifier][1] = parameter.at(r).at(2) ;
+                }
+                else if( specifier == 2 ){
+                    axisTitles[0] = parameter.at(r).at(1) ;
+                    axisTitles[1] = parameter.at(r).at(2) ;
+                }
+                continue ;
+            }
+        
+            if( 
+                (
+                    parameter.at(r).at(0).compare("ROWS") == 0  
+                    ||
+                    parameter.at(r).at(0).compare("COLUMNS") == 0  
+                )
+                &&
+                parameter.at(r).size() > 1
+            ){
+                
+                for(unsigned int c=1; c<parameter.at(r).size(); c++){
+                    
+                    TString tester = parameter.at(r).at(c) ;
+                    if( tester.EndsWith(".txt") ){
+                        tester = filename ;
+                        tester = tester( 0 , tester.Last('/')+1 ) ;
+                        tester += parameter.at(r).at(c) ;
+                        vector< vector<string> > numberStrings = 
+                            getInput( tester.Data() ) ;
+                        for(unsigned int n=0; n<numberStrings.size(); n++){
+                            givenRowsNcolumns[parameter.at(r).at(0)].push_back(
+                                atoi( numberStrings.at(n).at(0).c_str() )
+                            );
+                        }
+                    }
+                    else if( tester == "%" ) break ;
+                    else
+                        givenRowsNcolumns[parameter.at(r).at(0)].push_back(
+                            atoi( parameter.at(r).at(c).c_str() )
+                        );
+                }
+                
+                continue ;
+                
+            }
             
             if( parameter.at(r).size() < 2 ) continue ;
             
@@ -119,27 +194,58 @@ int main(int argc, char *argv[]){
             outname = outname( outname.Last('/')+1 , outname.Sizeof() ) ;
         
     }
+
+    for(unsigned int t=0; t<2; t++){
+        for(unsigned int f=0; f<2; f++){
+            if( 
+                preNsuffix[t][f].compare( neverUse ) == 0 
+                ||
+                preNsuffix[t][f].compare( "%" ) == 0
+            )
+                preNsuffix[t][f] = "" ;
+            if( filesNhists[t][f] == "%" )
+                filesNhists[t][f] = "" ;
+        }
+    }
+    
+    for(unsigned int c=0; c<2; c++){
+        if( 
+            axisTitles[c].compare( neverUse ) == 0 
+            ||
+            axisTitles[c].compare( "%" ) == 0
+        )
+            axisTitles[c] = "" ;
+    }
     
     count = 0 ; 
     
-    map< string , map< unsigned int , bool > > useRowsNcolumns ;
     TH2D ** hists = new TH2D*[2] ;
     
     for(unsigned int h=0; h<2; h++){
-    
-        TFile * input = new TFile( filesNhists[h][0] , "READ" ) ;
-        
+
+        name = preNsuffix[0][0] ;
+        name += filesNhists[h][0] ;
+        name += preNsuffix[0][1] ;
+        TFile * input = new TFile(name,"READ") ;
         if( input->IsZombie() ){
             cout << " ERROR : opening " << input->GetName() << endl ;
             return 4 ;
         }
-        
-        hists[h] = (TH2D*)input->Get( filesNhists[h][1] ) ;
-        
-        if( hists[h] == NULL ){
-            cout << " ERROR : reading " << filesNhists[h][1] 
-                    << " in " << input->GetName() << endl ;
+
+        name = preNsuffix[1][0] ;
+        name += filesNhists[h][1] ;
+        name += preNsuffix[1][1] ;
+        if( input->Get(name) == NULL ){
+            cout << " ERROR : reading " << name 
+                 << " in " << input->GetName() << endl ;
             return 5 ;
+        }
+        
+        hists[h] = (TH2D*)input->Get( name ) ;
+        if( hists[h] == NULL ){
+            cout << " ERROR : reading " << name 
+                 << " in " << input->GetName() << endl ;
+            return 6 ;
         }
         
         hists[h]->SetDirectory(0) ;
@@ -176,23 +282,48 @@ int main(int argc, char *argv[]){
     }
     
     unsigned int bins[2] = {
-        (unsigned int)hists[0]->GetNbinsX() ,
-        (unsigned int)hists[0]->GetNbinsY() 
+        (unsigned int)hists[0]->GetNbinsY() ,
+        (unsigned int)hists[0]->GetNbinsX() 
     } ;
     
     if( count != 2 
         ||
-        bins[0] != hists[1]->GetNbinsX()
+        bins[0] != hists[1]->GetNbinsY()
         ||
-        bins[1] != hists[1]->GetNbinsY()
+        bins[1] != hists[1]->GetNbinsX()
     ){
         cout << " ERROR : histograms ill-defined " << endl ;
-        return 6 ;
+        return 7 ;
+    }
+            
+    for(unsigned int i=0; i<2; i++){
+        string toUse = "ROWS" ;
+        if( i == 1 ) toUse = "COLUMNS" ;
+        bool overwrite = true ;
+        if( 
+            givenRowsNcolumns.find( toUse ) 
+            == 
+            givenRowsNcolumns.end() 
+        ) 
+            overwrite = false ;
+        bool toSet = true ;
+        if( overwrite && givenRowsNcolumns[toUse].at(0) > 0 ) 
+            toSet = false ;
+        for(unsigned int b=0; b<bins[i]; b++)
+            useRowsNcolumns[toUse][b+1] = toSet ;
+        if( overwrite ){
+            unsigned int nSpecifiedLines = 
+                givenRowsNcolumns[toUse].size() ;
+            for(unsigned int s=0; s<nSpecifiedLines; s++)
+                useRowsNcolumns[toUse][
+                    abs( givenRowsNcolumns[toUse].at(s) )
+                ] = !( toSet ) ;
+        }
     }
     
     TFile * outfile = new TFile( outname , "RECREATE" ) ;
     
-    TString name = "h_" ;
+    name = "h_" ;
     name += filesNhists[1][1] ;
     name += "_VS_" ;
     name += filesNhists[0][1] ;
@@ -218,10 +349,16 @@ int main(int argc, char *argv[]){
     g_correlation->SetName( name ) ;
     g_correlation->SetTitle( name ) ;
     
-    for(unsigned int x=1; x<=bins[0]; x++){
-        for(unsigned int y=1; y<=bins[1]; y++){
-            double a = hists[0]->GetBinContent( x , y ) ;
-            double b = hists[1]->GetBinContent( x , y ) ;
+    for(unsigned int x=1; x<=bins[1]; x++){
+        for(unsigned int y=1; y<=bins[0]; y++){
+            if( 
+                ! useRowsNcolumns["ROWS"   ][y] 
+                || 
+                ! useRowsNcolumns["COLUMNS"][x] 
+            )
+                continue ;
+            double a = hists[0]->GetBinContent( y , x ) ;
+            double b = hists[1]->GetBinContent( y , x ) ;
             if( toDiscard( a ) ) continue ;
             if( toDiscard( b ) ) continue ;
             h_correlation->Fill( a , b ) ;
@@ -237,6 +374,9 @@ int main(int argc, char *argv[]){
     
     h_correlation->Write() ;
     g_correlation->Write() ;
+    
+    h_correlation->GetXaxis()->SetTitle( axisTitles[0].c_str() ) ;
+    h_correlation->GetYaxis()->SetTitle( axisTitles[1].c_str() ) ;
     
     TApplication app("app", &argc, argv) ; 
 //     name = "hc_" ;
