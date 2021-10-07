@@ -2,8 +2,6 @@
 
 using namespace std;
 
-void plotOptions() ;
-
 int main(int argc, char *argv[]){
 
     if( argc < 2 ){ 
@@ -19,6 +17,7 @@ int main(int argc, char *argv[]){
     TString filename = argv[1] ;
     TString filesNhists[2][2] ;
     SpecifiedNumber ranges[2][2] ;
+    SpecifiedNumber divisions[2] ;
     TString outname ;
 
     unsigned int count = 0 ;
@@ -29,14 +28,29 @@ int main(int argc, char *argv[]){
         filesNhists[1][0] = argv[3] ;
         filesNhists[1][1] = argv[4] ;
         if( argc > 8 ){
-            ranges[0][0] = SpecifiedNumber( atof( argv[5] ) ) ;
-            ranges[0][1] = SpecifiedNumber( atof( argv[6] ) ) ;
-            ranges[1][0] = SpecifiedNumber( atof( argv[7] ) ) ;
-            ranges[1][1] = SpecifiedNumber( atof( argv[8] ) ) ;
+            if( string( argv[5] ).compare( "%" ) != 0  )
+                ranges[0][0] = SpecifiedNumber( atof( argv[5] ) ) ;
+            if( string( argv[6] ).compare( "%" ) != 0  )
+                ranges[0][1] = SpecifiedNumber( atof( argv[6] ) ) ;
+            if( string( argv[7] ).compare( "%" ) != 0  )
+                ranges[1][0] = SpecifiedNumber( atof( argv[7] ) ) ;
+            if( string( argv[8] ).compare( "%" ) != 0  )
+                ranges[1][1] = SpecifiedNumber( atof( argv[8] ) ) ;
         }
+        if( argc > 10 ){
+            if( string( argv[9] ).compare( "%" ) != 0  )
+                divisions[0] = SpecifiedNumber( atof( argv[9] ) ) ;
+            if( string( argv[10] ).compare( "%" ) != 0  )
+                divisions[1] = SpecifiedNumber( atof( argv[10] ) ) ;
+        }
+        outname = filesNhists[0][0] ;
+        outname += "_" ;
         outname = filesNhists[0][1] ;
         outname += "_VS_" ;
-        outname += filesNhists[1][1] ;
+        outname += filesNhists[1][0] ;
+        outname += "_" ;
+        outname = filesNhists[1][1] ;
+        outname.ReplaceAll( ".root" , "" ) ;
         outname += ".root" ;
     }
     else{
@@ -45,8 +59,8 @@ int main(int argc, char *argv[]){
         
         if( parameter.size() < 2 ){
             cout << " parameter-file should be of the format : " << endl ;
-            cout << " file1 hist1 (low1) (high1) " << endl ;
-            cout << " file2 hist2 (low2) (high2) " << endl ;
+            cout << " file1 hist1 (low1) (high1) (divisions1) " << endl ;
+            cout << " file2 hist2 (low2) (high2) (divisions2) " << endl ;
             cout << " bracket values are optional " << endl ;
             return 2 ;
         }
@@ -66,11 +80,27 @@ int main(int argc, char *argv[]){
             filesNhists[count][1] = parameter.at(r).at(1) ;
             
             if( parameter.at(r).size() > 3 ){
-                ranges[count][0] 
-                    = SpecifiedNumber( atof( parameter.at(r).at(2).c_str() ) ) ;
-                ranges[count][1] 
-                    = SpecifiedNumber( atof( parameter.at(r).at(3).c_str() ) ) ;
+                if( parameter.at(r).at(2).compare( "%" ) != 0  )
+                    ranges[count][0] = 
+                        SpecifiedNumber( 
+                            atof( parameter.at(r).at(2).c_str() ) 
+                        ) ;
+                if( parameter.at(r).at(3).compare( "%" ) != 0  )
+                    ranges[count][1] = 
+                        SpecifiedNumber( 
+                            atof( parameter.at(r).at(3).c_str() ) 
+                        ) ;
             }
+            
+            if( 
+                parameter.at(r).size() > 4 
+                && 
+                parameter.at(r).at(4).compare( "%" ) != 0  
+            )
+                divisions[count] = 
+                    SpecifiedNumber( 
+                        atof( parameter.at(r).at(4).c_str() ) 
+                    ) ;
             
             count++ ;
             
@@ -140,6 +170,8 @@ int main(int argc, char *argv[]){
             if( ! ranges[h][1].setting )
                 ranges[h][1].number = max ;
         }
+        
+        if( ! divisions[h].setting ) divisions[h] = 2000 ;
     
     }
     
@@ -166,10 +198,16 @@ int main(int argc, char *argv[]){
     name += filesNhists[0][1] ;
     TH2I * h_correlation = new TH2I( 
                             name , name ,
-                            2000 , ranges[0][0].number , ranges[0][1].number 
-                            + (ranges[0][1].number-ranges[0][0].number)/2000. ,
-                            2000 , ranges[1][0].number , ranges[1][1].number 
-                            + (ranges[1][1].number-ranges[1][0].number)/2000. 
+                            (unsigned int)divisions[0].number , 
+                            ranges[0][0].number , 
+                            ranges[0][1].number 
+                                + (ranges[0][1].number-ranges[0][0].number)
+                                    /divisions[0].number ,
+                            (unsigned int)divisions[1].number , 
+                            ranges[1][0].number , 
+                            ranges[1][1].number 
+                                + (ranges[1][1].number-ranges[1][0].number)
+                                    /divisions[1].number
                         ) ;
     
     name = "g_" ;
@@ -201,37 +239,38 @@ int main(int argc, char *argv[]){
     g_correlation->Write() ;
     
     TApplication app("app", &argc, argv) ; 
-    name = "hc_" ;
-    name += filesNhists[1][1] ;
-    name += "_VS_" ;
-    name += filesNhists[0][1] ;
+//     name = "hc_" ;
+//     name += filesNhists[1][1] ;
+//     name += "_VS_" ;
+//     name += filesNhists[0][1] ;
+    name = outname ;
+    name = name.ReplaceAll( ".root" , "" ) ;
     TCanvas * can = new TCanvas( name , name , 700 , 600 ) ;
     
     h_correlation->Draw("COLZ") ;
         
     showing() ;
     
-    name = can->GetName() ;
     name += ".pdf" ;
     can->Print(name);
     can->Close() ;
     
     outfile->Close() ;
     
-    name = "gc_" ;
-    name += filesNhists[1][1] ;
-    name += "_VS_" ;
-    name += filesNhists[0][1] ;
-    can = new TCanvas( name , name , 700 , 600 ) ;
-    
-    g_correlation->Draw("AP") ;
-        
-    showing() ;
-    
-    name = can->GetName() ;
-    name += ".pdf" ;
-    can->Print(name);
-    can->Delete() ;
+//     name = "gc_" ;
+//     name += filesNhists[1][1] ;
+//     name += "_VS_" ;
+//     name += filesNhists[0][1] ;
+//     can = new TCanvas( name , name , 700 , 600 ) ;
+//     
+//     g_correlation->Draw("AP") ;
+//         
+//     showing() ;
+//     
+//     name = can->GetName() ;
+//     name += ".pdf" ;
+//     can->Print(name);
+//     can->Delete() ;
 
     return 0 ;
 
