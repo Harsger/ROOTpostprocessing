@@ -63,7 +63,7 @@ int main(int argc, char *argv[]){
         }
         outname = filesNhists[0][0] ;
         outname += "_" ;
-        outname = filesNhists[0][1] ;
+        outname += filesNhists[0][1] ;
         outname += "_VS_" ;
         outname += filesNhists[1][0] ;
         outname += "_" ;
@@ -74,14 +74,6 @@ int main(int argc, char *argv[]){
     else{
         
         vector< vector<string> > parameter = getInput( filename.Data() ) ;
-        
-        if( parameter.size() < 2 ){
-            cout << " parameter-file should be of the format : " << endl ;
-            cout << " file1 hist1 (low1) (high1) (divisions1) " << endl ;
-            cout << " file2 hist2 (low2) (high2) (divisions2) " << endl ;
-            cout << " bracket values are optional " << endl ;
-            return 2 ;
-        }
         
         for(unsigned int r=0; r<parameter.size(); r++){
 
