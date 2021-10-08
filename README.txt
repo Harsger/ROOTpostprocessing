@@ -69,7 +69,7 @@ PALETTE <number> (inverted)
 -correlator: 
  takes two 2D-histograms and 
  plot corresponding bin-values agianst each other
- either standard parameter-file 
+    either standard parameter-file 
  with file-names and hist-names has to be specified
 <file1> <hist1> (<low1> <high1>)
 <file2> <hist2> (<low2> <high2>)
@@ -79,6 +79,17 @@ PALETTE <number> (inverted)
  and which values are plotted in correlation-graph
  additional options:
  FILE , HIST , AXIS , ROWS , COLUMNS : as for plotter
+ 
+-differentiator: 
+ takes two graphs and calculates differences (absolute and relative)
+ for each equal x-position
+ either standard parameter-file (except HIST=GRAPH)
+ with file-names and graph-names has to be specified
+<file1> <graph1>
+<file2> <graph2>
+ or commandline values can be given
+<file1> <graph1> <file2> <graph2>
+ only root-file output, no plotting
  
 -plotter: standard parameter-file ->
  takes 2D-histograms calculates
