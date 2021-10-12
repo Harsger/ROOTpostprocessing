@@ -40,6 +40,8 @@ int main(int argc, char *argv[]){
 
     bool specificSpecifier = false ;
     vector< vector<string> > specifiersNquantities ;
+    vector< vector<SpecifiedNumber> > markerNcolorNline ;
+    vector<SpecifiedNumber> specVecDummy ;
     unsigned int nSpecific = 0 ;
     vector<string> quantities ;
     unsigned int nQuant = 0 ;
@@ -48,7 +50,9 @@ int main(int argc, char *argv[]){
         specificSpecifier = true ;
         vector< vector<string> > specifierInput = getInput( argv[4] ) ;
         for(unsigned int s=0; s<specifierInput.size(); s++){
-            if( specifierInput.at(s).size() != 2 ) continue ;
+            if( specifierInput.at(s).at(0).rfind("#",0) == 0 )
+                continue ;
+            if( specifierInput.at(s).size() < 2 ) continue ;
             specifiersNquantities.push_back( {
                                                 specifierInput.at(s).at(0) ,
                                                 specifierInput.at(s).at(1) 
@@ -61,6 +65,36 @@ int main(int argc, char *argv[]){
                 }
             }
             if( toAdd ) quantities.push_back( specifierInput.at(s).at(1) ) ;
+            specVecDummy.clear() ;
+            if( 
+                specifierInput.at(s).size() > 2 
+                &&  
+                specifierInput.at(s).at(2).compare("%") != 0
+            )
+                specVecDummy.push_back( SpecifiedNumber(
+                    atof( specifierInput.at(s).at(2).c_str() )
+                ) ) ;
+            else specVecDummy.push_back( SpecifiedNumber() ) ;
+            if( 
+                specifierInput.at(s).size() > 3 
+                &&  
+                specifierInput.at(s).at(3).compare("%") != 0
+            )
+                specVecDummy.push_back( SpecifiedNumber(
+                    atof( specifierInput.at(s).at(3).c_str() )
+                ) ) ;
+            else specVecDummy.push_back( SpecifiedNumber() ) ;
+            if( 
+                specifierInput.at(s).size() > 4 
+                &&  
+                specifierInput.at(s).at(4).compare("%") != 0
+            )
+                specVecDummy.push_back( SpecifiedNumber(
+                    atof( specifierInput.at(s).at(4).c_str() )
+                ) ) ;
+            else specVecDummy.push_back( SpecifiedNumber() ) ;
+            markerNcolorNline.push_back( specVecDummy ) ;
+            specVecDummy.clear() ;
         }
         nSpecific = specifiersNquantities.size() ;
         nQuant = quantities.size() ;
@@ -271,7 +305,27 @@ int main(int argc, char *argv[]){
             if( toSkip ) continue ;
         }
         else{
+            
             bool toAdd = true ;
+            
+            for(unsigned int s=0; s<specifiersNquantities.size(); s++){
+                if( 
+                    specifiersNquantities.at(s).at(0) == specifier 
+                    &&
+                    specifiersNquantities.at(s).at(1) == quantity 
+                ){
+                    toAdd = false ;
+                    break ;
+                }
+            }
+            if( toAdd ) 
+                specifiersNquantities.push_back( { 
+                                                    specifier.Data() , 
+                                                    quantity.Data() 
+                                                } ) ;
+            
+            toAdd = true ;
+            
             for(unsigned int q=0; q<quantities.size(); q++ ){
                 if( quantity == quantities.at(q) ){
                     toAdd = false ;
@@ -279,6 +333,7 @@ int main(int argc, char *argv[]){
                 }
             }
             if( toAdd ) quantities.push_back( quantity.Data() ) ;
+            
         }
         
         if( quantityUnits.find( quantity.Data() ) == quantityUnits.end() )
@@ -308,7 +363,17 @@ int main(int argc, char *argv[]){
     
     if( rootData ) infile->Close() ;
     
+    nSpecific = specifiersNquantities.size() ;
     nQuant = quantities.size() ;
+    
+    if( markerNcolorNline.size() != nSpecific ){
+        for(unsigned int s=0; s<nSpecific; s++)
+            markerNcolorNline.push_back( {
+                SpecifiedNumber() ,
+                SpecifiedNumber() ,
+                SpecifiedNumber() 
+            } ) ;
+    }
     
     outfile->cd();
     
@@ -385,25 +450,24 @@ int main(int argc, char *argv[]){
         g_extrem[q]->GetYaxis()->SetTitle( title ) ;
         
         g_extrem[q]->Draw("AP") ;
+        
+        bool onlyOne = false ;
+        unsigned int count = 0 ;
+        for(unsigned int s=0; s<nSpecific; s++)
+            if( specifiersNquantities.at(s).at(1) == quantities.at(q) ) 
+                count++ ;
+        if( count < 2 ) onlyOne = true ;
  
-        for( auto p : plots[quantities.at(q)] ){
+        for(unsigned int s=0; s<nSpecific; s++){
             
-            if( specificSpecifier ){
-                bool toSkip = true ;
-                for(unsigned int s=0; s<nSpecific; s++){
-                    if( 
-                        specifiersNquantities.at(s).at(0) == p.first
-                        &&
-                        specifiersNquantities.at(s).at(1) == quantities.at(q)
-                    ){
-                        toSkip = false ;
-                        break ;
-                    }
-                }
-                if( toSkip ) continue ;
-            }
+            if( specifiersNquantities.at(s).at(1) != quantities.at(q) ) 
+                continue ;
+            
+            auto p = plots
+                            [specifiersNquantities.at(s).at(1)]
+                            [specifiersNquantities.at(s).at(0)] ;
 
-            title = p.second->GetName() ;
+            title = p->GetName() ;
             if( title.EndsWith( quantities.at(q).c_str() ) )
                 title = title( 
                                 0 , 
@@ -413,11 +477,44 @@ int main(int argc, char *argv[]){
                             ) ;
             if( title.EndsWith( "_" ) )
                 title = title( 0 , title.Length()-1 ) ;
-            p.second->SetName( title ) ;
-            p.second->SetTitle( title ) ;
+            p->SetName( title ) ;
+            p->SetTitle( title ) ;
+        
+            TString toAdd = "" ;
+            
+            if( markerNcolorNline.at(s).at(0).setting )
+                p->SetMarkerStyle( 
+                    (unsigned int)markerNcolorNline.at(s).at(0).number 
+                ) ;
+            else if( onlyOne ) p->SetMarkerStyle( 7 ) ;
+            else p->SetMarkerStyle( 6 ) ;
+            
+            if( markerNcolorNline.at(s).at(1).setting ){
+                p->SetMarkerColor( 
+                    (unsigned int)markerNcolorNline.at(s).at(1).number 
+                ) ;
+                p->SetLineColor( 
+                    (unsigned int)markerNcolorNline.at(s).at(1).number 
+                ) ;
+            }
+            else if( onlyOne ){
+                p->SetMarkerColor(1) ;
+                p->SetLineColor(1) ;
+            }
+            else toAdd += " PMC PLC " ;
+            
+            if( markerNcolorNline.at(s).at(2).setting ){ 
+                p->SetLineStyle( 
+                    (unsigned int)markerNcolorNline.at(s).at(2).number 
+                ) ;
+                name = "PLsame" ;
+            }
+            else name = "Psame" ;
+            
+            name += toAdd ;
+            name += " X " ;
 
-            p.second->SetMarkerStyle(6) ; 
-            p.second->Draw("SAME P PMC PLC") ;
+            p->Draw( name ) ;
             
         }
        
