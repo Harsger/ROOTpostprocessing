@@ -177,31 +177,41 @@ int main(int argc, char *argv[]){
         name = preNsuffix[0][0] ;
         name += filesNgraphsNtitles.at(r).at(0) ;
         name += preNsuffix[0][1] ;
-        TFile * input = new TFile(name,"READ") ;
-        if( input->IsZombie() ){
-            cout << " ERROR : opening " << name << endl ;
-            notFound++ ;
-            useable[r] = false ;
-            continue ;
-        }
-
-        name = preNsuffix[1][0] ;
-        name += filesNgraphsNtitles.at(r).at(1) ;
-        name += preNsuffix[1][1] ;
-        if( input->Get(name) == NULL ){
-            cout << " ERROR : reading " << name 
-                 << " in " << input->GetName() << endl ;
-            notFound++ ;
-            useable[r] = false ;
-            continue ;
-        }
-        graphs[r] = (TGraphErrors*)input->Get(name) ;
-
-        input->Close() ;
         
+        if( name.EndsWith(".root") ){
+        
+            TFile * input = new TFile(name,"READ") ;
+            if( input->IsZombie() ){
+                cout << " ERROR : opening " << name << endl ;
+                notFound++ ;
+                useable[r] = false ;
+                continue ;
+            }
+
+            name = preNsuffix[1][0] ;
+            name += filesNgraphsNtitles.at(r).at(1) ;
+            name += preNsuffix[1][1] ;
+            if( input->Get(name) == NULL ){
+                cout << " ERROR : reading " << name 
+                    << " in " << input->GetName() << endl ;
+                notFound++ ;
+                useable[r] = false ;
+                continue ;
+            }
+            graphs[r] = (TGraphErrors*)input->Get(name) ;
+
+            input->Close() ;
+        
+        }
+        else{
+            
+            graphs[r] = new TGraphErrors( name ) ;
+            
+        }
+            
         if( graphs[r]->GetN() < 1 ){
             cout << " ERROR : " << name 
-                 << " is empty " << endl ;
+                << " is empty " << endl ;
             notFound++ ;
             useable[r] = false ;
             continue ;
