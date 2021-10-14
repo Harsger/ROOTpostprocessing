@@ -9,6 +9,10 @@ int main(int argc, char *argv[]){
     TString filename = argv[1] ;
 
     vector< vector<string> > parameter = getInput( filename.Data() );
+    
+    bool show = true ;
+    
+    if( argc > 2 ) show = false ;
 
     string neverUse = "neverUseThisPhrase" ;
     string preNsuffix[2][2] = { 
@@ -255,11 +259,14 @@ int main(int argc, char *argv[]){
                 }
                 if( number != nToUse-1 ) continue ;
                 mean /= number ;
-                stdv = sqrt( 
-                                ( stdv - mean * mean * number ) 
-                                / 
-                                ( number - 1. ) 
-                            ) ; 
+                if( number > 1 )
+                    stdv = sqrt( 
+                                    ( stdv - mean * mean * number ) 
+                                    / 
+                                    ( number - 1. ) 
+                                ) ; 
+                else
+                    stdv = 0. ;
                 difference = content - mean ;
                 if( mean == 0. ) mean = 1. ;
                 differenceTOmean[0]->Fill( h+1 , difference/abs(mean) ) ;
@@ -303,6 +310,14 @@ int main(int argc, char *argv[]){
                                         );
     }
 
+    if( 
+        minMax[2][0] == 0. && minMax[2][1] == 0. 
+        ||
+        minMax[2][0] == minMax[2][1]
+    ){
+        minMax[2][0] -= 1. ;
+        minMax[2][1] += 1. ;
+    }
     variation[1] = new TH2I(
                             "variation_absolute" ,
                             "variation_absolute" ,
@@ -334,11 +349,14 @@ int main(int argc, char *argv[]){
                 }
                 if( number != nToUse-1 ) continue ;
                 mean /= number ;
-                stdv = sqrt( 
-                                ( stdv - mean * mean * number ) 
-                                / 
-                                ( number  - 1. ) 
-                            ) ; 
+                if( number > 1 )
+                    stdv = sqrt( 
+                                    ( stdv - mean * mean * number ) 
+                                    / 
+                                    ( number  - 1. ) 
+                                ) ; 
+                else
+                    stdv = 0. ;
                 difference = content - mean ;
                 if( mean == 0. ) mean = 1. ;
                 differenceTOmean[1]->Fill( h+1 , difference ) ;
@@ -376,14 +394,18 @@ int main(int argc, char *argv[]){
     cout << " writing ... " << flush ;
 
     outfile->Write() ;
+    
+    if( show ){
 
-    cout << " plotting ... " << flush ;
-        
-    showing() ;
+        cout << " plotting ... " << flush ;
+            
+        showing() ;
 
-    name = can->GetName() ;
-    name += ".pdf" ;
-    can->Print(name) ;
+        name = can->GetName() ;
+        name += ".pdf" ;
+        can->Print(name) ;
+    
+    }
 
     cout << " closing ... " << flush ;
     
