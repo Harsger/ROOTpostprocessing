@@ -27,6 +27,7 @@ int main(int argc, char *argv[]){
     TString scaleMode = "integral" ;
     
     SpecifiedNumber colorPalette ;
+    SpecifiedNumber statBox ;
 
     for(unsigned int r=0; r<parameter.size(); r++){
 
@@ -132,6 +133,23 @@ int main(int argc, char *argv[]){
                 colorPalette.specifier = "inverted" ;
             continue ;
         }
+        
+        if( 
+            parameter.at(r).at(0).compare("STATBOX") == 0 
+            &&
+            parameter.at(r).size() > 1
+        ){
+            if( TString(parameter.at(r).at(1)).IsDec() ){
+                statBox = 
+                    SpecifiedNumber( atoi( parameter.at(r).at(1).c_str() ) ) ;
+                statBox.specifier = parameter.at(r).at(1).c_str() ;
+            }
+            else{ 
+                statBox = SpecifiedNumber( 1111 ) ;
+                statBox.specifier = "1111" ;
+            }
+            continue ;
+        }
 
         if( parameter.at(r).size() > 2 ){
             strVecDummy.push_back( parameter.at(r).at(0) );
@@ -178,7 +196,9 @@ int main(int argc, char *argv[]){
             TColor::InvertPalette();
     }
         
-    gStyle->SetOptStat(0) ;
+//     gStyle->SetOptStat(0) ;
+    if( statBox.setting ) gStyle->SetOptStat( statBox.number ) ;
+    else gStyle->SetOptStat(0) ;
 
     gStyle->SetPadTopMargin(    0.03 ) ;
     gStyle->SetPadRightMargin(  0.11 ) ;
@@ -395,8 +415,12 @@ int main(int argc, char *argv[]){
             
         }
         else{ 
-            if( drawPoints ) hists[h]->Draw("Psame PLC PMC") ;
-            else  hists[h]->Draw("same PLC PMC") ;
+            name = "" ;
+            if( drawPoints ) name = "P" ;
+            name += "same" ;
+            if( statBox.setting ) name += "s" ;
+            name += " PLC PMC" ;
+            hists[h]->Draw(name) ;
         }
         
     }
