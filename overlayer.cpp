@@ -63,28 +63,24 @@ int main(int argc, char *argv[]){
             parameter.at(r).size() > 4
         ){
             if( parameter.at(r).at(1).compare("%") != 0 ){
-                plotRange[0][0].number 
-                    = atof( parameter.at(r).at(1).c_str() ) ;
+                plotRange[0][0]
+                    = SpecifiedNumber( atof( parameter.at(r).at(1).c_str() ) ) ;
                 plotRange[0][0].specifier = "xlow" ;
-                plotRange[0][0].setting = true ;
             }
             if( parameter.at(r).at(2).compare("%") != 0 ){
-                plotRange[0][1].number 
-                    = atof( parameter.at(r).at(2).c_str() ) ;
+                plotRange[0][1] 
+                    = SpecifiedNumber( atof( parameter.at(r).at(2).c_str() ) ) ;
                 plotRange[0][1].specifier = "xhigh" ;
-                plotRange[0][1].setting = true ;
             }
             if( parameter.at(r).at(3).compare("%") != 0 ){
-                plotRange[1][0].number 
-                    = atof( parameter.at(r).at(3).c_str() ) ;
+                plotRange[1][0] 
+                    = SpecifiedNumber( atof( parameter.at(r).at(3).c_str() ) ) ;
                 plotRange[1][0].specifier = "ylow" ;
-                plotRange[1][0].setting = true ;
             }
             if( parameter.at(r).at(4).compare("%") != 0 ){
-                plotRange[1][1].number 
-                    = atof( parameter.at(r).at(4).c_str() ) ;
+                plotRange[1][1] 
+                    = SpecifiedNumber( atof( parameter.at(r).at(4).c_str() ) ) ;
                 plotRange[1][1].specifier = "yhigh" ;
-                plotRange[1][1].setting = true ;
             }
             continue ;
         }
@@ -334,7 +330,7 @@ int main(int argc, char *argv[]){
             scaleMode == "ranged"
         )
             scaleFactor = 1. / (double)( hists[h]->Integral() ) ;
-        
+            
         TH1D * swapHist = hists[h] ;
         
         hists[h] = new TH1D( 
@@ -343,7 +339,7 @@ int main(int argc, char *argv[]){
                             nBins , valueRange[0][0] , valueRange[0][1]
         );
         
-        for(unsigned int b=1; b<=nBins; b++){
+        for(unsigned int b=0; b<=nBins+1; b++){
             hists[h]->SetBinContent( b , 
                 (double)(swapHist->GetBinContent( b ) ) * scaleFactor
             ) ;
@@ -385,26 +381,38 @@ int main(int argc, char *argv[]){
     }
     
     bool firstTOdraw = true ;
+    double under , over ;
     
     for(unsigned int h=0; h<nHists; h++){
         
         if( !useable[h] ) continue ;
         
         hists[h]->SetMarkerStyle(6) ;
-        hists[h]->SetLineWidth(3) ;
+        hists[h]->SetLineWidth(3) ;  
+        
+        getOutflow( 
+                    hists[h] , 
+                    plotRange[0][0].number , 
+                    plotRange[0][1].number , 
+                    under , 
+                    over 
+                  ) ; 
+            
+        hists[h]->GetXaxis()->SetRangeUser( 
+            plotRange[0][0].number , plotRange[0][1].number
+        );
+        
+        hists[h]->GetYaxis()->SetRangeUser( 
+            plotRange[1][0].number , plotRange[1][1].number
+        );
+        
+        hists[h]->SetBinContent( 0       , under ) ;
+        hists[h]->SetBinContent( nBins+1 , over  ) ;
         
         if( firstTOdraw ){ 
             
             if( drawPoints ) hists[h]->Draw("P PLC PMC") ;
-            else  hists[h]->Draw("PLC PMC") ;    
-            
-            hists[h]->GetXaxis()->SetRangeUser( 
-                plotRange[0][0].number , plotRange[0][1].number
-            );
-            
-            hists[h]->GetYaxis()->SetRangeUser( 
-                plotRange[1][0].number , plotRange[1][1].number
-            );
+            else  hists[h]->Draw("PLC PMC") ; 
             
             if( axisTitles[0].compare(neverUse) != 0 )
                 hists[h]->SetXTitle( axisTitles[0].c_str() ) ;
@@ -422,7 +430,7 @@ int main(int argc, char *argv[]){
             name += " PLC PMC" ;
             hists[h]->Draw(name) ;
         }
-        
+                  
     }
     
     gPad->SetGridx() ;
