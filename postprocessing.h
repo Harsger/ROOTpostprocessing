@@ -302,3 +302,32 @@ TString replaceBadChars( TString input ){
     return output ;
 }
 
+void getOutflow( 
+                    TH1D * hist , 
+                    double lowLimit , 
+                    double highLimit , 
+                    double &underFlow , 
+                    double &overFlow
+){
+    
+    unsigned int nbins = hist->GetNbinsX() ;
+    
+//     double range[2] = {
+//         hist->GetXaxis()->GetXmin() ,
+//         hist->GetXaxis()->GetXmax() 
+//     } ;
+    
+    underFlow = 0. ;
+    underFlow += hist->GetBinContent( 0 ) ;
+    int bin = hist->GetXaxis()->FindBin(lowLimit)-1 ;
+    if( bin > 0 )
+        underFlow += hist->Integral( 1 , bin ) ;
+    
+    overFlow = 0. ;
+    overFlow += hist->GetBinContent( nbins+1 );
+    bin = hist->GetXaxis()->FindBin(highLimit)+1 ;
+    if( bin <= nbins )
+        overFlow += hist->Integral( bin , nbins ) ;
+    
+}
+
