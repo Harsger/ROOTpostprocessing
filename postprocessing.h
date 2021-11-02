@@ -235,7 +235,7 @@ void plotOptions(){
         
     gROOT->SetStyle("Plain") ;
     
-    gStyle->SetPalette(kRainBow);
+    gStyle->SetPalette(55); // kRainBow
     gStyle->SetOptTitle(0) ;
     gStyle->SetOptStat(11110) ;
     gStyle->SetOptFit(0) ;

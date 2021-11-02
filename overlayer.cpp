@@ -120,7 +120,7 @@ int main(int argc, char *argv[]){
                 colorPalette = 
                     SpecifiedNumber( atoi( parameter.at(r).at(1).c_str() ) ) ;
             else 
-                colorPalette = SpecifiedNumber( kRainBow ) ;
+                colorPalette = SpecifiedNumber( 55 ) ; // kRainBow
             if( 
                 parameter.at(r).size() > 2 
                 && 
