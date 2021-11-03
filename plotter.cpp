@@ -26,6 +26,9 @@ int main(int argc, char *argv[]){
     map< string , map< unsigned int , bool > > useRowsNcolumns ;
     map< string , vector<int> > givenRowsNcolumns ;
     string delimiter = " ";
+    vector<string> axisLabels ;
+    bool setLabels = false ;
+    SpecifiedNumber labeblsotpion ;
 
     for(unsigned int r=0; r<parameter.size(); r++){
 
@@ -148,7 +151,16 @@ int main(int argc, char *argv[]){
         ){
             delimiter = parameter.at(r).at(1) ;
             continue ;
-            
+        }
+        
+        if( 
+            parameter.at(r).at(0).compare("LABELSOPTION") == 0  
+            &&
+            parameter.at(r).size() > 1
+        ){
+            labeblsotpion = SpecifiedNumber(0.);
+            labeblsotpion.specifier = parameter.at(r).at(1) ;
+            continue ;
         }
         
         if( parameter.at(r).size() > 2 ){
@@ -157,12 +169,26 @@ int main(int argc, char *argv[]){
             filesNhists.push_back( strVecDummy ) ;
             strVecDummy.clear() ;
             doVecDummy.push_back( atof( parameter.at(r).at(2).c_str() ) );
-            if( parameter.at(r).size() > 3 )
+            if( 
+                parameter.at(r).size() > 3 
+                &&
+                parameter.at(r).at(3).compare( "%" ) != 0
+            )
                 doVecDummy.push_back( atof( parameter.at(r).at(3).c_str() ) );
             else
                 doVecDummy.push_back( 0. ) ;
             valueNerror.push_back( doVecDummy ) ;
             doVecDummy.clear() ;
+            if( 
+                parameter.at(r).size() > 4 
+                &&
+                parameter.at(r).at(4).compare( "%" ) != 0
+            ){
+                axisLabels.push_back( parameter.at(r).at(4) );
+                setLabels = true ;
+            }
+            else
+                axisLabels.push_back( "" ) ;
         }
 
     }
@@ -559,6 +585,19 @@ int main(int argc, char *argv[]){
     g_extrema->SetMarkerColor( 0 ) ;
     g_extrema->SetLineColor( 0 ) ;
     g_extrema->GetYaxis()->SetNdivisions(520) ;
+    
+    if( setLabels ){
+        for(unsigned int h=0; h<nHists; h++){
+            g_extrema->GetXaxis()->SetBinLabel( 
+                g_extrema->GetXaxis()->FindBin(valueNerror.at(h).at(0)) , 
+                axisLabels.at(h).c_str() 
+            ) ;
+        }
+        if( labeblsotpion.setting )
+            g_extrema->GetHistogram()
+                     ->LabelsOption( labeblsotpion.specifier.c_str() , "X" ) ;
+    }
+    
     g_extrema->Draw( "AP" ) ;
     g_extrema->GetXaxis()->SetTitle( axisTitles[0].c_str() ) ;
     g_extrema->GetYaxis()->SetTitle( axisTitles[1].c_str() ) ;
