@@ -25,6 +25,7 @@ int main(int argc, char *argv[]){
     SpecifiedNumber lowLimit , highLimit , plotRange[2][2] ;
     map< string , map< unsigned int , bool > > useRowsNcolumns ;
     map< string , vector<int> > givenRowsNcolumns ;
+    string delimiter = " ";
 
     for(unsigned int r=0; r<parameter.size(); r++){
 
@@ -136,6 +137,16 @@ int main(int argc, char *argv[]){
                     );
             }
             
+            continue ;
+            
+        }
+        
+        if( 
+            parameter.at(r).at(0).compare("DELIMITER") == 0  
+            &&
+            parameter.at(r).size() > 1
+        ){
+            delimiter = parameter.at(r).at(1) ;
             continue ;
             
         }
@@ -312,7 +323,10 @@ int main(int argc, char *argv[]){
         }
         else{
             
-            vector<vector<string> > input = getInput( name.Data() ) ;
+            vector<vector<string> > input = getInput( 
+                                                        name.Data() , 
+                                                        delimiter 
+                                                    ) ;
             unsigned int nLines = input.size() ;
             if( nLines < 1 ){
                 cout << " WARNING : reading " << name << endl ;

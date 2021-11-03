@@ -18,7 +18,10 @@ std::map< std::string , unsigned int > secondsPER = {
     { "y" , 31536000 }   // 365 * 24 * 60 * 60
 } ;
 
-std::vector< std::vector<std::string> > getInput( std::string filename ){
+std::vector< std::vector<std::string> > getInput( 
+                                                    std::string filename ,
+                                                    std::string delimiter = " "
+                                                ){
     
     std::vector< std::vector<std::string> > input;
     
@@ -34,11 +37,23 @@ std::vector< std::vector<std::string> > getInput( std::string filename ){
         return input;
     }
     
+    bool swapDelimiter = false ;
+    if( delimiter != " " ) swapDelimiter = true ;
+    
     std::string line = "";
     std::string word = "";
     std::vector<std::string> dummy;
+    std::size_t found ;
     
     while( getline( ifile, line) ){
+        
+        if(swapDelimiter){
+            found = line.find( delimiter ) ;
+            while( found != std::string::npos ){
+                line.replace( found , delimiter.length() , " " ) ;
+                found = line.find( delimiter ) ;
+            }
+        }
         
         std::stringstream sline(line);
         
