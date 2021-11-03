@@ -92,9 +92,9 @@ PALETTE <number> (inverted)
  only root-file output, no plotting
  
 -plotter: standard parameter-file ->
- takes 2D-histograms calculates
+ takes 2D-histograms (or text-files) and calculates
  mean, standard-deviation, median, minimum, maximum
- of bin-values
+ of bin-values (numbers in rows and columns)
  stores results in TGraphs as function of specified values
  and plots combined graphs
  required options per histogram

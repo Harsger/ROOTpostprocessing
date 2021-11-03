@@ -216,33 +216,113 @@ int main(int argc, char *argv[]){
         name = preNsuffix[0][0] ;
         name += filesNhists.at(h).at(0) ;
         name += preNsuffix[0][1] ;
-        TFile * input = new TFile(name,"READ") ;
-        if( input->IsZombie() ){
-            cout << " WARNING : opening " << name << endl ;
-            notFound++ ;
-            useable[h] = false ;
-            continue ;
-        }
+        
+        if( name.EndsWith(".root") ){
+        
+            TFile * input = new TFile(name,"READ") ;
+            if( input->IsZombie() ){
+                cout << " WARNING : opening " << name << endl ;
+                notFound++ ;
+                useable[h] = false ;
+                continue ;
+            }
 
-        name = preNsuffix[1][0] ;
-        name += filesNhists.at(h).at(1) ;
-        name += preNsuffix[1][1] ;
-        if( input->Get(name) == NULL ){
-            cout << " WARNING : reading " << name 
-                 << " in " << input->GetName() << endl ;
-            notFound++ ;
-            useable[h] = false ;
-            continue ;
-        }
-        readhist = (TH2D*)input->Get(name) ;
+            name = preNsuffix[1][0] ;
+            name += filesNhists.at(h).at(1) ;
+            name += preNsuffix[1][1] ;
+            if( input->Get(name) == NULL ){
+                cout << " WARNING : reading " << name 
+                    << " in " << input->GetName() << endl ;
+                notFound++ ;
+                useable[h] = false ;
+                continue ;
+            }
+            readhist = (TH2D*)input->Get(name) ;
 
-        readhist->SetDirectory(0) ;
-        input->Close() ;
+            readhist->SetDirectory(0) ;
+            input->Close() ;
 
-        if( rowsNcolumns[1] == 0 ){
+            if( rowsNcolumns[1] == 0 ){
+                
+                rowsNcolumns[1] = readhist->GetNbinsX() ;
+                rowsNcolumns[0] = readhist->GetNbinsY() ;
+                
+                for(unsigned int i=0; i<2; i++){
+                    string toUse = "ROWS" ;
+                    if( i == 1 ) toUse = "COLUMNS" ;
+                    bool overwrite = true ;
+                    if( 
+                        givenRowsNcolumns.find( toUse ) 
+                        == 
+                        givenRowsNcolumns.end() 
+                    ) 
+                        overwrite = false ;
+                    bool toSet = true ;
+                    if( overwrite && givenRowsNcolumns[toUse].at(0) > 0 ) 
+                        toSet = false ;
+                    for(unsigned int b=0; b<rowsNcolumns[i]; b++)
+                        useRowsNcolumns[toUse][b+1] = toSet ;
+                    if( overwrite ){
+                        unsigned int nSpecifiedLines = 
+                            givenRowsNcolumns[toUse].size() ;
+                        for(unsigned int s=0; s<nSpecifiedLines; s++)
+                            useRowsNcolumns[toUse][
+                                abs( givenRowsNcolumns[toUse].at(s) )
+                            ] = !( toSet ) ;
+                    }
+                }
+                
+                if( givenRowsNcolumns.size() < 1 )
+                    useRowsNcolumns.clear() ;
+                
+            }        
+            else if(  
+                rowsNcolumns[1] != readhist->GetNbinsX()
+                ||
+                rowsNcolumns[0] != readhist->GetNbinsY()
+            ){
+                cout << " WARNING : histsize " << name 
+                    << " in " << input->GetName() << endl ;
+                notFound++ ;
+                useable[h] = false ;
+                readhist->Delete() ;
+                continue ;
+            }
+
+            number = 1 ;
+            useable[h] = getStats(
+                                    readhist ,
+                                    mean , stdv , min , max , median , number ,
+                                    toSkip , lowLimit , highLimit , useRowsNcolumns
+                                ) ;
+        
+            readhist->Delete() ;
             
-            rowsNcolumns[1] = readhist->GetNbinsX() ;
-            rowsNcolumns[0] = readhist->GetNbinsY() ;
+            if( ! useable[h] ){ 
+                cout << " WARNING : getStats " << name 
+                    << " in " << input->GetName() << endl ;
+                if( number != 1 )
+                    g_number->SetPoint(
+                        g_number->GetN() , valueNerror.at(h).at(0) , 0
+                    ) ;
+                notFound++ ;
+                continue ;
+            }
+        
+        }
+        else{
+            
+            vector<vector<string> > input = getInput( name.Data() ) ;
+            unsigned int nLines = input.size() ;
+            if( nLines < 1 ){
+                cout << " WARNING : reading " << name << endl ;
+                notFound++ ;
+                useable[h] = false ;
+                continue ;
+            }
+                
+            rowsNcolumns[0] = nLines ;
+            rowsNcolumns[1] = input.at(0).size() ;
             
             for(unsigned int i=0; i<2; i++){
                 string toUse = "ROWS" ;
@@ -272,37 +352,61 @@ int main(int argc, char *argv[]){
             if( givenRowsNcolumns.size() < 1 )
                 useRowsNcolumns.clear() ;
             
-        }        
-        else if(  
-            rowsNcolumns[1] != readhist->GetNbinsX()
-            ||
-            rowsNcolumns[0] != readhist->GetNbinsY()
-        ){
-            cout << " WARNING : histsize " << name 
-                 << " in " << input->GetName() << endl ;
-            notFound++ ;
-            useable[h] = false ;
-            readhist->Delete() ;
-            continue ;
-        }
-
-        number = 1 ;
-        useable[h] = getStats(
-                                readhist ,
-                                mean , stdv , min , max , median , number ,
-                                toSkip , lowLimit , highLimit , useRowsNcolumns
-                            ) ;
-        
-        if( ! useable[h] ){ 
-            cout << " WARNING : getStats " << name 
-                 << " in " << input->GetName() << endl ;
-            if( number != 1 )
-                g_number->SetPoint(
-                    g_number->GetN() , valueNerror.at(h).at(0) , 0
-                ) ;
-            notFound++ ;
-            readhist->Delete() ;
-            continue ;
+            vector<double> data ;
+    
+            bool discardRowsOrColumns[2] = { false , false } ;
+            if( useRowsNcolumns.find("ROWS") != useRowsNcolumns.end() )
+                discardRowsOrColumns[0] = true ;
+            if( useRowsNcolumns.find("COLUMNS") != useRowsNcolumns.end() )
+                discardRowsOrColumns[1] = true ;
+            
+            for(unsigned int l=0; l<nLines; l++){
+                if( 
+                    discardRowsOrColumns[0] 
+                    && 
+                    !( useRowsNcolumns["ROWS"][l+1] ) 
+                )
+                    continue ;
+                unsigned int nWords = input.at(l).size() ;
+                for(unsigned int w=0; w<nWords; w++){
+                    if( 
+                        discardRowsOrColumns[1] 
+                        && 
+                        !( useRowsNcolumns["COLUMNS"][w+1] ) 
+                    )
+                        continue ;
+                    double content = atof( input.at(l).at(w).c_str() ) ;
+                    if( toDiscard( content ) ) continue ;
+                    if( 
+                        lowLimit.setting 
+                        && 
+                        content < lowLimit.number
+                    )
+                        continue ;
+                    if( 
+                        highLimit.setting 
+                        && 
+                        content > highLimit.number
+                    )
+                        continue ;
+                    data.push_back( content ) ;
+                }
+            }
+            
+            number = data.size() ;
+            
+            useable[h] = getStats( &data , mean , stdv , min , max , median ) ;
+            
+            if( ! useable[h] ){ 
+                cout << " WARNING : getStats " << name << endl ;
+                if( number != 1 )
+                    g_number->SetPoint(
+                        g_number->GetN() , valueNerror.at(h).at(0) , 0
+                    ) ;
+                notFound++ ;
+                continue ;
+            }
+            
         }
         
         if( toInitialize ){
@@ -351,19 +455,9 @@ int main(int argc, char *argv[]){
             g_median->GetN() , valueNerror.at(h).at(0) , median
         ) ;
         
-        readhist->Delete() ;
-        
     }
 
-    if( 
-        notFound == nHists 
-        ||
-        (
-            rowsNcolumns[0] == 0
-            &&
-            rowsNcolumns[1] == 0
-        )
-    ){
+    if( notFound == nHists ){
         cout << " ERROR : histograms not useable " << endl ;
         return 3 ;
     }
