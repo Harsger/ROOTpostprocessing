@@ -124,6 +124,8 @@ LOG <logarithmicX> <logarithmicY>
  (specified by '0' [->false] or '1' [->true], without quotes)
 NOERRORS
  omits error-bars (during drawing)
+FORMAT
+ c formatting for scanf used for text-data-input
 
 -housekeeper: /path/to/files(.dat) (<specifierList>)
  stores data from text-files in root tree 

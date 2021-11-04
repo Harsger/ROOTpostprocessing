@@ -24,6 +24,7 @@ int main(int argc, char *argv[]){
     SpecifiedNumber plotRanges[2][2] ;
     bool useLogScale[2] = { false , false } ;
     bool skipErrors = false ;
+    SpecifiedNumber textDataFormat ;
 
     for(unsigned int r=0; r<parameter.size(); r++){
 
@@ -99,6 +100,20 @@ int main(int argc, char *argv[]){
         
         if( parameter.at(r).at(0).compare("NOERRORS") == 0 ){
             skipErrors = true ;
+            continue ;
+        }
+        
+        if( 
+            parameter.at(r).at(0).compare("FORMAT") == 0 
+            &&
+            parameter.at(r).size() > 2
+        ){
+            textDataFormat = SpecifiedNumber(0.) ;
+            textDataFormat.specifier = parameter.at(r).at(1) ;
+            for(unsigned int c=2; c<parameter.at(r).size(); c++){
+                textDataFormat.specifier += " " ;
+                textDataFormat.specifier += parameter.at(r).at(c) ;
+            }
             continue ;
         }
 
@@ -205,7 +220,13 @@ int main(int argc, char *argv[]){
         }
         else{
             
-            graphs[r] = new TGraphErrors( name ) ;
+            if( textDataFormat.setting )
+                graphs[r] = new TGraphErrors(
+                                                name , 
+                                                textDataFormat.specifier.c_str() 
+                                            ) ;
+            else
+                graphs[r] = new TGraphErrors(name) ;
             
         }
             
