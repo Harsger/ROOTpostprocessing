@@ -1,6 +1,19 @@
-evaluation and plotting software for ROOT histograms
+////////////////////////////////////////////////////////////////////////////////
+evaluation and plotting software using CERN's ROOT C++ library 
+////////////////////////////////////////////////////////////////////////////////
 
-format of standard parameter-files is :
+compilation using make
+requires g++ with c++11 and active ROOT environment
+(https://root.cern.ch/)
+
+////////////////////////////////////////////////////////////////////////////////
+
+after successful compilation several commandline programs are available
+most of these reuqire parameter-files as argument
+
+////////////////////////////////////////////////////////////////////////////////
+
+format of standard-parameter-files is :
 
 FILE </path/to> <.ending>
 HIST <prefix> <suffix>
@@ -12,9 +25,141 @@ HIST <prefix> <suffix>
 (strings or values without <> , uppercase words are specific)
 values can be omitted using '%' (without quotes)
 
--overlayer: standard parameter-file -> 
+////////////////////////////////////////////////////////////////////////////////
+
+comparator
+
+ arguments :
+ standard-parameter-file
+ 
+ output :
+ root-file containing histograms , PDF
+ 
+ takes 2D-histograms (ROOT::TH2 e.g. heatmaps)
+ creates difference-histograms for each combination and stores overview
+ calculates bin(/pixel)-wise mean for exclusivly one histogram
+ subtracts this mean from bin-value of excluded histogram
+ saves differences for each histogram separately (in distribution)
+
+////////////////////////////////////////////////////////////////////////////////
+ 
+correlator 
+
+ arguments :
+ <file1> <hist1> <file2> <hist2> (<low1> <high1> <low2> <high2>)
+ or
+ standard-parameter-file
+ 
+ output :
+ root-file containing histogram , PDF
+ 
+ takes two 2D-histograms (ROOT::TH2) and 
+ plots corresponding bin-values agianst each other
+ 
+ parameter-file-format :
+<file1> <hist1> (<low1> <high1>)
+<file2> <hist2> (<low2> <high2>)
+
+ low and high values define correlation-histogram range 
+ and which values are plotted in correlation-graph
+ 
+ additional options in parameter-file (see plotter):
+ FILE , HIST , AXIS , ROWS , COLUMNS
+
+////////////////////////////////////////////////////////////////////////////////
+ 
+differentiator
+
+ arguments :
+ <file1> <graph1> <file2> <graph2>
+ or 
+ standard-parameter-file 
+ 
+ output :
+ root-file containing graph
+ 
+ takes two graphs (ROOT::TGraph) and 
+ calculates differences (absolute and relative) for each equal x-position
+ only root-file output, no plotting
+ 
+ parameter-file-format (HIST has to be GRAPH) :
+<file1> <graph1>
+<file2> <graph2>
+
+////////////////////////////////////////////////////////////////////////////////
+
+drawer 
+
+ arguments :
+ /path/to/file.root histname (<lowLimit> <highLimit> <nContours>)
+ 
+ output :
+ PDF
+ 
+ shows specified 2D-histogram (ROOT::TH2 e.g. heatmap) from file,
+ if <lowLimit> <highLimit> is specified Z-range is adjusted
+ <nContours> specify number of color countours 
+ values can be omitted using '%' (without quotes) 
+ if only one ore more than three optional arguments are given
+ plot is not shown but only saved as PDF
+
+////////////////////////////////////////////////////////////////////////////////
+
+housekeeper 
+
+ arguments :
+ /path/to/files(.dat) (<specifierList>)
+ 
+ output :
+ root-file containing tree , PDF
+ 
+ stores data from text-files in root tree 
+ and (optional) plots TGraphs of values with specifier from list
+ 
+ format of text-files has to be:
+<unixtime> <quantity> <specifier> <value> <unit>
+
+////////////////////////////////////////////////////////////////////////////////
+
+logTOplot 
+
+ arguments :
+ /path/to/file.dat (<timeOffset> <duration> <specifierListFile>)
+ 
+ output :
+ root-file containing canvas , PDF
+ 
+ stores data from text-files or root-trees in graphs 
+ and plots these in canvas against time
+ 
+ format of text-files has to be the same as for housekeeper
+
+ each row in the specifier-list-file has to be a specifier
+ and its corresponding unit, e.g. :
+<specifier1> <unit1>
+<specifier2> <unit1>
+<specifier3> <unit2>
+<specifier4> <unit2>
+...
+ specifier with the same unit are plotted in the same pad
+ (only specifier-unit-combinations are plotted, which are found in data)
+ 
+ timeOffset and duration should be given as number with unit
+ (e.g. 3h or 3m , where "s"=second , "m"=minute , "h"=hour , "d"=day)
+
+////////////////////////////////////////////////////////////////////////////////
+
+overlayer 
+ 
+ arguments :
+ standard-parameter-file
+ 
+ output :
+ root-file containing canvas , PDF
+ 
  takes 1D-histograms (ROOT::TH1 e.g. spectrums) and superimposes them
- additional options:
+ 
+ additional options in parameter-file :
 AXIS <xAxisTitle> <yAxisTitle>
 RANGE <xlow> <xhigh> <ylow> <yhigh>
 LOG <logarithmicX> <logarithmicY> 
@@ -26,80 +171,56 @@ SCALEMODE <mode>
 PALETTE <number> (inverted)
  number of ROOT color palette which should be chosen for plotting
  optional 'inverted' (high/low color)
+POINTS
+ points are used instead of bar-histograms
+STATBOX <mode>
+ statboxes for each histogram are drawn with entries according to mode
+ (see : https://root.cern.ch/doc/master/classTPaveStats.html)
 
--peakFitter: standard parameter-file ->
+////////////////////////////////////////////////////////////////////////////////
+
+peakFitter 
+
+ arguments :
+ standard-parameter-file
+ 
+ output :
+ root-file containing graphs
+ 
  takes 1D-histograms and fit specified peaks
- width (sigma and FWHM) and 
- peak-fit-center difference to nominal 
- is stored in ROOT::TGraphs
- required options per histogram
+ width (sigma and FWHM) and peak-fit-center difference to nominal 
+ are stored in ROOT::TGraphs
+ 
+ required arguments in parameter-file per histogram :
 <file1> <hist1> <peakPosition> <lowFitLimit> <highFitLimit>
- additional options per histogram
+
+ additional options in parameter-file per histogram :
 <additionalFunctionPart> <startParameter>
+
  the additional function part should be specified as ROOT::TFormula
  addable to the standard gaussian
- <startParameter> should be a list with size of additional parameter
+ <startParameter> should be a list with size of additional parameters
 
--drawer: /path/to/file.root histname (<lowLimit> <highLimit> <nContours>)
- shows specified 2D-histogram (ROOT::TH2 e.g. heat-maps) from file,
- if <lowLimit> <highLimit> is specified both Z-range is adjusted
- <nContours> specify number of color countours 
- values can be omitted using '%' (without quotes) 
- if only one ore more than three options are given
- plot is not shown but only saved as PDF
+////////////////////////////////////////////////////////////////////////////////
  
--projector: /path/to/file.root histname 
- options : <thresholdfactor> / <lowThresh> <highThresh> <nBins> (<skipPlotting>)
- bin-values from specified 2D-histogram (ROOT::TH2 e.g. heat-maps) in the file,
- are shown and histogram is projected
- onto X and Y axis (column and row average, respectivly)
- bins, columns and rows deviating the standard-devation times
- <thresholdfactor> from mean are written to text-files
- or exceeding the <lowThresh> <highThresh> (one or both can be omitted using %)
- if <nBins> is specified bin-value-spectrum is ranged to lowThresh to highThresh
+plotter 
 
--comparator: standard parameter-file ->
- takes 2D-histograms 
- creates difference-histograms for each combination 
- -> stores overview
- calculates bin(/pixel)-wise mean for exclusivly one histogram
- subtracts this mean from bin-value of excluded histogram
- -> saves differences for each histogram separately (in distribution)
+ arguments :
+ standard-parameter-file
  
--correlator: 
- takes two 2D-histograms and 
- plot corresponding bin-values agianst each other
-    either standard parameter-file 
- with file-names and hist-names has to be specified
-<file1> <hist1> (<low1> <high1>)
-<file2> <hist2> (<low2> <high2>)
- or commandline values can be given
-<file1> <hist1> <file2> <hist2> (<low1> <high1> <low2> <high2>)
- low and high values define correlation-histogram range 
- and which values are plotted in correlation-graph
- additional options:
- FILE , HIST , AXIS , ROWS , COLUMNS : as for plotter
+ output :
+ root-file containing graphs , PDF
  
--differentiator: 
- takes two graphs and calculates differences (absolute and relative)
- for each equal x-position
- either standard parameter-file (except HIST=GRAPH)
- with file-names and graph-names has to be specified
-<file1> <graph1>
-<file2> <graph2>
- or commandline values can be given
-<file1> <graph1> <file2> <graph2>
- only root-file output, no plotting
- 
--plotter: standard parameter-file ->
- takes 2D-histograms (or text-files) and calculates
+ takes 2D-histograms (ROOT::TH2 e.g heatmaps) (or text-files) and calculates
  mean, standard-deviation, median, minimum, maximum
  of bin-values (numbers in rows and columns)
- stores results in TGraphs as function of specified values
+ stores results in TGraphs as function of specified values (or names)
  and plots combined graphs
- required options per histogram
-<file1> <hist1> <value> <error(optional)>
- additional options:
+ 
+ arguments in parameter-file per histogram :
+<file1> <hist1> <value> <error(optional)> <name(optional)>
+
+ additional options in parameter-file :
 AXIS <xAxisTitle> <yAxisTitle>
 RANGE <ylow> <yhigh> / <xlow> <xhigh> <ylow> <yhigh>
  (either only ylow and yhigh or all four)
@@ -108,53 +229,85 @@ SKIP <listOfValuesToBeSkipped> <<lowLimit> ><highLimit>
 ROWS <rowsList>
 COLUMNS <columnsList>
  lists to use or to omit during calculation (bin-numbers required)
- lists can either be directly given or specified in textfile (separate lines)
+ lists can either be directly given or specified in text-file (separate lines)
  negativ values will be omitted, positive values will be used 
- (all with same sign required)
+ (only one sign allowed)
+DELIMITER <string>
+ if text-files are specified columns are separated using specified string
+LABELSOPTION <mode>
+ X-axis labels can be manipulated according to 
+ https://root.cern.ch/doc/v608/classTH1.html -> LabelsOption
+
+////////////////////////////////////////////////////////////////////////////////
  
--superimposer: standard parameter-file (except HIST=GRAPH) ->
- takes ROOT::TGraphs and superimposes them in one plot
- stores result in canvas (.root-file) and as PDF
- required options per graph
+projector 
+
+ arguments :
+ /path/to/file.root histname 
+ 
+ optional arguments :
+ <thresholdfactor> 
+ or
+ <lowThresh> <highThresh> <nBins> (<skipPlotting>)
+ 
+ output :
+ root-file containing histograms , PDFs , text-files
+ 
+ bin-values from specified 2D-histogram (ROOT::TH2 e.g. heat-maps) in the file,
+ are shown (and saved as ROOT::TH1) and histogram is projected
+ onto X and Y axis (column and row average, respectivly)
+ 
+ bins, columns and rows deviating the standard-devation times
+ <thresholdfactor> from mean are written to text-files
+ or exceeding the <lowThresh> <highThresh> (one or both can be omitted using %)
+ 
+ if <nBins> is specified bin-value-spectrum is ranged to lowThresh to highThresh
+
+////////////////////////////////////////////////////////////////////////////////
+ 
+superimposer 
+
+ arguments :
+ standard parameter-file
+ 
+ takes ROOT::TGraphs (or text-files) and superimposes the points in one plot
+ 
+ output :
+ root-file containing canvas , PDF
+ 
+ required options per graph in parameter-file :
 <file1> <graph1> <title1>
-  additional options:
+
+  additional options in parameter-file :
 AXIS <xAxisTitle> <yAxisTitle>
 RANGE <xlow> <xhigh> <ylow> <yhigh>
 LOG <logarithmicX> <logarithmicY> 
  (specified by '0' [->false] or '1' [->true], without quotes)
 NOERRORS
  omits error-bars (during drawing)
-FORMAT
+FORMAT <formatSpecifierList>
  c formatting for scanf used for text-data-input
+ ( see : https://www.cplusplus.com/reference/cstdio/scanf/ )
 
--housekeeper: /path/to/files(.dat) (<specifierList>)
- stores data from text-files in root tree 
- and plots TGraphs of values with specifier from list
- format of text-files has to be:
-unixtime quantity specifier value unit
+////////////////////////////////////////////////////////////////////////////////
 
--logTOplot: /path/to/file.dat (<timeOffset> <duration> <specifierListFile>)
- stores data from text-files or root-trees in graphs 
- and plots these in canvas against time
- format of text-files has to be the same as for housekeeper
- each row of in the specifier-list-file has to be a specifier
- and its corresponding unit, e.g. :
-<specifier1> <unit1>
-<specifier2> <unit1>
-<specifier3> <unit2>
-<specifier4> <unit2>
-...
- specifier with the same unit are plotted in the same pad
- (only specifier-unit-combinations are plotted, which are found in data)
+textTOtree 
 
--textTOtree: parameter-file
- stores columns of textfiles in specified leafs of ROOT:TTree
- format of parameter-file
+ arguments :
+ parameter-file
+ 
+ output :
+ root-file containing tree
+ 
+ stores columns of text-files in specified leafs of ROOT:TTree
+ 
+ format of parameter-file :
 FILE </path/to> <specifier> <.ending>
 <columnIndex1> <variableName1> <variableType1>
 <columnIndex2> <variableName2> <variableType2>
 <columnIndex3> <variableName3> <variableType3>
 ...
+ column-indices are counted starting from zero
  variableType should be 'int' , 'double' , 'string' without quotes
  'string's are stored as ROOT::TString (for postprocessing)
 
