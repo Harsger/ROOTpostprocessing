@@ -22,7 +22,7 @@ int main(int argc, char *argv[]){
     string axisTitles[2] = { neverUse , neverUse } ;
     SpecifiedNumber plotRange[2][2] ;
     bool useLogScale[2] = { false , false } ;
-    bool drawPoints = false ;
+    SpecifiedNumber drawPoints ;
     
     TString scaleMode = "integral" ;
     
@@ -107,7 +107,12 @@ int main(int argc, char *argv[]){
         }
         
         if( parameter.at(r).at(0).compare("POINTS") == 0 ){
-            drawPoints = true ;
+            if( parameter.at(r).size() > 1 )
+                drawPoints = SpecifiedNumber( atoi( 
+                                                parameter.at(r).at(1).c_str() 
+                                            ) ) ;
+            else
+                drawPoints = SpecifiedNumber( 6 ) ;
             continue ;
         }
         
@@ -387,7 +392,8 @@ int main(int argc, char *argv[]){
         
         if( !useable[h] ) continue ;
         
-        hists[h]->SetMarkerStyle(6) ;
+        if( drawPoints.setting ) hists[h]->SetMarkerStyle(drawPoints.number) ;
+        else hists[h]->SetMarkerStyle(6) ;
         hists[h]->SetLineWidth(3) ;  
         
         getOutflow( 
@@ -411,7 +417,7 @@ int main(int argc, char *argv[]){
         
         if( firstTOdraw ){ 
             
-            if( drawPoints ) hists[h]->Draw("P PLC PMC") ;
+            if( drawPoints.setting ) hists[h]->Draw("P PLC PMC") ;
             else  hists[h]->Draw("PLC PMC") ; 
             
             if( axisTitles[0].compare(neverUse) != 0 )
@@ -424,7 +430,7 @@ int main(int argc, char *argv[]){
         }
         else{ 
             name = "" ;
-            if( drawPoints ) name = "P" ;
+            if( drawPoints.setting ) name = "P" ;
             name += "same" ;
             if( statBox.setting ) name += "s" ;
             name += " PLC PMC" ;

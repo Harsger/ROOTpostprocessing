@@ -186,7 +186,7 @@ SCALEMODE <mode>
 PALETTE <number> (inverted)
  number of ROOT color palette which should be chosen for plotting
  optional 'inverted' (high/low color)
-POINTS
+POINTS (<markerStyle>)
  points are used instead of bar-histograms
 STATBOX <mode>
  statboxes for each histogram are drawn with entries according to mode
@@ -290,8 +290,11 @@ superimposer
  output :
  root-file containing canvas , PDF
  
- required options per graph in parameter-file :
-<file1> <graph1> <title1>
+ options per graph in parameter-file :
+<file1> <graph1> <title1> (<markerStyle> <markerColor> <lineStyle>)
+
+ for style and color options see :
+ https://root.cern.ch/doc/master/classTAttMarker.html
 
   additional options in parameter-file :
 AXIS <xAxisTitle> <yAxisTitle>
