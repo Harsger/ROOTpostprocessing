@@ -25,6 +25,7 @@ int main(int argc, char *argv[]){
     bool useLogScale[2] = { false , false } ;
     bool skipErrors = false ;
     SpecifiedNumber textDataFormat ;
+    double markerSize = 1. ;
 
     for(unsigned int r=0; r<parameter.size(); r++){
 
@@ -106,7 +107,7 @@ int main(int argc, char *argv[]){
         if( 
             parameter.at(r).at(0).compare("FORMAT") == 0 
             &&
-            parameter.at(r).size() > 2
+            parameter.at(r).size() > 1
         ){
             textDataFormat = SpecifiedNumber(0.) ;
             textDataFormat.specifier = parameter.at(r).at(1) ;
@@ -114,6 +115,15 @@ int main(int argc, char *argv[]){
                 textDataFormat.specifier += " " ;
                 textDataFormat.specifier += parameter.at(r).at(c) ;
             }
+            continue ;
+        }
+        
+        if( 
+            parameter.at(r).at(0).compare("MARKERSIZE") == 0 
+            &&
+            parameter.at(r).size() > 1
+        ){
+            markerSize = atof( parameter.at(r).at(1).c_str() ) ;
             continue ;
         }
 
@@ -348,6 +358,7 @@ int main(int argc, char *argv[]){
     
     extrema->SetMarkerStyle( 1 ) ;
     extrema->SetMarkerColor( 0 ) ;
+    extrema->SetMarkerSize( markerSize ) ;
     extrema->SetLineColor( 0 ) ;
     extrema->Draw( "AP" ) ;
     extrema->GetXaxis()->SetTitle( axisTitles[0].c_str() ) ;
@@ -401,6 +412,8 @@ int main(int argc, char *argv[]){
         
         name += toAdd ;
         if( skipErrors ) name += " X " ;
+        
+        graphs[g]->SetMarkerSize( markerSize ) ;
         
         graphs[g]->Draw( name ) ;
         

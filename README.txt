@@ -36,7 +36,8 @@ HIST <prefix> <suffix>
 <file3> <hist3>
 ...
 
-(strings or values without <> , uppercase words are specific)
+uppercase words are specific
+strings or values without <> 
 values can be omitted using '%' (without quotes)
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -302,6 +303,8 @@ NOERRORS
 FORMAT <formatSpecifierList>
  c formatting for scanf used for text-data-input
  ( see : https://www.cplusplus.com/reference/cstdio/scanf/ )
+MARKERSIZE <size>
+ global size of drawn point-marker (default=1)
 
 ///////////////////////////////////////////////////////////////////////////////
 
