@@ -375,6 +375,25 @@ int main(int argc, char *argv[]){
             } ) ;
     }
     
+    unsigned int nEmpty = 0 ;
+    vector<bool> emptyQuantity ;
+    for(unsigned int q=0; q<nQuant; q++){
+        if( 
+            !( extrema[0][quantities.at(q)].setting )
+            ||
+            !( extrema[1][quantities.at(q)].setting )
+        ){
+            nEmpty++ ;
+            emptyQuantity.push_back(true) ;
+        }
+        else emptyQuantity.push_back(false) ;
+    }
+    
+    if( nEmpty >= nQuant ){
+        cout << " ERROR : no data found " << endl ;
+        return 6 ;
+    }
+    
     outfile->cd();
     
     cout << " writing ... " << flush ;
@@ -391,19 +410,27 @@ int main(int argc, char *argv[]){
     
     name = name.ReplaceAll( ".root" , "" ) ; 
     
-    TCanvas * can = new TCanvas( name , name , 1400 , 400 * nQuant ) ;
-    can->Divide(1,nQuant,0.001,0.001);
+    TCanvas * can = new TCanvas( 
+                                    name , name , 
+                                    1400 , 400 * ( nQuant - nEmpty ) 
+                                ) ;
+    can->Divide(1,nQuant-nEmpty,0.001,0.001);
     
     TGraphErrors ** g_extrem = new TGraphErrors*[nQuant] ;
     TString title ;
     
+    unsigned int count = 0 ;
     for(unsigned int q=0; q<nQuant; q++){
-
-        can->cd( q+1 ) ;
+        
+        if( emptyQuantity.at(q) ) continue ;
+        
+        count++ ;
+        
+        can->cd( count ) ;
         
         double legendLowEdge = 0.025 ;
         
-        if( q+1 == nQuant ){ 
+        if( count == nQuant-nEmpty ){ 
             legendLowEdge = 0.12 ;
             gPad->SetBottomMargin( legendLowEdge ) ;
             gStyle->SetLabelOffset( 0.005 );
@@ -466,6 +493,8 @@ int main(int argc, char *argv[]){
             auto p = plots
                             [specifiersNquantities.at(s).at(1)]
                             [specifiersNquantities.at(s).at(0)] ;
+                            
+            if( p == NULL ) continue ;
 
             title = p->GetName() ;
             if( title.EndsWith( quantities.at(q).c_str() ) )
