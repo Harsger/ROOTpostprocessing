@@ -23,6 +23,8 @@ int main(int argc, char *argv[]){
     vector< vector<string> > filesNhists ;
     vector<string> strVecDummy ;
     vector<TString> histIdentifier ;
+    unsigned int nIdentified = 0 ;
+    SpecifiedNumber labeblsotpion ;
 
     for(unsigned int r=0; r<parameter.size(); r++){
 
@@ -40,13 +42,25 @@ int main(int argc, char *argv[]){
             preNsuffix[fileORhist][0] = parameter.at(r).at(1) ;
             preNsuffix[fileORhist][1] = parameter.at(r).at(2) ;
             continue ;
+        }        
+        
+        if( 
+            parameter.at(r).at(0).compare("LABELSOPTION") == 0  
+            &&
+            parameter.at(r).size() > 1
+        ){
+            labeblsotpion = SpecifiedNumber(0.);
+            labeblsotpion.specifier = parameter.at(r).at(1) ;
+            continue ;
         }
 
         if( parameter.at(r).size() > 1 ){
             strVecDummy.push_back( parameter.at(r).at(0) );
             strVecDummy.push_back( parameter.at(r).at(1) );
-            if( parameter.at(r).size() > 2 )
+            if( parameter.at(r).size() > 2 ){
                 histIdentifier.push_back( parameter.at(r).at(2) ) ;
+                nIdentified++ ;
+            }
             else
                 histIdentifier.push_back( "" ) ;
         }
@@ -390,6 +404,29 @@ int main(int argc, char *argv[]){
     }
 
     for(unsigned int h=0; h<nHists; h++) hists[h]->Delete() ;
+    
+    if( nIdentified == nHists ){
+        for(unsigned int r=0; r<2; r++){
+            for(unsigned int h=0; h<nHists; h++){
+                differenceTOmean[r]->GetXaxis()->SetBinLabel(
+                    differenceTOmean[r]->GetXaxis()->FindBin(h+1) ,
+                    histIdentifier.at(h)
+                ) ;
+                variation[r]->GetXaxis()->SetBinLabel(
+                    variation[r]->GetXaxis()->FindBin(h+1) ,
+                    histIdentifier.at(h)
+                ) ;
+            }
+            if( labeblsotpion.setting ){
+                differenceTOmean[r]->LabelsOption( 
+                    labeblsotpion.specifier.c_str() , "X" 
+                ) ;
+                variation[r]->LabelsOption( 
+                    labeblsotpion.specifier.c_str() , "X" 
+                ) ;
+            }
+        }
+    }
 
     cout << " writing ... " << flush ;
 

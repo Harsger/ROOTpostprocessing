@@ -45,7 +45,7 @@ values can be omitted using '%' (without quotes)
 comparator
 
  arguments :
- standard-parameter-file
+ standard-parameter-file (<skipPlotting>)
  
  output :
  root-file containing histograms , PDF
@@ -55,6 +55,13 @@ comparator
  calculates bin(/pixel)-wise mean for exclusivly one histogram
  subtracts this mean from bin-value of excluded histogram
  saves differences for each histogram separately (in distribution)
+ 
+ additional options in parameter-file :
+ for each histogram
+<file1> <hist1> <identifier1>
+ identifiers are used on X-axis and for map-differences-names 
+LABELOPTIONS <mode>
+ see description at plotter
 
 ///////////////////////////////////////////////////////////////////////////////
  
