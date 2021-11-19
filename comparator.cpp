@@ -25,6 +25,21 @@ int main(int argc, char *argv[]){
     vector<TString> histIdentifier ;
     unsigned int nIdentified = 0 ;
     SpecifiedNumber labeblsotpion ;
+    
+    map< string , vector<double> > ranges = {
+        { "difference_relative" , { 2000 , -1. , 1. } } ,
+        { "difference_absolute" , { 2000 , -1. , 1. } } ,
+        { "variation_relative"  , { 2000 ,  0. , 1. } } ,
+        { "variation_absolute"  , { 2000 ,  0. , 1. } } ,
+        { "spectra"             , { 2000 , -1. , 1. } } ,
+    } ;
+    map< string , bool > rangeSetting = {
+        { "difference_relative" , false } ,
+        { "difference_absolute" , false } ,
+        { "variation_relative"  , false } ,
+        { "variation_absolute"  , false } ,
+        { "spectra"             , false } ,
+    } ;
 
     for(unsigned int r=0; r<parameter.size(); r++){
 
@@ -51,6 +66,23 @@ int main(int argc, char *argv[]){
         ){
             labeblsotpion = SpecifiedNumber(0.);
             labeblsotpion.specifier = parameter.at(r).at(1) ;
+            continue ;
+        }       
+        
+        if( 
+            parameter.at(r).at(0).compare("RANGE") == 0  
+            &&
+            parameter.at(r).size() > 4
+            &&
+            ranges.find( parameter.at(r).at(1) ) != ranges.end() 
+        ){
+            for(unsigned int i=0; i<3; i++){
+                if( parameter.at(r).at(i+2).compare( "%" ) != 0 ){
+                    ranges[parameter.at(r).at(1)].at(i) =
+                        atof( parameter.at(r).at(i+2).c_str() ) ;
+                }
+            }
+            rangeSetting[parameter.at(r).at(1)] = true ;
             continue ;
         }
 
@@ -209,7 +241,9 @@ int main(int argc, char *argv[]){
                                     "differenceTOmean_relative" ,
                                     "differenceTOmean_relative" ,
                                     nHists , 0.5 , nHists+0.5 ,
-                                    2000 , -1. , 1.
+                                    ranges["difference_relative"].at(0) ,
+                                    ranges["difference_relative"].at(1) ,
+                                    ranges["difference_relative"].at(2) 
                                 );
 
     TH2I *** differenceTOeach = new TH2I**[2] ;
@@ -218,10 +252,12 @@ int main(int argc, char *argv[]){
         name = histIdentifier.at( h ) ;
         name += "_diffRelative" ;
         differenceTOeach[0][h] = new TH2I(
-                                            name , name ,
-                                            nHists , 0.5 , nHists+0.5 ,
-                                            2000 , -1. , 1.
-                                        );
+                                        name , name ,
+                                        nHists , 0.5 , nHists+0.5 ,
+                                        ranges["difference_relative"].at(0) ,
+                                        ranges["difference_relative"].at(1) ,
+                                        ranges["difference_relative"].at(2) 
+                                    );
     }
 
     TH2I ** variation = new TH2I*[2] ;
@@ -229,7 +265,9 @@ int main(int argc, char *argv[]){
                             "variation_relative" ,
                             "variation_relative" ,
                             nHists , 0.5 , nHists+0.5 ,
-                            2000 , 0. , 1.
+                                    ranges["variation_relative"].at(0) ,
+                                    ranges["variation_relative"].at(1) ,
+                                    ranges["variation_relative"].at(2) 
                         ) ;
 
     double mean , stdv , minMax[3][2] , content , reference , difference ; 
@@ -299,18 +337,34 @@ int main(int argc, char *argv[]){
     cout << " value range " << minMax[0][0] << " to " << minMax[0][1] << endl ;
     cout << " diff. range " << minMax[1][0] << " to " << minMax[1][1] << endl ;
     cout << " STDV  range " << minMax[2][0] << " to " << minMax[2][1] << endl ;
+    
+    if( !( rangeSetting["spectra"] ) ){
+        ranges["spectra"].at(0) = 2000 ;
+        ranges["spectra"].at(1) = minMax[0][0] ;
+        ranges["spectra"].at(2) = minMax[0][1] ;
+    }
          
     TH2I * spectra = new TH2I( 
                                 "spectra" , "spectra" ,  
                                 nHists , 0.5 , nHists+0.5 ,
-                                2000 , minMax[0][0] , minMax[0][1]
+                                ranges["spectra"].at(0) ,
+                                ranges["spectra"].at(1) ,
+                                ranges["spectra"].at(2) 
                              );
+    
+    if( !( rangeSetting["difference_absolute"] ) ){
+        ranges["difference_absolute"].at(0) = 2000 ;
+        ranges["difference_absolute"].at(1) = minMax[1][0] ;
+        ranges["difference_absolute"].at(2) = minMax[1][1] ;
+    }
 
     differenceTOmean[1] = new TH2I( 
                                     "differenceTOmean_absolute" ,
                                     "differenceTOmean_absolute" ,
                                     nHists , 0.5 , nHists+0.5 ,
-                                    2000 , minMax[1][0] , minMax[1][1]
+                                    ranges["difference_absolute"].at(0) ,
+                                    ranges["difference_absolute"].at(1) ,
+                                    ranges["difference_absolute"].at(2) 
                                 );
 
     differenceTOeach[1] = new TH2I*[nHists] ;
@@ -318,10 +372,12 @@ int main(int argc, char *argv[]){
         name = histIdentifier.at( h ) ;
         name += "_diffAbsolute" ;
         differenceTOeach[1][h] = new TH2I(
-                                            name , name ,
-                                            nHists , 0.5 , nHists+0.5 ,
-                                            2000 , minMax[1][0] , minMax[1][1]
-                                        );
+                                        name , name ,
+                                        nHists , 0.5 , nHists+0.5 ,
+                                        ranges["difference_absolute"].at(0) ,
+                                        ranges["difference_absolute"].at(1) ,
+                                        ranges["difference_absolute"].at(2) 
+                                    );
     }
 
     if( 
@@ -332,11 +388,20 @@ int main(int argc, char *argv[]){
         minMax[2][0] -= 1. ;
         minMax[2][1] += 1. ;
     }
+    
+    if( !( rangeSetting["variation_absolute"] ) ){
+        ranges["variation_absolute"].at(0) = 2000 ;
+        ranges["variation_absolute"].at(1) = minMax[2][0] ;
+        ranges["variation_absolute"].at(2) = minMax[2][1] ;
+    }
+    
     variation[1] = new TH2I(
                             "variation_absolute" ,
                             "variation_absolute" ,
                             nHists , 0.5 , nHists+0.5 ,
-                            2000 , minMax[2][0] , minMax[2][1]
+                            ranges["variation_absolute"].at(0) ,
+                            ranges["variation_absolute"].at(1) ,
+                            ranges["variation_absolute"].at(2) 
                         ) ;
 
     for(unsigned int r=1; r<=rowsNcolumns[0]; r++){
@@ -399,7 +464,10 @@ int main(int argc, char *argv[]){
             diffHist->SetName(name);
             diffHist->Add( hists[h] , hists[o] , 1. , -1. ) ;
             diffHist->Draw("COLZ");
-            diffHist->GetZaxis()->SetRangeUser( minMax[1][0] , minMax[1][1] );
+            diffHist->GetZaxis()->SetRangeUser( 
+                                        ranges["difference_absolute"].at(1) ,
+                                        ranges["difference_absolute"].at(2) 
+                                    ) ;
         }
     }
 

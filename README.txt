@@ -23,7 +23,7 @@ projector
 superimposer
 textTOtree
 
-most of these reuqire parameter-files as argument
+most of these require parameter-files as argument
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -62,6 +62,12 @@ comparator
  identifiers are used on X-axis and for map-differences-names 
 LABELOPTIONS <mode>
  see description at plotter
+RANGE <type> <nbins> <low> <high>
+ specifies the number of bins (<nbins>) and range (frome <low> to <high>)
+ of the Y-axis for histograms of <type>
+ "difference_relative" , "difference_absolute" ,
+ "variation_relative"  , "variation_absolute"
+  or "spectra" (all without quotes)
 
 ///////////////////////////////////////////////////////////////////////////////
  
