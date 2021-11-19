@@ -127,6 +127,7 @@ int main(int argc, char *argv[]){
     TH2D** hists = new TH2D*[nHists] ;
     TString name ;
     unsigned int rowsNcolumns[2] = { 0 , 0 } ;
+    double axesRanges[2][2] = { { 0. , 0. } , { 0. , 0. } } ;
     unsigned int notFound = 0 ;
     bool useable[nHists] ;
     
@@ -161,6 +162,10 @@ int main(int argc, char *argv[]){
         if( rowsNcolumns[1] == 0 ){
             rowsNcolumns[1] = hists[r]->GetNbinsX() ;
             rowsNcolumns[0] = hists[r]->GetNbinsY() ;
+            axesRanges[0][0] = hists[r]->GetXaxis()->GetXmin() ;
+            axesRanges[0][1] = hists[r]->GetXaxis()->GetXmax() ;
+            axesRanges[1][0] = hists[r]->GetYaxis()->GetXmin() ;
+            axesRanges[1][1] = hists[r]->GetYaxis()->GetXmax() ;
         }        
         else if(  
             rowsNcolumns[1] != hists[r]->GetNbinsX()
@@ -260,14 +265,14 @@ int main(int argc, char *argv[]){
                                     );
     }
 
-    TH2I ** variation = new TH2I*[2] ;
-    variation[0] = new TH2I(
+    TH2I ** variationDistribution = new TH2I*[2] ;
+    variationDistribution[0] = new TH2I(
                             "variation_relative" ,
                             "variation_relative" ,
                             nHists , 0.5 , nHists+0.5 ,
-                                    ranges["variation_relative"].at(0) ,
-                                    ranges["variation_relative"].at(1) ,
-                                    ranges["variation_relative"].at(2) 
+                            ranges["variation_relative"].at(0) ,
+                            ranges["variation_relative"].at(1) ,
+                            ranges["variation_relative"].at(2) 
                         ) ;
 
     double mean , stdv , minMax[3][2] , content , reference , difference ; 
@@ -322,7 +327,7 @@ int main(int argc, char *argv[]){
                 difference = content - mean ;
                 if( mean == 0. ) mean = 1. ;
                 differenceTOmean[0]->Fill( h+1 , difference/abs(mean) ) ;
-                variation[0]->Fill( h+1 , stdv/abs(mean) ) ;
+                variationDistribution[0]->Fill( h+1 , stdv/abs(mean) ) ;
                 if( setMinMax[2] ){
                     minMax[2][0] = stdv ;
                     minMax[2][1] = stdv ;
@@ -395,21 +400,38 @@ int main(int argc, char *argv[]){
         ranges["variation_absolute"].at(2) = minMax[2][1] ;
     }
     
-    variation[1] = new TH2I(
-                            "variation_absolute" ,
-                            "variation_absolute" ,
-                            nHists , 0.5 , nHists+0.5 ,
-                            ranges["variation_absolute"].at(0) ,
-                            ranges["variation_absolute"].at(1) ,
-                            ranges["variation_absolute"].at(2) 
-                        ) ;
+    variationDistribution[1] = new TH2I(
+                                        "variation_absolute" ,
+                                        "variation_absolute" ,
+                                        nHists , 0.5 , nHists+0.5 ,
+                                        ranges["variation_absolute"].at(0) ,
+                                        ranges["variation_absolute"].at(1) ,
+                                        ranges["variation_absolute"].at(2) 
+                                    ) ;
+                        
+    TH2D * variationMap = new TH2D(
+                                    "variationMap" , "variationMap" ,
+                                    rowsNcolumns[0] ,
+                                    axesRanges[0][0] , axesRanges[0][1] ,
+                                    rowsNcolumns[1] ,
+                                    axesRanges[1][0] , axesRanges[1][1] 
+    ) ;
+    
+    unsigned int count ;
+    double average , variation ;
 
     for(unsigned int r=1; r<=rowsNcolumns[0]; r++){
         for(unsigned int c=1; c<=rowsNcolumns[1]; c++){
+            count = 0 ;
+            average = 0. ;
+            variation = 0. ;
             for(unsigned int h=0; h<nHists; h++){
                 if( ! useable[h] ) continue ;
                 content = hists[h]->GetBinContent( c , r ) ;
                 if( toDiscard( content ) ) continue ;
+                count++ ;
+                average += content ;
+                variation += ( content * content ) ;
                 spectra->Fill( h+1 , content ) ; 
                 mean = 0. ;
                 stdv = 0. ;
@@ -439,8 +461,20 @@ int main(int argc, char *argv[]){
                 difference = content - mean ;
                 if( mean == 0. ) mean = 1. ;
                 differenceTOmean[1]->Fill( h+1 , difference ) ;
-                variation[1]->Fill( h+1 , stdv ) ;
+                variationDistribution[1]->Fill( h+1 , stdv ) ;
             }
+            if( count > 1 )
+                variation = sqrt(
+                                    ( 
+                                        variation 
+                                        -  
+                                        average * average / (double)count
+                                    )
+                                    /
+                                    ( (double)count - 1. )
+                                ) ;
+            else variation = 0. ;
+            variationMap->SetBinContent( c , r , variation ) ;
         }
     }
 
@@ -480,8 +514,8 @@ int main(int argc, char *argv[]){
                     differenceTOmean[r]->GetXaxis()->FindBin(h+1) ,
                     histIdentifier.at(h)
                 ) ;
-                variation[r]->GetXaxis()->SetBinLabel(
-                    variation[r]->GetXaxis()->FindBin(h+1) ,
+                variationDistribution[r]->GetXaxis()->SetBinLabel(
+                    variationDistribution[r]->GetXaxis()->FindBin(h+1) ,
                     histIdentifier.at(h)
                 ) ;
             }
@@ -489,7 +523,7 @@ int main(int argc, char *argv[]){
                 differenceTOmean[r]->LabelsOption( 
                     labeblsotpion.specifier.c_str() , "X" 
                 ) ;
-                variation[r]->LabelsOption( 
+                variationDistribution[r]->LabelsOption( 
                     labeblsotpion.specifier.c_str() , "X" 
                 ) ;
             }
