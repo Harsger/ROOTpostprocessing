@@ -176,6 +176,8 @@ int main(int argc, char *argv[]){
         
         cout << " => # rows : " << rows << endl ;
         
+        string specNquant ;
+        
         for(unsigned int r=0; r<rows; r++){
             
             if( textData.at(r).size() < 5 ) continue;
@@ -188,15 +190,19 @@ int main(int argc, char *argv[]){
             
             data->Fill();
             
+            specNquant = specifier.Data() ;
+            specNquant += " \t " ;
+            specNquant += quantity.Data() ;
+            
             if( find( 
                         foundSpecifier.begin() , 
                         foundSpecifier.end() , 
-                        specifier.Data() 
+                        specNquant.c_str() 
                     ) 
                 == 
                 foundSpecifier.end() 
             ){
-                foundSpecifier.push_back( specifier.Data() ) ;
+                foundSpecifier.push_back( specNquant ) ;
             }
             
             if( argc > 2 && nFiles == 1 ){
@@ -222,9 +228,11 @@ int main(int argc, char *argv[]){
     
     outfile->cd();
     
-    cout << " specifier : " ;
+    std::sort( foundSpecifier.begin() , foundSpecifier.end() ) ;
+    
+    cout << " specifier \t quantity " << endl ;
     for(unsigned int s=0; s<foundSpecifier.size(); s++)
-        cout << " " << foundSpecifier.at(s) ;
+        cout << " " << foundSpecifier.at(s) << endl ;
     cout << endl ;
     
     cout << " writing ... " ;
