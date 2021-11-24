@@ -124,7 +124,9 @@ double getFWHM(
                 TH1D * distribution , 
                 double maximum , 
                 double position , 
-                double offset = 0
+                double offset ,
+                double &halfLow ,
+                double &halfHigh
 ){
 
     double FWHM = -1. ;
@@ -184,6 +186,27 @@ double getFWHM(
     }
     
     return FWHM ;
+    
+}
+
+
+double getFWHM( 
+                TH1D * distribution , 
+                double maximum , 
+                double position , 
+                double offset = 0.
+){
+    
+    double halfLow , halfHigh ;
+    
+    return getFWHM( 
+                    distribution , 
+                    maximum , 
+                    position , 
+                    offset ,
+                    halfLow ,
+                    halfHigh
+                ) ;
     
 }
 
