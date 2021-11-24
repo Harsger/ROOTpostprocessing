@@ -181,6 +181,9 @@ double getFWHM(
         
     }
     
+    halfLow  = halfPositions[0] ;
+    halfHigh = halfPositions[1] ;
+    
     if( halfPositions[0] < halfPositions[1] ){
         FWHM = halfPositions[1] - halfPositions[0] ;
     }
