@@ -204,6 +204,11 @@ int main(int argc, char *argv[]){
     g_centerDifference->SetTitle("centerDifference") ;
     
     TF1 * fitfunction ;
+    double fwhm , halfLow , halfHigh ;
+    TLine * lineLow , * lineHigh ;
+    
+    gStyle->SetOptStat(1001100) ;
+    gStyle->SetOptFit(1) ;
     
     TApplication app("app", &argc, argv) ; 
     
@@ -214,10 +219,10 @@ int main(int argc, char *argv[]){
         name = "histogram" ;
         name += h ;
         hists[h]->SetName(name) ;
-        name = filesNhists.at(h).at(0) ;
-        name += filesNhists.at(h).at(1) ;
-        name = name.ReplaceAll( "/" , "" );
-        name = name.ReplaceAll( "-" , "" );
+//         name = filesNhists.at(h).at(0) ;
+//         name += filesNhists.at(h).at(1) ;
+//         name = name.ReplaceAll( "/" , "" );
+//         name = name.ReplaceAll( "-" , "" );
         hists[h]->SetTitle(name) ;
         
         hists[h]->GetXaxis()->SetRangeUser( 
@@ -372,7 +377,32 @@ int main(int argc, char *argv[]){
         }
         cout << endl;
         
+        fwhm = getFWHM(
+                        hists[h] ,
+                        fitfunction->GetParameter( 0 ) ,
+                        peakNrange.at(h).at(0) ,
+                        maximum - fitfunction->GetParameter( 0 ) ,
+                        halfLow ,
+                        halfHigh
+                    ) ;
+        cout << " \t FWHM : "  << fwhm
+             << " - maximum "  << maximum 
+             << " - halfLow "  << halfLow 
+             << " - halfHigh " << halfHigh
+             << endl ;
+        
         hists[h]->Draw() ;
+        
+        double ymin = 0. , ymax = maximum ;
+             
+        lineLow  = new TLine( halfLow  , ymin , halfLow  , ymax ) ;
+        lineLow->SetLineColor(kBlue) ;
+        lineHigh = new TLine( halfHigh , ymin , halfHigh , ymax ) ;
+        lineHigh->SetLineColor(kRed) ;
+        
+        lineLow->Draw() ;
+        lineHigh->Draw() ;
+        
         gPad->Modified() ;
         gPad->Update() ;
         gPad->WaitPrimitive() ;
@@ -409,12 +439,7 @@ int main(int argc, char *argv[]){
         g_fwhm->SetPoint(
             g_fwhm->GetN() ,
             position ,
-            getFWHM(
-                        hists[h] ,
-                        fitfunction->GetParameter( 0 ) ,
-                        peakNrange.at(h).at(0) ,
-                        maximum - fitfunction->GetParameter( 0 ) 
-                    )
+            fwhm
         );
         
         g_fwhm->SetPointError(
