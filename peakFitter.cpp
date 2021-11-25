@@ -7,6 +7,9 @@ int main(int argc, char *argv[]){
     if( argc < 2 ) return 1 ;
 
     TString filename = argv[1] ;
+
+    bool printFits = false ;
+    if( argc > 2 ) printFits = true ;
     
     double fwhmFactor = 2. * sqrt( 2. * log( 2. ) ) ;
     
@@ -441,7 +444,15 @@ int main(int argc, char *argv[]){
         
         gPad->Modified() ;
         gPad->Update() ;
-        gPad->WaitPrimitive() ;
+
+        if( printFits ){
+            name = outfile->GetName() ;
+            name = name.ReplaceAll( ".root" , "_" ) ;
+            name += hists[h]->GetName() ;
+            name += ".pdf" ;
+            gPad->GetCanvas()->Print( name ) ;
+        }
+        else gPad->WaitPrimitive() ;
 
         hists[h]->SetTitle( hists[h]->GetName() ) ;
 
