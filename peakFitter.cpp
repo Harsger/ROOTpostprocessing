@@ -115,6 +115,29 @@ int main(int argc, char *argv[]){
         }
     }
 
+    plotOptions() ;
+
+    gStyle->SetOptTitle(1) ;
+    gStyle->SetTitleX(0.5) ;
+    gStyle->SetTitleAlign(23) ;
+    gStyle->SetOptFit( 1 ) ;
+    gStyle->SetOptStat( 1001100 ) ;
+    gStyle->SetStatX( 0.995 ) ;
+    gStyle->SetStatY( 0.90  ) ;
+    gStyle->SetStatW( 0.115 );
+    gStyle->SetStatH( 0.30  );
+
+    gStyle->SetCanvasDefW( 1000 ) ;
+    gStyle->SetCanvasDefH(  600 ) ;
+   
+    gStyle->SetPadTopMargin(    0.10 ) ; 
+    gStyle->SetPadRightMargin(  0.22 ) ;
+    gStyle->SetPadBottomMargin( 0.11 ) ;
+    gStyle->SetPadLeftMargin(   0.11 ) ;
+
+    gStyle->SetTitleOffset( 1.0 , "x" ) ; 
+    gStyle->SetTitleOffset( 1.2 , "y" ) ; 
+
     unsigned int nHists = filesNhists.size() ;
     TH1D** hists = new TH1D*[nHists] ;
     TString name , title ;
@@ -207,9 +230,6 @@ int main(int argc, char *argv[]){
     double fwhm , halfLow , halfHigh ;
     TLine * lineLow , * lineHigh ;
     
-    gStyle->SetOptStat(1001100) ;
-    gStyle->SetOptFit(1) ;
-    
     TApplication app("app", &argc, argv) ; 
     
     for(unsigned int h=0; h<nHists; h++){
@@ -219,10 +239,6 @@ int main(int argc, char *argv[]){
         name = "histogram" ;
         name += h ;
         hists[h]->SetName(name) ;
-//         name = filesNhists.at(h).at(0) ;
-//         name += filesNhists.at(h).at(1) ;
-//         name = name.ReplaceAll( "/" , "" );
-//         name = name.ReplaceAll( "-" , "" );
         hists[h]->SetTitle(name) ;
         
         hists[h]->GetXaxis()->SetRangeUser( 
@@ -295,6 +311,8 @@ int main(int argc, char *argv[]){
                                 peakNrange.at(h).at(1) , 
                                 peakNrange.at(h).at(2) 
                              ) ;
+
+        hists[h]->SetTitle(title) ;
                              
         fitfunction->SetParameter( 0 , 0.9 * maximum ) ;
         fitfunction->SetParameter( 1 , peakNrange.at(h).at(0) ) ;
@@ -364,12 +382,22 @@ int main(int argc, char *argv[]){
             count++ ;
         }
         
-        cout << " " << filesNhists.at(h).at(0) 
-             << " " << filesNhists.at(h).at(1)
-             << " - entries " << hists[h]->GetEntries()
+        cout 
+             << " " 
+             << preNsuffix[0][0] 
+             << filesNhists.at(h).at(0) 
+             << preNsuffix[0][1]
+             << endl << " " 
+             << preNsuffix[1][0]
+             << filesNhists.at(h).at(1)
+             << preNsuffix[1][1]
+             << endl
+             << " \t DISTRIBUTION : "
+             << " entries "     << hists[h]->GetEntries()
              << " - reference " << peakNrange.at(h).at(0)
-             << " - steps " << count
-             << " - chi2ndf " << chi2ndf << endl ;
+             << " - steps "     << count
+             << " - chi2ndf "   << chi2ndf 
+             << endl ;
              
         cout << " \t FIT : " ;
         for(unsigned int p=0; p<fitfunction->GetNpar(); p++){
@@ -390,15 +418,23 @@ int main(int argc, char *argv[]){
              << " - halfLow "  << halfLow 
              << " - halfHigh " << halfHigh
              << endl ;
-        
+
         hists[h]->Draw() ;
+        gPad->SetGridx() ;
+        gPad->SetGridy() ;
+        gPad->Modified() ;
+        gPad->Update() ;
         
-        double ymin = 0. , ymax = maximum ;
+        double 
+                ymin = gPad->GetUymin() , 
+                ymax = gPad->GetUymax() ;
              
         lineLow  = new TLine( halfLow  , ymin , halfLow  , ymax ) ;
         lineLow->SetLineColor(kBlue) ;
+        lineLow->SetLineWidth(3) ;
         lineHigh = new TLine( halfHigh , ymin , halfHigh , ymax ) ;
         lineHigh->SetLineColor(kRed) ;
+        lineHigh->SetLineWidth(3) ;
         
         lineLow->Draw() ;
         lineHigh->Draw() ;
@@ -406,7 +442,9 @@ int main(int argc, char *argv[]){
         gPad->Modified() ;
         gPad->Update() ;
         gPad->WaitPrimitive() ;
-        
+
+        hists[h]->SetTitle( hists[h]->GetName() ) ;
+
         if( chi2ndf > 10. ){ 
             outfile->cd() ;
             hists[h]->Write() ;
