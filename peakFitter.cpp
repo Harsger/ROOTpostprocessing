@@ -8,8 +8,13 @@ int main(int argc, char *argv[]){
 
     TString filename = argv[1] ;
 
+    bool drawFits  = true ;
     bool printFits = false ;
-    if( argc > 2 ) printFits = true ;
+    if( argc > 2 ){ 
+        string option = argv[2] ;
+        if( option.compare("skip") == 0 ) drawFits = false ; 
+        else printFits = true ;
+    }
     
     double fwhmFactor = 2. * sqrt( 2. * log( 2. ) ) ;
     
@@ -422,37 +427,41 @@ int main(int argc, char *argv[]){
              << " - halfHigh " << halfHigh
              << endl ;
 
-        hists[h]->Draw() ;
-        gPad->SetGridx() ;
-        gPad->SetGridy() ;
-        gPad->Modified() ;
-        gPad->Update() ;
-        
-        double 
-                ymin = gPad->GetUymin() , 
-                ymax = gPad->GetUymax() ;
-             
-        lineLow  = new TLine( halfLow  , ymin , halfLow  , ymax ) ;
-        lineLow->SetLineColor(kBlue) ;
-        lineLow->SetLineWidth(3) ;
-        lineHigh = new TLine( halfHigh , ymin , halfHigh , ymax ) ;
-        lineHigh->SetLineColor(kRed) ;
-        lineHigh->SetLineWidth(3) ;
-        
-        lineLow->Draw() ;
-        lineHigh->Draw() ;
-        
-        gPad->Modified() ;
-        gPad->Update() ;
+        if( drawFits ){
 
-        if( printFits ){
-            name = outfile->GetName() ;
-            name = name.ReplaceAll( ".root" , "_" ) ;
-            name += hists[h]->GetName() ;
-            name += ".pdf" ;
-            gPad->GetCanvas()->Print( name ) ;
+            hists[h]->Draw() ;
+            gPad->SetGridx() ;
+            gPad->SetGridy() ;
+            gPad->Modified() ;
+            gPad->Update() ;
+            
+            double 
+                    ymin = gPad->GetUymin() , 
+                    ymax = gPad->GetUymax() ;
+                 
+            lineLow  = new TLine( halfLow  , ymin , halfLow  , ymax ) ;
+            lineLow->SetLineColor(kBlue) ;
+            lineLow->SetLineWidth(3) ;
+            lineHigh = new TLine( halfHigh , ymin , halfHigh , ymax ) ;
+            lineHigh->SetLineColor(kRed) ;
+            lineHigh->SetLineWidth(3) ;
+            
+            lineLow->Draw() ;
+            lineHigh->Draw() ;
+            
+            gPad->Modified() ;
+            gPad->Update() ;
+
+            if( printFits ){
+                name = outfile->GetName() ;
+                name = name.ReplaceAll( ".root" , "_" ) ;
+                name += hists[h]->GetName() ;
+                name += ".pdf" ;
+                gPad->GetCanvas()->Print( name ) ;
+            }
+            else gPad->WaitPrimitive() ;
+
         }
-        else gPad->WaitPrimitive() ;
 
         hists[h]->SetTitle( hists[h]->GetName() ) ;
 
