@@ -415,9 +415,10 @@ int main(int argc, char *argv[]){
         
         fwhm = getFWHM(
                         hists[h] ,
-                        fitfunction->GetParameter( 0 ) ,
+                        fitfunction->Eval( fitfunction->GetParameter(1) ) ,
                         peakNrange.at(h).at(0) ,
-                        maximum - fitfunction->GetParameter( 0 ) ,
+                        fitfunction->Eval( fitfunction->GetParameter(1) ) 
+                            - fitfunction->GetParameter( 0 ) ,
                         halfLow ,
                         halfHigh
                     ) ;
