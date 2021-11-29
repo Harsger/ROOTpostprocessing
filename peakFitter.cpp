@@ -233,6 +233,10 @@ int main(int argc, char *argv[]){
     TGraphErrors * g_centerDifference = new TGraphErrors() ;
     g_centerDifference->SetName("centerDifference") ;
     g_centerDifference->SetTitle("centerDifference") ;
+
+    TGraphErrors * g_fitquality = new TGraphErrors() ;                    
+    g_fitquality->SetName("chi2ndf") ;                           
+    g_fitquality->SetTitle("chi2ndf") ;
     
     TF1 * fitfunction ;
     double fwhm , halfLow , halfHigh ;
@@ -466,12 +470,12 @@ int main(int argc, char *argv[]){
 
         hists[h]->SetTitle( hists[h]->GetName() ) ;
 
-        if( chi2ndf > 10. ){ 
-            outfile->cd() ;
-            hists[h]->Write() ;
-            fitfunction->Write() ;
-            continue ;
-        }
+//        if( chi2ndf > 10. ){ 
+//            outfile->cd() ;
+//            hists[h]->Write() ;
+//            fitfunction->Write() ;
+//            continue ;
+//        }
         
         double position = plotPosition.at(h).number ;
         double posError = 0 ;
@@ -506,6 +510,12 @@ int main(int argc, char *argv[]){
             posError ,
             hists[h]->GetBinWidth(1) 
         );
+
+        g_fitquality->SetPoint(
+            g_fitquality->GetN() ,
+            position ,
+            chi2ndf
+        ) ;
         
         if( ! plotPosition.at(h).setting )
             position = peakNrange.at(h).at(0) ;
@@ -536,6 +546,7 @@ int main(int argc, char *argv[]){
     g_width->Write() ;
     g_fwhm->Write() ;
     g_centerDifference->Write() ;
+    g_fitquality->Write() ;
     
     outfile->Write() ;
     outfile->Close() ;
