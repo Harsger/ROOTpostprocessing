@@ -87,10 +87,13 @@ int main(int argc, char *argv[]){
     vector<double> toSkip ;
     SpecifiedNumber lowLimit , highLimit ;
     map< string , map< unsigned int , bool > > useRowsNcolumns ;
+    map< unsigned int , vector<unsigned int> > pixelList ;
+    bool exclude = true ;
     
     bool working = getStats(
         hist , mean , stdv , min , max , median , number ,
-        toSkip , lowLimit , highLimit , useRowsNcolumns
+        toSkip , lowLimit , highLimit , useRowsNcolumns ,
+        pixelList , exclude
     ) ;
     
     if( ! working ) return 4 ;

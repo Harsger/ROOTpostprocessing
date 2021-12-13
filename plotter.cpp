@@ -29,6 +29,8 @@ int main(int argc, char *argv[]){
     vector<string> axisLabels ;
     bool setLabels = false ;
     SpecifiedNumber labeblsotpion ;
+    map< unsigned int , vector<unsigned int> > pixelList ;
+    bool exclude = true ;
 
     for(unsigned int r=0; r<parameter.size(); r++){
 
@@ -142,6 +144,44 @@ int main(int argc, char *argv[]){
             
             continue ;
             
+        }
+
+        if(
+            parameter.at(r).at(0).compare("PIXELS") == 0  
+            &&
+            parameter.at(r).size() > 1
+        ){
+
+            vector< vector<string> > pixelStringList = 
+                getInput( parameter.at(r).at(1) ) ;
+            unsigned int nPixel = pixelStringList.size() ;
+            if( nPixel == 0 ){
+                TString pixelFile = filename ;
+                pixelFile = pixelFile( 0 , pixelFile.Last('/')+1 ) ;
+                pixelFile += parameter.at(r).at(1) ;
+                pixelStringList = getInput( pixelFile.Data() ) ;
+                nPixel = pixelStringList.size() ;
+                if( nPixel > 0 )
+                    cout << " -> found at parameter-file " << endl ;
+            }
+            for(unsigned int p=0; p<nPixel; p++){
+                if( pixelStringList.size() < 2 ) continue ;
+                pixelList[ 
+                        atoi( pixelStringList.at(p).at(1).c_str() ) 
+                    ]
+                    .push_back( 
+                        atoi( pixelStringList.at(p).at(0).c_str() ) 
+                    ) ;
+            }
+            if( 
+                parameter.at(r).size() > 2 
+                && 
+                parameter.at(r).at(2).compare("select") == 0 
+            )
+                exclude = false ;
+
+            continue ;
+
         }
         
         if( 
@@ -329,8 +369,18 @@ int main(int argc, char *argv[]){
             number = 1 ;
             useable[h] = getStats(
                                     readhist ,
-                                    mean , stdv , min , max , median , number ,
-                                    toSkip , lowLimit , highLimit , useRowsNcolumns
+                                    mean , 
+                                    stdv , 
+                                    min , 
+                                    max , 
+                                    median , 
+                                    number ,
+                                    toSkip , 
+                                    lowLimit , 
+                                    highLimit , 
+                                    useRowsNcolumns ,
+                                    pixelList ,
+                                    exclude
                                 ) ;
         
             readhist->Delete() ;
@@ -400,6 +450,9 @@ int main(int argc, char *argv[]){
             if( useRowsNcolumns.find("COLUMNS") != useRowsNcolumns.end() )
                 discardRowsOrColumns[1] = true ;
             
+            bool pixelSpecified = false ;
+            if( !( pixelList.empty() ) ) pixelSpecified = true ;
+
             for(unsigned int l=0; l<nLines; l++){
                 if( 
                     discardRowsOrColumns[0] 
@@ -415,6 +468,24 @@ int main(int argc, char *argv[]){
                         !( useRowsNcolumns["COLUMNS"][w+1] ) 
                     )
                         continue ;
+                    if( pixelSpecified ){
+                        if( 
+                            pixelList.find(l+1) != pixelList.end() 
+                            && 
+                            std::find( 
+                                        pixelList[l+1].begin() , 
+                                        pixelList[l+1].end() , 
+                                        w+1 
+                                     )
+                                !=
+                                    pixelList[l+1].end()
+                        ){
+                            if( exclude ) continue ;
+                        }
+                        else{
+                            if( !( exclude ) ) continue ;
+                        }
+                    }
                     double content = atof( input.at(l).at(w).c_str() ) ;
                     if( toDiscard( content ) ) continue ;
                     if( 

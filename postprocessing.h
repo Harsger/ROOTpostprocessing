@@ -44,7 +44,9 @@ bool getStats(
     std::vector<double> toSkip ,
     SpecifiedNumber lowLimit ,
     SpecifiedNumber highLimit , 
-    std::map< std::string , std::map< unsigned int , bool > > useRowsNcolumns
+    std::map< std::string , std::map< unsigned int , bool > > useRowsNcolumns ,
+    std::map< unsigned int , std::vector<unsigned int> > pixelList ,
+    bool exclude = true
 ){
     
     bool allGood = true ;
@@ -73,12 +75,61 @@ bool getStats(
     if( useRowsNcolumns.find("COLUMNS") != useRowsNcolumns.end() )
         discardRowsOrColumns[1] = true ;
     
+    bool pixelSpecified = false ;
+    if( !( pixelList.empty() ) ) pixelSpecified = true ;
+    
     for(unsigned int r=0; r<rowsNcolumns[0]; r++){
         for(unsigned int c=0; c<rowsNcolumns[1]; c++){
             if( discardRowsOrColumns[0] && !( useRowsNcolumns["ROWS"][r+1] ) )
                 continue ;
             if( discardRowsOrColumns[1] && !( useRowsNcolumns["COLUMNS"][c+1] ) )
                 continue ;
+            if( pixelSpecified ){
+//                if( exclude ){
+//                    if( 
+//                        pixelList.find(r+1) != pixelList.end() 
+//                        && 
+//                        std::find( 
+//                                    pixelList[r+1].begin() ,
+//                                    pixelList[r+1].end() ,
+//                                    c+1
+//                        )
+//                            != 
+//                                    pixelList[r+1].end()
+//                    )
+//                        continue ;
+//                }
+//                else{
+//                    if( 
+//                        pixelList.find(r+1) == pixelList.end() 
+//                        || 
+//                        std::find( 
+//                                    pixelList[r+1].begin() ,
+//                                    pixelList[r+1].end() ,
+//                                    c+1
+//                        )
+//                            == 
+//                                    pixelList[r+1].end()
+//                    )
+//                        continue ;
+//                }
+                if( 
+                    pixelList.find(r+1) != pixelList.end() 
+                    && 
+                    std::find( 
+                                pixelList[r+1].begin() , 
+                                pixelList[r+1].end() , 
+                                c+1 
+                             )
+                        !=
+                            pixelList[r+1].end()
+                ){
+                    if( exclude ) continue ;
+                }
+                else{
+                    if( !( exclude ) ) continue ;
+                }
+            }
             double content = hist->GetBinContent( c+1 , r+1 ) ;
             if( toDiscard( content ) ) continue ;
             if( 

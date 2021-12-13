@@ -37,6 +37,8 @@ int main(int argc, char *argv[]){
     string axisTitles[2] = { neverUse , neverUse } ;
     map< string , map< unsigned int , bool > > useRowsNcolumns ;
     map< string , vector<int> > givenRowsNcolumns ;
+    map< unsigned int , vector<unsigned int> > pixelList ;
+    bool exclude = true ;
 
     unsigned int count = 0 ;
     
@@ -134,6 +136,44 @@ int main(int argc, char *argv[]){
                             atoi( parameter.at(r).at(c).c_str() )
                         );
                 }
+                
+                continue ;
+                
+            }
+            
+            if(
+                parameter.at(r).at(0).compare("PIXELS") == 0  
+                &&
+                parameter.at(r).size() > 1
+            ){
+                
+                vector< vector<string> > pixelStringList = 
+                    getInput( parameter.at(r).at(1) ) ;
+                unsigned int nPixel = pixelStringList.size() ;
+                if( nPixel == 0 ){
+                    TString pixelFile = filename ;
+                    pixelFile = pixelFile( 0 , pixelFile.Last('/')+1 ) ;
+                    pixelFile += parameter.at(r).at(1) ;
+                    pixelStringList = getInput( pixelFile.Data() ) ;
+                    nPixel = pixelStringList.size() ;
+                    if( nPixel > 0 )
+                        cout << " -> found at parameter-file " << endl ;
+                }
+                for(unsigned int p=0; p<nPixel; p++){
+                    if( pixelStringList.size() < 2 ) continue ;
+                    pixelList[ 
+                            atoi( pixelStringList.at(p).at(1).c_str() ) 
+                        ]
+                        .push_back( 
+                            atoi( pixelStringList.at(p).at(0).c_str() ) 
+                        ) ;
+                }
+                if( 
+                    parameter.at(r).size() > 2 
+                    && 
+                    parameter.at(r).at(2).compare("select") == 0 
+                )
+                    exclude = false ;
                 
                 continue ;
                 
@@ -258,7 +298,9 @@ int main(int argc, char *argv[]){
                                     toSkip ,
                                     SpecifiedNumber() ,
                                     SpecifiedNumber() ,
-                                    useRowsNcolumns
+                                    useRowsNcolumns ,
+                                    pixelList ,
+                                    exclude
                                 );
         
         if(working){
@@ -340,7 +382,10 @@ int main(int argc, char *argv[]){
     TGraphErrors * g_correlation = new TGraphErrors() ; 
     g_correlation->SetName( name ) ;
     g_correlation->SetTitle( name ) ;
-    
+   
+    bool pixelSpecified = false ;
+    if( !( pixelList.empty() ) ) pixelSpecified = true ;
+ 
     for(unsigned int x=1; x<=bins[1]; x++){
         for(unsigned int y=1; y<=bins[0]; y++){
             if( 
@@ -349,8 +394,54 @@ int main(int argc, char *argv[]){
                 ! useRowsNcolumns["COLUMNS"][x] 
             )
                 continue ;
-            double a = hists[0]->GetBinContent( y , x ) ;
-            double b = hists[1]->GetBinContent( y , x ) ;
+            if( pixelSpecified ){
+//                if( exclude ){
+//                    if( 
+//                        pixelList.find(y) != pixelList.end() 
+//                        && 
+//                        std::find(
+//                                    pixelList[y].begin() ,
+//                                    pixelList[y].end() ,
+//                                    x
+//                                )
+//                            !=
+//                                pixelList[y].end()
+//                    )
+//                        continue ;
+//                }
+//                else{
+//                    if( 
+//                        pixelList.find(y) == pixelList.end() 
+//                        || 
+//                        std::find(
+//                                    pixelList[y].begin() ,
+//                                    pixelList[y].end() ,
+//                                    x
+//                                )
+//                            ==
+//                                pixelList[y].end()
+//                    )
+//                        continue ;
+//                }
+                if( 
+                    pixelList.find(y) != pixelList.end() 
+                    && 
+                    std::find( 
+                                pixelList[y].begin() , 
+                                pixelList[y].end() , 
+                                x 
+                             )
+                        !=
+                            pixelList[y].end()
+                ){
+                    if( exclude ) continue ;
+                }
+                else{
+                    if( !( exclude ) ) continue ;
+                }
+            }
+            double a = hists[0]->GetBinContent( x , y ) ;
+            double b = hists[1]->GetBinContent( x , y ) ;
             if( toDiscard( a ) ) continue ;
             if( toDiscard( b ) ) continue ;
             h_correlation->Fill( a , b ) ;

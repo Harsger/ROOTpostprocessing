@@ -92,7 +92,7 @@ correlator
  and which values are plotted in correlation-graph
  
  additional options in parameter-file (see plotter):
- FILE , HIST , AXIS , ROWS , COLUMNS
+ FILE , HIST , AXIS , ROWS , COLUMNS , PIXELS
 
 ///////////////////////////////////////////////////////////////////////////////
  
@@ -260,6 +260,10 @@ COLUMNS <columnsList>
  lists can either be directly given or specified in text-file (separate lines)
  negativ values will be omitted, positive values will be used 
  (only one sign allowed)
+PIXELS <pixelList> (select)
+ <pixelList> should be name of text-file containing list of pixels (x y)
+ if select is specified only for given pixels values are calculated
+ else pixels in list are excluded  
 DELIMITER <string>
  if text-files are specified columns are separated using specified string
 LABELSOPTION <mode>
