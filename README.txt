@@ -14,6 +14,7 @@ comparator
 correlator
 differentiator
 drawer
+grapher
 housekeeper
 logTOplot
 overlayer
@@ -130,6 +131,40 @@ drawer
  values can be omitted using '%' (without quotes) 
  if only one ore more than three optional arguments are given
  plot is not shown but only saved as PDF
+
+///////////////////////////////////////////////////////////////////////////////
+
+grapher
+
+ arguments :
+ parameter-file
+
+ output :
+ root-file containing graphs
+
+ reads text-files and/or root-graphs and combines these
+ according defined function 
+ values are matched with index and X-value (first column)
+
+ arguments in parameter-file per output-graph :
+<resultsGraphName1> <rawData1> (<additionalDataList1>)
+<resultsGraphName2> <rawData2> (<additionalDataList2>)
+ the <additionalDataList> can be also text or root-files
+ for root-files the name of the corresponding graph has to specified next
+ raw- and additional-data is also stored
+ 
+FORMAT <formatSpecifierList>
+ c formatting for scanf used for text-data-input
+ ( see : https://www.cplusplus.com/reference/cstdio/scanf/ )
+FUNCTION <formula>
+ function defined as specified in
+ https://root.cern.ch/doc/master/classTFormula.html
+ value of "x" in formula is taken from <rawData> Y-values
+ parameters are filled from <additionalDataList> (for each point separat)
+ default is "x" (without quotes, understood as f(x)=x , no other parameter)
+ADJUSTX <scaleX> <offsetX>
+ X-values of data are adjusted (after comparison)
+ <scaleX> is applied before <offsetX> ( X_new = <scaleX> * X_old + <offsetX> )
 
 ///////////////////////////////////////////////////////////////////////////////
 
