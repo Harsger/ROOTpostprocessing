@@ -420,7 +420,7 @@ int main(int argc, char *argv[]){
         fwhm = getFWHM(
                         hists[h] ,
                         fitfunction->Eval( fitfunction->GetParameter(1) ) ,
-                        peakNrange.at(h).at(0) ,
+                        fitfunction->GetParameter(1) ,
                         fitfunction->Eval( fitfunction->GetParameter(1) ) 
                             - fitfunction->GetParameter( 0 ) ,
                         halfLow ,

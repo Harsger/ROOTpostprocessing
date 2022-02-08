@@ -191,7 +191,7 @@ double getFWHM(
     double halfPositions[2] = { 1. , -1. } ;
     int halfBins[2] = { -1 , -1 } ;
     double heights[2] = { 0. , 0. } ;
-    
+
     for(int s=-1; s<2; s+=2){
     
         unsigned int b = maxPosBin + s ;
@@ -206,7 +206,7 @@ double getFWHM(
             heights[1] = distribution->GetBinContent( b + s ) - offset ;
             
             if(
-                heights[0] > halfHeight
+                heights[0] >= halfHeight
                 &&
                 heights[1] < halfHeight
             ){
