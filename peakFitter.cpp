@@ -12,8 +12,8 @@ int main(int argc, char *argv[]){
     bool printFits = false ;
     if( argc > 2 ){ 
         string option = argv[2] ;
-        if( option.compare("skip") == 0 ) drawFits = false ; 
-        else printFits = true ;
+        if( option.compare("print") == 0 ) printFits = true ;
+        else drawFits = false ;
     }
     
     double fwhmFactor = 2. * sqrt( 2. * log( 2. ) ) ;

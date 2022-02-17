@@ -247,12 +247,17 @@ peakFitter
  arguments :
  standard-parameter-file
  
+ optional arguments :
+ <skipDrawing>/print
+ 
  output :
  root-file containing graphs
  
  takes 1D-histograms and fit specified peaks
  width (sigma and FWHM) and peak-fit-center difference to nominal 
  are stored in ROOT::TGraphs
+ fits are shown in canvas (double-click required for progress)
+ fit-specifications are written to std-out
  
  required arguments in parameter-file per histogram :
 <file1> <hist1> <peakPosition> <lowFitLimit> <highFitLimit>
@@ -263,6 +268,10 @@ peakFitter
  the additional function part should be specified as ROOT::TFormula
  addable to the standard gaussian
  <startParameter> should be a list with size of additional parameters
+ 
+ if additional arguments besides the parameter-file are provided
+ the fits are not drawn unless the first argument reads "print"
+ then single fits are stored as PDF
 
 ///////////////////////////////////////////////////////////////////////////////
  
