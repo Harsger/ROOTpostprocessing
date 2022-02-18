@@ -100,20 +100,17 @@ correlator
 differentiator
 
  arguments :
- <file1> <graph1> <file2> <graph2>
- or 
- standard-parameter-file 
+ <file> <graph/hist>
  
  output :
- root-file containing graph
+ root-file containing graphs
  
- takes two graphs (ROOT::TGraph) and 
- calculates differences (absolute and relative) for each equal x-position
- only root-file output, no plotting
+ takes either graph (ROOT::TGraph) or histogram (ROOT::TH1) 
+ calculates differential (difference of adjacent Y-values) 
+ and integral (accumulation of Y-values) in ascending X-value direction
  
- parameter-file-format (HIST has to be GRAPH) :
-<file1> <graph1>
-<file2> <graph2>
+ for both types output will be graphs
+ a version weighted by the distance between the values will be also calculated
 
 ///////////////////////////////////////////////////////////////////////////////
 

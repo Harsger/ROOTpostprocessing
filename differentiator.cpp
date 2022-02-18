@@ -4,196 +4,219 @@ using namespace std;
 
 int main(int argc, char *argv[]){
 
-    if( argc < 2 ){ 
-        cout << " usage : " << argv[0] << endl ;
-        cout << " append either single text-file-name " << endl ;
-        cout << " or : <file1> <graph1> <file2> <graph2> " << endl ;
-        return 1 ;
-    }
-    
-    plotOptions() ;
+    if( argc < 3 ) return 1 ;
 
     TString filename = argv[1] ;
-    TString filesNgraphs[2][2] ;
-    TString outname ;
-    TString name ;
-
-    string neverUse = "neverUseThisPhrase" ;
-    string preNsuffix[2][2] = { 
-                                { neverUse , neverUse } ,
-                                { neverUse , neverUse }
-                            };
-
-    unsigned int count = 0 ;
+    TString dataname = argv[2] ;
     
-    if( argc > 4 && filename.EndsWith(".root") ){
-        filesNgraphs[0][0] = argv[1] ;
-        filesNgraphs[0][1] = argv[2] ;
-        filesNgraphs[1][0] = argv[3] ;
-        filesNgraphs[1][1] = argv[4] ;
-        outname = filesNgraphs[0][0] ;
-        outname += "_" ;
-        outname += filesNgraphs[0][1] ;
-        outname += "_VS_" ;
-        outname += filesNgraphs[1][0] ;
-        outname += "_" ;
-        outname = filesNgraphs[1][1] ;
-        outname.ReplaceAll( ".root" , "" ) ;
-        outname += ".root" ;
+//     bool graphData = false ;
+//     bool histData  = false ;
+    
+    TFile * input = new TFile(filename,"READ") ;
+    if( input->IsZombie() ){
+        cout << " ERROR : opening " << input->GetName() << endl ;
+        return 2 ;
     }
-    else{
+    
+    if( input->Get(dataname) == NULL ){
+        cout << " ERROR : reading " << dataname 
+                          << " in " << input->GetName() << endl ;
+        return 3 ;
+    }
+    
+    TString dataClass =  input->Get(dataname)->ClassName() ;
+    
+    TGraphErrors * differential = new TGraphErrors() ;
+    differential->SetName(  "differential" ) ;
+    differential->SetTitle( "differential" ) ;
+    TGraphErrors * weightedDifferential = new TGraphErrors() ;
+    weightedDifferential->SetName(  "weightedDifferential" ) ;
+    weightedDifferential->SetTitle( "weightedDifferential" ) ;
+    TGraphErrors * integral = new TGraphErrors() ;
+    integral->SetName(  "integral" ) ;
+    integral->SetTitle( "integral" ) ;
+    TGraphErrors * weightedIntegral = new TGraphErrors() ;
+    weightedIntegral->SetName(  "weightedIntegral" ) ;
+    weightedIntegral->SetTitle( "weightedIntegral" ) ;
+    
+    if( dataClass.Contains("Graph") ){
         
-        vector< vector<string> > parameter = getInput( filename.Data() ) ;
+        TGraphErrors * graph = (TGraphErrors*)input->Get(dataname) ;
+        unsigned int nPoints = graph->GetN() ;
+        double value[2] , position[2] ;
+        vector<double> xvalues ;
         
-        for(unsigned int r=0; r<parameter.size(); r++){
-
-            if( parameter.at(r).at(0).rfind("#",0) == 0 ){ 
-//                 cout << " comment line " << r << endl ;
-                continue ;
-            }
-
-            int specifier = -1 ;
-
-            if( parameter.at(r).at(0).compare("FILE") == 0  ) 
-                specifier = 0 ;
-            else if( parameter.at(r).at(0).compare("GRAPH") == 0  ) 
-                specifier = 1 ;
-
-            if( specifier > -1 && parameter.at(r).size() > 2 ){
-                if( specifier < 2 ){
-                    preNsuffix[specifier][0] = parameter.at(r).at(1) ;
-                    preNsuffix[specifier][1] = parameter.at(r).at(2) ;
+        bool ascending = false ;
+        bool descending = false ;
+        
+        bool unusableData = false ;
+        bool toBeSorted = false ;
+        
+        for(unsigned int p=0; p<nPoints; p++){
+            graph->GetPoint( p , position[0] , value[0] ) ;
+            xvalues.push_back( position[0] ) ;
+            if( p > 0 ){
+                if( position[0] == position[1] ){
+                    unusableData = true ;
+                    break ;
                 }
-                continue ;
+                if     ( position[0] > position[1] ) ascending  = true ;
+                else if( position[0] < position[1] ) descending = true ;
+                if( ascending && descending ) toBeSorted = true ;
             }
-            
-            if( parameter.at(r).size() < 2 ) continue ;
-            
-            if( count > 1 ) continue ;
-            
-            filesNgraphs[count][0] = parameter.at(r).at(0) ;
-            filesNgraphs[count][1] = parameter.at(r).at(1) ;
-            
-            count++ ;
-            
+            position[1] = position[0] ;
         }
         
-        if( count != 2 ){
-            cout << " ERROR : parameter-file not in correct format " << endl ;
-            return 3 ;
-        }
-        
-        outname = filename ;
-        if( outname.Contains(".") ) 
-            outname = outname( 0 , outname.Last('.') ) ;
-        outname += ".root" ;
-        if( outname.Contains("/") ) 
-            outname = outname( outname.Last('/')+1 , outname.Sizeof() ) ;
-        
-    }
-
-    for(unsigned int t=0; t<2; t++){
-        for(unsigned int f=0; f<2; f++){
-            if( 
-                preNsuffix[t][f].compare( neverUse ) == 0 
-                ||
-                preNsuffix[t][f].compare( "%" ) == 0
-            )
-                preNsuffix[t][f] = "" ;
-            if( filesNgraphs[t][f] == "%" )
-                filesNgraphs[t][f] = "" ;
-        }
-    }
-    
-    count = 0 ; 
-    
-    TGraphErrors ** graphs = new TGraphErrors*[2] ;
-    
-    for(unsigned int g=0; g<2; g++){
-
-        name = preNsuffix[0][0] ;
-        name += filesNgraphs[g][0] ;
-        name += preNsuffix[0][1] ;
-        TFile * input = new TFile(name,"READ") ;
-        if( input->IsZombie() ){
-            cout << " ERROR : opening " << input->GetName() << endl ;
+        if( unusableData ){
+            cout << " ERROR : " 
+                 << " data can not be processed due overlapping " << endl ;
             return 4 ;
         }
-
-        name = preNsuffix[1][0] ;
-        name += filesNgraphs[g][1] ;
-        name += preNsuffix[1][1] ;
-        if( input->Get(name) == NULL ){
-            cout << " ERROR : reading " << name 
-                 << " in " << input->GetName() << endl ;
-            return 5 ;
+        
+        vector<unsigned int> order ;
+        if( toBeSorted )
+            order = getSortedIndices( xvalues ) ;
+        
+        unsigned int index ;
+        double accumulated = 0. , weightedAccumulated = 0. ;
+        double difference , distance , center ;
+        
+        for(unsigned int p=0; p<nPoints; p++){
+            
+            if( toBeSorted ) index = order.at( p ) ;
+            else{
+                if( descending ) index = nPoints - p - 1 ;
+                else index = p ;
+            }
+            
+            graph->GetPoint( index , position[0] , value[0] ) ;
+            
+            accumulated += value[0] ;
+            
+            integral->SetPoint( 
+                                integral->GetN() ,  
+                                position[0] ,
+                                accumulated
+                              ) ;
+            
+            if( p > 0 ){
+                
+                center     = 0.5 * ( position[0] + position[1] ) ;
+                difference = value[0]    - value[1] ;
+                distance   = position[0] - position[1] ;
+                
+                differential->SetPoint(
+                                        differential->GetN() ,
+                                        center ,
+                                        difference 
+                                      ) ;
+                
+                if( distance > 0. )
+                    weightedDifferential->SetPoint(
+                                            weightedDifferential->GetN() ,
+                                            center ,
+                                            difference / distance
+                                        ) ;
+                
+            }
+            
+            position[1] = position[0] ;
+            value[1]    = value[0] ;
+            
         }
         
-        graphs[g] = (TGraphErrors*)input->Get( name ) ;
-        if( graphs[g] == NULL ){
-            cout << " ERROR : reading " << name 
-                 << " in " << input->GetName() << endl ;
-            return 6 ;
+    }
+    else if( dataClass.Contains("TH1") ){
+        
+        TH1D * hist = (TH1D*)input->Get(dataname) ;
+        unsigned int nbins = hist->GetNbinsX() ; 
+        double value[2] , lowEdge[2] , width[2] ;
+        double accumulated = 0. , weightedAccumulated = 0. ;
+        double difference , position , distance ;
+        
+        for(unsigned int b=1; b<=nbins; b++){
+            
+            value[0]   = hist->GetBinContent( b ) ;
+            lowEdge[0] = hist->GetBinLowEdge( b ) ;
+            width[0]   = hist->GetBinWidth(   b ) ;
+            
+            accumulated         +=   value[0] ;
+            weightedAccumulated += ( value[0] * width[0] ) ;
+            
+            integral->SetPoint( 
+                                integral->GetN() ,  
+                                lowEdge[0] + width[0] ,
+                                accumulated
+                              ) ;
+                              
+            weightedIntegral->SetPoint( 
+                                weightedIntegral->GetN() ,  
+                                lowEdge[0] + width[0] ,
+                                weightedAccumulated
+                              ) ;
+            
+            if( b > 1 ){
+                
+                difference = value[0] - value[1] ;
+                position = ( 
+                                ( lowEdge[1] + 0.5 * width[1] ) * width[1] 
+                                +  
+                                ( lowEdge[0] + 0.5 * width[0] ) * width[0] 
+                           ) 
+                           / 
+                           ( width[1] + width[0] ) ;
+                           
+                distance = 
+                            lowEdge[0] + 0.5 * width[0] 
+                            - 
+                            ( lowEdge[1] + 0.5 * width[1] ) ;
+                           
+                differential->SetPoint(
+                                        differential->GetN() ,
+                                        position ,
+                                        difference
+                                      ) ;
+                
+                if( distance > 0. )
+                    weightedDifferential->SetPoint(
+                                        weightedDifferential->GetN() ,
+                                        position ,
+                                        difference / distance
+                                    ) ;
+                
+            }
+            
+            value[1]   = value[0] ;
+            lowEdge[1] = lowEdge[0] ;
+            width[1]   = width[0] ;
+            
         }
         
-        input->Close() ;
-        
-        count++ ;
-    
     }
-        
-    if( count != 2 ){
-        cout << " ERROR : not enough graphs found " << endl ;
-        return 7 ;
-    }
+    else{
+        cout << " ERROR : no suitable data found " << endl ;
+        return 6 ;
+    }    
     
-    count = graphs[0]->GetN() ;
-        
-    if( count != graphs[1]->GetN() ){
-        cout << " ERROR : graphs not of same size " << endl ;
-        return 8 ;
-    }
+    TString name = filename ;
+    if( name.Contains(".") ) 
+        name = name( 0 , name.Last('.') ) ;
+    if( name.Contains("/") ) 
+        name = name( name.Last('/')+1 , name.Sizeof() ) ;
+    name += "_" ;
+    name += dataname ;
+    name = replaceBadChars( name );
+    name += "_differentials.root" ;
     
-    TFile * outfile = new TFile( outname , "RECREATE" ) ;
+    TFile * outfile = new TFile( name , "RECREATE" ) ;
     
     outfile->cd() ;
     
-    TGraphErrors * relativeDifferences = new TGraphErrors() ;
-    relativeDifferences->SetName("relativeDifferences") ;
-    relativeDifferences->SetTitle("relativeDifferences") ;
-    TGraphErrors * absoluteDifferences = new TGraphErrors() ;
-    absoluteDifferences->SetName("absoluteDifferences") ;
-    absoluteDifferences->SetTitle("absoluteDifferences") ;
-    
-    double x[2] , y[2] ;
-    unsigned int foundBad = 0 ;
-    
-    for(unsigned int p=0; p<count; p++){
-        
-        for(unsigned int g=0; g<2; g++)
-            graphs[g]->GetPoint( p , x[g] , y[g] ) ;
-        
-        if( ! almostEqual( x[0] , x[1] ) ){
-            foundBad++ ;
-            continue ;
-        }
-        
-        absoluteDifferences->SetPoint(
-            absoluteDifferences->GetN() , x[0] , y[0] - y[1]
-        ) ;
-        
-        if( y[1] == 0. ) continue ;
-        
-        relativeDifferences->SetPoint(
-            relativeDifferences->GetN() , x[0] , ( y[0] - y[1] ) / y[1]
-        ) ;
-        
-    }
-    
-    cout << " # points : " << count << " -> # bad " << foundBad  << endl ;
-    
-    relativeDifferences->Write() ;
-    absoluteDifferences->Write() ;
+    differential->Write() ;
+    weightedDifferential->Write() ;
+    integral->Write() ;
+    if( dataClass.Contains("TH1") ) weightedIntegral->Write() ;
+    else weightedIntegral->Delete() ;
     
     outfile->Close() ;
 

@@ -385,3 +385,65 @@ void getLimits( double min , double max , double &low , double &high ){
     }
     
 }
+
+std::vector<unsigned int> getSortedIndices(std::vector<double> order){
+   
+    std::vector<unsigned int> sorted;
+    unsigned int nPoints = order.size();
+    double lower = 0;
+    double lowest = 0;
+    unsigned int index = 0;
+    
+    if( nPoints < 1 ) return sorted;
+
+    for(unsigned int l=0; l<nPoints; l++){
+
+        if( sorted.size() < 1 ) lowest = order.at(0);
+        else{ 
+            lower = order.at( sorted.at(l-1) );
+            unsigned int newone = 0;
+            bool found = false;
+            for(unsigned int p=0; p<nPoints; p++){
+                bool inlist = false;
+                for(unsigned int s=0; s<sorted.size(); s++){
+                    if( sorted.at(s) == p ){ 
+                        inlist = true;
+                        break;
+                    }
+                }
+                if( !inlist){ 
+                    newone = p;
+                    found = true;
+                    break;
+                }
+            }
+            if( !found ){
+                std::cout << " WARNING : no index found " << std::endl;
+                break;
+            }
+            else{ 
+                lowest = order.at(newone);
+                index = newone;
+            }
+        }
+
+        for(unsigned int p=0; p<nPoints; p++){
+
+            if( sorted.size() < 1 && order.at(p) < lowest ){
+                lowest = order.at(p);
+                index = p;
+            }
+            if( order.at(p) < lowest && order.at(p) > lower  ){ 
+                index = p;
+                lowest = order.at(p);
+            }
+
+        }
+
+        sorted.push_back( index );
+
+    }
+    
+    return sorted;
+  
+}
