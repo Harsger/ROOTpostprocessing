@@ -112,6 +112,36 @@ double getNumberWithUnit( std::string s , std::string &unit ){
     
 }
 
+double getNumberWithRange( std::string s , double &low , double &high ){
+    
+    if( s.length() < 1 ){ 
+        low = nan("") ;
+        high = nan("") ;
+        return nan("") ;
+    }
+    
+    double value ;
+    
+    unsigned int nChars = s.length() ;
+    
+    if( s[ nChars - 1 ] == ']' ){
+        std::size_t bra = s.find("[") ;
+        std::size_t comma = s.find(",") ;
+        value = atof( s.substr( 0       , bra            ).c_str() ) ;
+        low   = atof( s.substr( bra+1   , comma-bra-1    ).c_str() ) ;
+        high  = atof( s.substr( comma+1 , nChars-comma-1 ).c_str() ) ;
+        if( low > high) std::swap( low , high ) ;
+    }
+    else{
+        value = atof( s.c_str() ) ;
+        low = nan("") ;
+        high = nan("") ;
+    }
+    
+    return value ;
+    
+}
+
 class SpecifiedNumber{
     
     public :

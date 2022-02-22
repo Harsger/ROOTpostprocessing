@@ -14,6 +14,7 @@ comparator
 correlator
 differentiator
 drawer
+functionFitter
 grapher
 housekeeper
 logTOplot
@@ -128,6 +129,34 @@ drawer
  values can be omitted using '%' (without quotes) 
  if only one ore more than three optional arguments are given
  plot is not shown but only saved as PDF
+
+///////////////////////////////////////////////////////////////////////////////
+ 
+functionFitter
+
+ arguments :
+ <file> <graph/hist> <lowLimit> <highLimit> <function> 
+ 
+ optional arguments :
+ <startParameterList> print/skip
+ 
+ output :
+ fit-parameter (std-out) , root-file containing fit-function , PDF
+ 
+ takes either graph (ROOT::TGraph) or histogram (ROOT::TH1) 
+ fits function within specified limits to data
+ 
+ function-formula has to be defined as specified in
+ https://root.cern.ch/doc/master/classTFormula.html
+ 
+ start-parameter should be specified in order according to formula,
+ but can be skipped using '%' (without quotes)
+ 
+ start-parameter can be given with range-limits, via :
+ value[low,high] (all without withspaces) 
+ 
+ for PDF 'print' should be the last argument
+ with 'skip' no canvas is drawn
 
 ///////////////////////////////////////////////////////////////////////////////
 
