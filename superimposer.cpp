@@ -26,6 +26,7 @@ int main(int argc, char *argv[]){
     bool skipErrors = false ;
     SpecifiedNumber textDataFormat ;
     double markerSize = 1. ;
+    SpecifiedNumber legendText ;
 
     for(unsigned int r=0; r<parameter.size(); r++){
 
@@ -124,6 +125,21 @@ int main(int argc, char *argv[]){
             parameter.at(r).size() > 1
         ){
             markerSize = atof( parameter.at(r).at(1).c_str() ) ;
+            continue ;
+        }
+        
+        if( 
+            parameter.at(r).at(0).compare("LEGEND") == 0 
+            &&
+            parameter.at(r).size() > 1
+        ){
+            legendText = SpecifiedNumber( 0. ) ;
+            legendText.specifier = parameter.at(r).at(1) ;
+            for(unsigned int w=2; w<parameter.at(r).size(); w++){
+                legendText.specifier += " " ;
+                legendText.specifier += parameter.at(r).at(w) ;
+                
+            }
             continue ;
         }
 
@@ -314,6 +330,10 @@ int main(int argc, char *argv[]){
 //     extrema->SetTitle( name ) ;
     extrema->SetName( "extrema" ) ;
     extrema->SetTitle( "extrema" ) ;
+    if( legendText.setting ){
+        extrema->SetName( legendText.specifier.c_str() ) ;
+        extrema->SetTitle( legendText.specifier.c_str() ) ;
+    }
     extrema->SetPoint( 
                         extrema->GetN() , 
                         plotRanges[0][0].number , 
@@ -426,16 +446,20 @@ int main(int argc, char *argv[]){
 //     legend->RecursiveRemove( extrema );
 //     legend->Draw() ;
 
-    TList * legendEntries = legend->GetListOfPrimitives();
-    TIter next(legendEntries);
-    TObject * obj;
-    TLegendEntry * le;
+    if( ! legendText.setting ){
     
-    while( ( obj = next() ) ){
-        le = (TLegendEntry*)obj ;
-        name = le->GetLabel() ;
-        if( name.CompareTo("extrema") == 0 )
-            legendEntries->RemoveAt( legendEntries->IndexOf( obj ) ) ;
+        TList * legendEntries = legend->GetListOfPrimitives();
+        TIter next(legendEntries);
+        TObject * obj;
+        TLegendEntry * le;
+        
+        while( ( obj = next() ) ){
+            le = (TLegendEntry*)obj ;
+            name = le->GetLabel() ;
+            if( name.CompareTo("extrema") == 0 )
+                legendEntries->RemoveAt( legendEntries->IndexOf( obj ) ) ;
+        }
+        
     }
         
     showing() ;

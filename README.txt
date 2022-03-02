@@ -399,6 +399,8 @@ FORMAT <formatSpecifierList>
  ( see : https://www.cplusplus.com/reference/cstdio/scanf/ )
 MARKERSIZE <size>
  global size of drawn point-marker (default=1)
+LEGEND <text>
+ adds <text> on top of legend
 
 ///////////////////////////////////////////////////////////////////////////////
 
