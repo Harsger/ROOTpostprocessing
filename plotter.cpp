@@ -9,6 +9,9 @@ int main(int argc, char *argv[]){
     TString filename = argv[1] ;
 
     vector< vector<string> > parameter = getInput( filename.Data() );
+    
+    bool draw = true ;
+    if( argc > 2 ) draw = false ;
 
     string neverUse = "neverUseThisPhrase" ;
     string preNsuffix[2][2] = { 
@@ -835,13 +838,17 @@ int main(int argc, char *argv[]){
         else g_overflow->Delete() ;
         
     }
+    
+    if( draw ){
+    
+        showing() ;
         
-    showing() ;
-        
-    name = can->GetName() ;
-    name += ".pdf" ;
-    can->Print(name) ;
-    can->Write() ;
+        name = can->GetName() ;
+        name += ".pdf" ;
+        can->Print(name) ;
+        can->Write() ;
+    
+    }
     
     outfile->Write() ;
     outfile->Close() ;
