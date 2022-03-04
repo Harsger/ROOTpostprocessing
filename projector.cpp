@@ -15,6 +15,7 @@ int main(int argc, char *argv[]){
     SpecifiedNumber nBins ;
     
     bool show = true ;
+    bool print = true ;
     
     if( argc == 4 ){
         TString threshString = argv[3] ;
@@ -22,7 +23,10 @@ int main(int argc, char *argv[]){
         if( tester.IsDec() ){
             threshold = SpecifiedNumber( atof( threshString.Data() ) ) ;
         }
-        else show = false ;
+        else{ 
+            show = false ;
+            print = false ;
+        }
     }
     else if( argc > 4 ){
         TString tester = argv[3] ;
@@ -36,7 +40,11 @@ int main(int argc, char *argv[]){
             TString firstChar = tester( 0 , 1 ) ;
             if( !( firstChar.IsDec() ) ) show = false ;
             else nBins = SpecifiedNumber( atof( tester.Data() ) ) ;
-            if( argc > 6 ) show = false ;
+            if( argc > 6 ){ 
+                show = false ;
+                string option = argv[6] ;
+                if( option.compare("skip") == 0 ) print = false ;
+            }
         }
     }
                   
@@ -201,7 +209,7 @@ int main(int argc, char *argv[]){
     if( show ) showing() ;
     
     proName += "_spectrum.pdf" ;
-    can->Print( proName ) ;
+    if( print ) can->Print( proName ) ;
     can->Close() ;
     
     TF1 * lowLine , * highLine ;
@@ -299,7 +307,7 @@ int main(int argc, char *argv[]){
         proName = proName.ReplaceAll( "noisyBins.txt" , replacement ) ;
         proName += ".pdf" ;
         
-        can->Print( proName ) ;
+        if( print ) can->Print( proName ) ;
         
         can->Close() ;
         
