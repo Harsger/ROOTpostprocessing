@@ -371,6 +371,28 @@ projector
 
 ///////////////////////////////////////////////////////////////////////////////
  
+slicer 
+
+ arguments :
+ /path/to/file.root histname 
+ 
+ optional arguments :
+ <X/Y> <slicesList>
+ 
+ output :
+ root-file containing histograms
+ 
+ slices from specified 2D-histogram (ROOT::TH2 e.g. heat-maps) 
+ are stored in new file
+ 
+ if X or Y is specified only slices along this direction are stored
+
+ numbers in <sliceList> (on commandline) must be whitespace-separated
+ these numbers must be bin-numbers 
+ so between 1 and total number of bins (both included)
+
+///////////////////////////////////////////////////////////////////////////////
+ 
 superimposer 
 
  arguments :
