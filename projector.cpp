@@ -78,9 +78,9 @@ int main(int argc, char *argv[]){
     name += histname ;
     name = replaceBadChars( name );
         
-    name += ".root" ;
+    name += "_projections.root" ;
     TFile * outfile = new TFile( name , "RECREATE" );
-    name = name.ReplaceAll( ".root" , "" ) ;
+    name = name.ReplaceAll( "_projections.root" , "" ) ;
     
     double mean , stdv , min , max , median ;
     unsigned int number ;
@@ -127,16 +127,16 @@ int main(int argc, char *argv[]){
     
     TCanvas * can = new TCanvas( proName , proName , 1000 , 500 ) ; 
     
-    TH1I * binSpectrum = new TH1I( 
-                                    "binSpectrum" , "binSpectrum" , 
+    TH1I * spectrum = new TH1I( 
+                                    "spectrum" , "spectrum" , 
                                     number/10. , 
                                     min , max+(max-min)/(double)number
                                 ) ;
                                 
     if( nBins.setting ){
-        binSpectrum->Delete() ;
-        binSpectrum = new TH1I( 
-                                    "binSpectrum" , "binSpectrum" , 
+        spectrum->Delete() ;
+        spectrum = new TH1I( 
+                                    "spectrum" , "spectrum" , 
                                     nBins.number , 
                                     lowThreshold.number , 
                                     highThreshold.number
@@ -146,7 +146,7 @@ int main(int argc, char *argv[]){
     for(unsigned int x=0; x<bins[0]; x++){
         for(unsigned int y=0; y<bins[1]; y++){
             double content = hist->GetBinContent( x+1 , y+1 ) ;
-            binSpectrum->Fill( content ) ;
+            spectrum->Fill( content ) ;
             if( 
                 (
                     lowThreshold.setting
@@ -174,7 +174,7 @@ int main(int argc, char *argv[]){
     
     textout.close() ;
     
-    binSpectrum->Draw("HIST") ;
+    spectrum->Draw("HIST") ;
     
     TLine * lineLow , * lineHigh ;
     if( lowThreshold.setting ){
@@ -182,7 +182,7 @@ int main(int argc, char *argv[]){
                                 lowThreshold.number , 
                                 0. , 
                                 lowThreshold.number , 
-                                binSpectrum->GetMaximum() 
+                                spectrum->GetMaximum() 
                             ) ;
         lineLow->SetLineColor(kBlue) ;
         lineLow->Draw() ;
@@ -192,7 +192,7 @@ int main(int argc, char *argv[]){
                                 highThreshold.number , 
                                 0. , 
                                 highThreshold.number , 
-                                binSpectrum->GetMaximum() 
+                                spectrum->GetMaximum() 
                             ) ;
         lineHigh->SetLineColor(kRed) ;
         lineHigh->Draw() ;
@@ -200,7 +200,7 @@ int main(int argc, char *argv[]){
     
     if( show ) showing() ;
     
-    proName += "_binSpectrum.pdf" ;
+    proName += "_spectrum.pdf" ;
     can->Print( proName ) ;
     can->Close() ;
     
@@ -237,6 +237,7 @@ int main(int argc, char *argv[]){
         TString nameHist = replacement ;
         nameHist = nameHist.ReplaceAll( "noisy" , "" ) ;
         nameHist = nameHist.ReplaceAll( ".txt" , "" ) ;
+        nameHist.ToLower() ;
         projection->SetName( nameHist ) ;
         projection->SetTitle( nameHist ) ;
         
