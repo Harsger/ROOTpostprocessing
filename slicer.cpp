@@ -13,6 +13,7 @@ int main(int argc, char *argv[]){
     TString histname = argv[2] ;
     
     vector<unsigned int> specifiedBins ;
+    vector<double> specifiedValues ;
     bool slice[2] = { true , true } ;
     
     bool show = true ;
@@ -22,10 +23,16 @@ int main(int argc, char *argv[]){
         tester.ToUpper() ;
         if(      tester == "X" ) slice[1] = false ;
         else if( tester == "Y" ) slice[0] = false ;
+        tester = argv[3] ;
         if( argc > 4 ){
             for(unsigned int a=4; a<argc; a++){
-                int b = atoi( argv[a] ) ;
-                if( b > 0 ) specifiedBins.push_back( b ) ;
+                if( tester == "X" || tester == "Y" ){
+                    int b = atoi( argv[a] ) ;
+                    if( b > 0 ) specifiedBins.push_back( b ) ;
+                }
+                else if( tester == "x" || tester == "y" ){
+                    specifiedValues.push_back( atof( argv[a] ) ) ;
+                }
             }
         }
     }
@@ -44,6 +51,23 @@ int main(int argc, char *argv[]){
     TH2D * hist = (TH2D*)input->Get(histname) ;
     hist->SetDirectory(0) ;
     input->Close() ;
+    
+    unsigned int nBins[2] = { 
+        (unsigned int)hist->GetNbinsX() ,
+        (unsigned int)hist->GetNbinsY() 
+    } ;
+    
+    for(unsigned int v=0; v<specifiedValues.size(); v++){
+        if(      slice[0] ) 
+            specifiedBins.push_back( 
+                hist->GetXaxis()->FindBin( specifiedValues.at(v) ) 
+            ) ;
+        else if( slice[1] )
+            specifiedBins.push_back( 
+                hist->GetYaxis()->FindBin( specifiedValues.at(v) ) 
+            ) ;
+        cout << " " << specifiedValues.at(v) << "->" << specifiedBins.at(v) << endl ;
+    }
 
     TString name = filename ;
     if( name.Contains(".") ) 
@@ -62,13 +86,9 @@ int main(int argc, char *argv[]){
     
     TFile * outfile = new TFile( name , "RECREATE" ) ;
     
-    unsigned int nBins[2] = { 
-        (unsigned int)hist->GetNbinsX() ,
-        (unsigned int)hist->GetNbinsY() 
-    } ;
-    
     outfile->cd();
     TH1D * projection ;
+    TString title ;
     for(unsigned int c=0; c<2; c++){
         if( !slice[(c+1)%2] ) continue ;
         if( c == 0 ) name = "Y" ;
@@ -77,12 +97,21 @@ int main(int argc, char *argv[]){
             unsigned int bin ;
             for(unsigned int b=0; b<specifiedBins.size(); b++){
                 bin = specifiedBins.at(b) ;
-                if( bin > nBins[c] ) continue ;
+                if( bin < 1 || bin > nBins[c] ) continue ;
                 name = name( 0 , 1 ) ;
                 name += bin ;
                 if( c == 0 ) projection = hist->ProjectionX( name, bin, bin ) ;
                 else         projection = hist->ProjectionY( name, bin, bin ) ;
-                if( projection != NULL ) projection->Write() ;
+                if( projection != NULL ){
+                    if( specifiedValues.size() == specifiedBins.size() ){
+                        title = name( 0 , 1 ) ;
+                        title.ToLower() ;
+                        title += specifiedValues.at(b) ;
+                    }
+                    else title = name ;
+                    projection->SetTitle( title ) ; 
+                    projection->Write() ;
+                }
             }
         }
         else{
@@ -91,7 +120,10 @@ int main(int argc, char *argv[]){
                 name += b ;
                 if( c == 0 ) projection = hist->ProjectionX( name , b , b ) ;
                 else         projection = hist->ProjectionY( name , b , b ) ;
-                if( projection != NULL ) projection->Write() ;
+                if( projection != NULL ){
+                    projection->SetTitle( name ) ;
+                    projection->Write() ;
+                }
             }
         }
     }

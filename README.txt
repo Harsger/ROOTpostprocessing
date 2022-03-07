@@ -377,19 +377,28 @@ slicer
  /path/to/file.root histname 
  
  optional arguments :
- <X/Y> <slicesList>
+ <X/x/Y/y> <slicesList>
  
  output :
  root-file containing histograms
  
- slices from specified 2D-histogram (ROOT::TH2 e.g. heat-maps) 
+ slices (ROOT::TH1D) from specified 2D-histogram (ROOT::TH2 e.g. heat-maps) 
  are stored in new file
  
- if X or Y is specified only slices along this direction are stored
+ if 'X' , 'x' , 'Y' or 'y' is specified 
+ only slices along the respective direction are stored
 
- numbers in <sliceList> (on commandline) must be whitespace-separated
- these numbers must be bin-numbers 
- so between 1 and total number of bins (both included)
+ numbers in <sliceList> (on commandline) must be whitespace-separated 
+ 
+ if a capital letter is used for the direction
+ these numbers are treated as bin-numbers
+ (so they should between 1 and total number of bins (both included) )
+ 
+ if a lowercase letter is used for the direction
+ these numbers are treated as axis-values 
+ from which bin-numbers are derived
+ 
+ for both cases out of range values are omitted
 
 ///////////////////////////////////////////////////////////////////////////////
  
