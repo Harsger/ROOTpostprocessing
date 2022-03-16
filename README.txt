@@ -76,9 +76,12 @@ RANGE <type> <nbins> <low> <high>
 correlator 
 
  arguments :
- <file1> <hist1> <file2> <hist2> (<low1> <high1> <low2> <high2>)
+ <file1> <hist1> <file2> <hist2> 
  or
  standard-parameter-file
+ 
+ optional arguments :
+ <low1> <high1> <low2> <high2> <divisions1> <divisions2>
  
  output :
  root-file containing histogram , PDF
@@ -87,8 +90,8 @@ correlator
  plots corresponding bin-values agianst each other
  
  parameter-file-format :
-<file1> <hist1> (<low1> <high1>)
-<file2> <hist2> (<low2> <high2>)
+<file1> <hist1> (<low1> <high1> <divisions1>)
+<file2> <hist2> (<low2> <high2> <divisions2>)
 
  low and high values define correlation-histogram range 
  and which values are plotted in correlation-graph
@@ -118,7 +121,10 @@ differentiator
 drawer 
 
  arguments :
- /path/to/file.root histname (<lowLimit> <highLimit> <nContours>)
+ /path/to/file.root histname
+ 
+ optional arguments :
+ <lowLimit> <highLimit> <nContours> <skipDrawing>
  
  output :
  PDF
@@ -127,8 +133,6 @@ drawer
  if <lowLimit> <highLimit> is specified Z-range is adjusted
  <nContours> specify number of color countours 
  values can be omitted using '%' (without quotes) 
- if only one ore more than three optional arguments are given
- plot is not shown but only saved as PDF
 
 ///////////////////////////////////////////////////////////////////////////////
  
@@ -235,6 +239,9 @@ logTOplot
  
  timeOffset and duration should be given as number with unit
  (e.g. 3h or 3m , where "s"=second , "m"=minute , "h"=hour , "d"=day)
+ 
+ additional options per specifier :
+<markerStyle> <markerColor> <lineStyle>
 
 ///////////////////////////////////////////////////////////////////////////////
 
