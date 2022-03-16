@@ -89,15 +89,17 @@ int main(int argc, char *argv[]){
     outfile->cd();
     TH1D * projection ;
     TString title ;
+    unsigned int other ;
     for(unsigned int c=0; c<2; c++){
-        if( !slice[(c+1)%2] ) continue ;
+        other = (c+1)%2 ;
+        if( !slice[other] ) continue ;
         if( c == 0 ) name = "Y" ;
         else         name = "X" ;
         if( specifiedBins.size() > 0 ){
             unsigned int bin ;
             for(unsigned int b=0; b<specifiedBins.size(); b++){
                 bin = specifiedBins.at(b) ;
-                if( bin < 1 || bin > nBins[c] ) continue ;
+                if( bin < 1 || bin > nBins[other] ) continue ;
                 name = name( 0 , 1 ) ;
                 name += bin ;
                 if( c == 0 ) projection = hist->ProjectionX( name, bin, bin ) ;
@@ -115,7 +117,7 @@ int main(int argc, char *argv[]){
             }
         }
         else{
-            for(unsigned int b=1; b<nBins[c]; b++){
+            for(unsigned int b=1; b<nBins[other]; b++){
                 name = name( 0 , 1 ) ;
                 name += b ;
                 if( c == 0 ) projection = hist->ProjectionX( name , b , b ) ;
