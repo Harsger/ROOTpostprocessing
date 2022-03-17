@@ -76,7 +76,7 @@ RANGE <type> <nbins> <low> <high>
 correlator 
 
  arguments :
- <file1> <hist1> <file2> <hist2> 
+ <file1> <hist/graph1> <file2> <hist/graph2> 
  or
  standard-parameter-file
  
@@ -86,8 +86,8 @@ correlator
  output :
  root-file containing histogram , PDF
  
- takes two 2D-histograms (ROOT::TH2) and 
- plots corresponding bin-values agianst each other
+ takes two 2D-histograms (ROOT::TH2) or graphs and 
+ plots corresponding (bin-)values agianst each other
  
  parameter-file-format :
 <file1> <hist1> (<low1> <high1> <divisions1>)
@@ -95,6 +95,10 @@ correlator
 
  low and high values define correlation-histogram range 
  and which values are plotted in correlation-graph
+ 
+ if only one additional argument is given or 
+ if more optional arguments than specified are given
+ plotting is omitted
  
  additional options in parameter-file (see plotter):
  FILE , HIST , AXIS , ROWS , COLUMNS , PIXELS
