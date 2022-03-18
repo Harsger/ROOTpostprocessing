@@ -303,7 +303,7 @@ int main(int argc, char *argv[]){
 
             if( h == 0 ){
                 bins[0] = (unsigned int)hists[h]->GetNbinsY() ;
-                bins[1] = (unsigned int)hists[h]->GetNbinsY() ;
+                bins[1] = (unsigned int)hists[h]->GetNbinsX() ;
             }
             else if( 
                 bins[0] != hists[1]->GetNbinsY()
