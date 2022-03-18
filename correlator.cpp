@@ -24,6 +24,7 @@ int main(int argc, char *argv[]){
     TString name ;
 
     bool draw = true ;
+    bool useErrors = true ;
     string neverUse = "neverUseThisPhrase" ;
     string preNsuffix[2][2] = { 
                                 { neverUse , neverUse } ,
@@ -114,6 +115,12 @@ int main(int argc, char *argv[]){
                 }
                 continue ;
             }
+
+            if( parameter.at(r).at(0).compare("NOERRORS") == 0 ){
+                useErrors = false ;
+                continue ;
+            }
+
         
             if( 
                 (
@@ -504,6 +511,15 @@ int main(int argc, char *argv[]){
                 if( ranges[1][0].setting && b < ranges[1][0].number ) continue ;
                 if( ranges[1][1].setting && b < ranges[1][1].number ) continue ;
                 g_correlation->SetPoint( g_correlation->GetN() , a , b ) ;
+                a = hists[0]->GetBinError( x , y )  ;
+                b = hists[1]->GetBinError( x , y ) ;
+                if( toDiscard( a ) || a == -1. ) a = 0. ;
+                if( toDiscard( b ) || b == -1. ) b = 0. ;
+                if( useErrors ) 
+                    g_correlation->SetPointError( 
+                                                    g_correlation->GetN()-1 , 
+                                                    a , b 
+                                                ) ;
             }
         }
 
@@ -536,7 +552,7 @@ int main(int argc, char *argv[]){
                     return 11 ;
                 }
                 graphs[1]->GetPoint( equalXpoint , x[1] , y[1] ) ;
-                e[1] = graphs[1]->GetErrorY( equalXpoint ) ;
+                if( useErrors ) e[1] = graphs[1]->GetErrorY( equalXpoint ) ;
             } 
             a = y[0] ;
             b = y[1] ;
@@ -552,7 +568,11 @@ int main(int argc, char *argv[]){
             b = e[1] ;
             if( toDiscard( a ) || a == -1. ) a = 0. ;
             if( toDiscard( b ) || b == -1. ) b = 0. ;
-            g_correlation->SetPointError( g_correlation->GetN()-1 , a , b ) ;
+            if( useErrors ) 
+                g_correlation->SetPointError( 
+                                                g_correlation->GetN()-1 , 
+                                                a , b 
+                                            ) ;
         }
 
     }

@@ -101,7 +101,7 @@ correlator
  plotting is omitted
  
  additional options in parameter-file (see plotter):
- FILE , HIST , AXIS , ROWS , COLUMNS , PIXELS
+ FILE , HIST , AXIS , ROWS , COLUMNS , PIXELS , NOERRORS
 
 ///////////////////////////////////////////////////////////////////////////////
  
