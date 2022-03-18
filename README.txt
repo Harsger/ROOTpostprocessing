@@ -276,6 +276,8 @@ POINTS (<markerStyle>)
 STATBOX <mode>
  statboxes for each histogram are drawn with entries according to mode
  (see : https://root.cern.ch/doc/master/classTPaveStats.html)
+LEGEND <text>
+ adds <text> on top of legend
 
 ///////////////////////////////////////////////////////////////////////////////
 

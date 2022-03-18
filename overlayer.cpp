@@ -28,6 +28,7 @@ int main(int argc, char *argv[]){
     
     SpecifiedNumber colorPalette ;
     SpecifiedNumber statBox ;
+    SpecifiedNumber legendText ;
 
     for(unsigned int r=0; r<parameter.size(); r++){
 
@@ -148,6 +149,21 @@ int main(int argc, char *argv[]){
             else{ 
                 statBox = SpecifiedNumber( 1111 ) ;
                 statBox.specifier = "1111" ;
+            }
+            continue ;
+        }
+
+        if( 
+            parameter.at(r).at(0).compare("LEGEND") == 0 
+            &&
+            parameter.at(r).size() > 1
+        ){
+            legendText = SpecifiedNumber( 0. ) ;
+            legendText.specifier = parameter.at(r).at(1) ;
+            for(unsigned int w=2; w<parameter.at(r).size(); w++){
+                legendText.specifier += " " ;
+                legendText.specifier += parameter.at(r).at(w) ;
+                
             }
             continue ;
         }
@@ -442,7 +458,9 @@ int main(int argc, char *argv[]){
     gPad->SetGridx() ;
     gPad->SetGridy() ;
     
-    can->BuildLegend( 0.90 , 0.15 , 0.995 , 0.95 ) ;
+    TLegend * legend = can->BuildLegend( 0.90 , 0.15 , 0.995 , 0.95 ) ;
+    if( legendText.setting ) 
+        legend->SetHeader( legendText.specifier.c_str() , "C" );
     
     showing() ;
 
