@@ -6,6 +6,7 @@
 #include <TStyle.h>
 #include <TPad.h> 
 #include <TCanvas.h>
+#include <TPaveStats.h>
 #include <TLegend.h> 
 #include <TLegendEntry.h>
 #include <TFile.h>

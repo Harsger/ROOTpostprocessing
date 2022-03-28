@@ -28,6 +28,7 @@ int main(int argc, char *argv[]){
     
     SpecifiedNumber colorPalette ;
     SpecifiedNumber statBox ;
+    SpecifiedNumber boxPosition ; 
     SpecifiedNumber legendText ;
 
     for(unsigned int r=0; r<parameter.size(); r++){
@@ -149,6 +150,10 @@ int main(int argc, char *argv[]){
             else{ 
                 statBox = SpecifiedNumber( 1111 ) ;
                 statBox.specifier = "1111" ;
+            }
+            if( parameter.at(r).size() > 2 ){
+                boxPosition = SpecifiedNumber( 0. ) ;
+                boxPosition.specifier = parameter.at(r).at(2).c_str() ;
             }
             continue ;
         }
@@ -461,6 +466,91 @@ int main(int argc, char *argv[]){
     TLegend * legend = can->BuildLegend( 0.90 , 0.15 , 0.995 , 0.95 ) ;
     if( legendText.setting ) 
         legend->SetHeader( legendText.specifier.c_str() , "C" );
+
+    if( boxPosition.setting ){
+        
+        double boxRanges[2][2] = {
+            { 0.075 , 0.885 } , { 0.15 , 0.99 }
+        } ;
+        double margins[2] = { 0.003 , 0.007 } ;
+        double boxDimensions[2] = { 0.12 , 0.16 } ;
+        double boxStarts[2] = { boxRanges[0][0] , boxRanges[1][1] } ;
+        double stepSizes[2] = { 0. , 0. } ;
+
+        bool adjustPositions = true ;
+        
+        if(      boxPosition.specifier.compare("top")   == 0 ){
+            boxDimensions[0] =  (
+                                    ( boxRanges[0][1] - boxRanges[0][0] ) 
+                                    - 
+                                    ( (double)nHists - 1. ) * margins[0] 
+                                )
+                                / (double)nHists ;
+            stepSizes[0] = boxDimensions[0] + margins[0] ;
+        }
+        else if( boxPosition.specifier.compare("bot")   == 0 ){
+            boxDimensions[0] =  (
+                                    ( boxRanges[0][1] - boxRanges[0][0] ) 
+                                    - 
+                                    ( (double)nHists - 1. ) * margins[0] 
+                                )
+                                / (double)nHists ;
+            stepSizes[0] = boxDimensions[0] + margins[0] ;
+            boxStarts[1] = boxRanges[1][0] + boxDimensions[1] ;
+        }
+        else if( boxPosition.specifier.compare("left")  == 0 ){
+            boxRanges[1][1] = 0.95 ;
+            boxStarts[1]    = boxRanges[1][1] ;
+            boxDimensions[1] =  (
+                                    ( boxRanges[1][1] - boxRanges[1][0] ) 
+                                    - 
+                                    ( (double)nHists - 1. ) * margins[1] 
+                                )
+                                / (double)nHists ;
+            stepSizes[1] = boxDimensions[1] + margins[1] ;
+        }
+        else if( boxPosition.specifier.compare("right") == 0 ){
+            boxRanges[1][1] = 0.95 ;
+            boxStarts[1]    = boxRanges[1][1] ;
+            boxDimensions[1] =  (
+                                    ( boxRanges[1][1] - boxRanges[1][0] ) 
+                                    - 
+                                    ( (double)nHists - 1. ) * margins[1] 
+                                )
+                                / (double)nHists ;
+            stepSizes[1] = boxDimensions[1] + margins[1] ; 
+            boxStarts[0] = boxRanges[0][1] - boxDimensions[0] ;
+        }
+        else{
+            cout << " WARNING : stat-box-position must be " << endl
+                 << "           top , bot , left or right " << endl ;
+            adjustPositions = false ;
+        }
+        
+        if( adjustPositions ){
+
+            gPad->Modified() ;
+            gPad->Update() ;           
+ 
+            TPaveStats * box ;
+            
+            for(unsigned int h=0; h<nHists; h++){
+
+                if( !useable[h] ) continue ;
+                box = (TPaveStats*)hists[h]->FindObject("stats") ;
+                
+                box->SetX1NDC( boxStarts[0] + stepSizes[0] * h ) ;
+                box->SetX2NDC( boxStarts[0] + stepSizes[0] * h 
+                                            + boxDimensions[0] ) ; 
+                box->SetY1NDC( boxStarts[1] - stepSizes[1] * h 
+                                            - boxDimensions[1] ) ;
+                box->SetY2NDC( boxStarts[1] - stepSizes[1] * h ) ; 
+
+            }
+            
+        }
+
+    }
     
     showing() ;
 

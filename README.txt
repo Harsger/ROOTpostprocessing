@@ -273,9 +273,11 @@ PALETTE <number> (inverted)
  optional 'inverted' (high/low color)
 POINTS (<markerStyle>)
  points are used instead of bar-histograms
-STATBOX <mode>
+STATBOX <mode> (<position>)
  statboxes for each histogram are drawn with entries according to mode
  (see : https://root.cern.ch/doc/master/classTPaveStats.html)
+ position can be specified as top , bot , left or right
+ statboxes are ordered column- or row-wise accordingly
 LEGEND <text>
  adds <text> on top of legend
 
