@@ -322,7 +322,7 @@ plotter
  standard-parameter-file
  
  optional argument :
- <skipDrawing>
+ <skipShowing>/skip
  
  output :
  root-file containing graphs , PDF
@@ -332,7 +332,8 @@ plotter
  of bin-values (numbers in rows and columns)
  stores results in TGraphs as function of specified values (or names)
  and plots combined graphs
- plotting is omitted if additional commandline-arguments are given
+ showing is omitted if additional commandline-arguments are given
+ no PDF is written if skip is next argument
  
  arguments in parameter-file per histogram :
 <file1> <hist1> <value> <error(optional)> <name(optional)>

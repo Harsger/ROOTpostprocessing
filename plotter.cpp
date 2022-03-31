@@ -10,8 +10,12 @@ int main(int argc, char *argv[]){
 
     vector< vector<string> > parameter = getInput( filename.Data() );
     
-    bool draw = true ;
-    if( argc > 2 ) draw = false ;
+    bool show = true ;
+    bool print = true ;
+    if( argc > 2 ){ 
+        show = false ;
+        if( ( (string)(argv[2]) ).compare("skip") == 0 ) print = false ;
+    }
 
     string neverUse = "neverUseThisPhrase" ;
     string preNsuffix[2][2] = { 
@@ -739,7 +743,7 @@ int main(int argc, char *argv[]){
     g_number->SetName("number") ;
     g_number->Write() ;
     
-    can->BuildLegend() ;
+    if( show ) can->BuildLegend() ;
     
     TGraphErrors * g_underflow ;
     if( 
@@ -839,16 +843,15 @@ int main(int argc, char *argv[]){
         
     }
     
-    if( draw ){
+    if( show ) showing() ;
     
-        showing() ;
-        
+    if( print ){    
         name = can->GetName() ;
         name += ".pdf" ;
         can->Print(name) ;
-        can->Write() ;
-    
     }
+
+    can->Write() ;
     
     outfile->Write() ;
     outfile->Close() ;
