@@ -445,7 +445,8 @@ int main(int argc, char *argv[]){
                 hists[h]->SetXTitle( axisTitles[0].c_str() ) ;
             if( axisTitles[1].compare(neverUse) != 0 )
                 hists[h]->SetYTitle( axisTitles[1].c_str() ) ;
-            
+    
+            hists[h]->GetXaxis()->SetNdivisions(520) ;        
             firstTOdraw = false ;
             
         }
