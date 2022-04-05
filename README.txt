@@ -245,7 +245,14 @@ logTOplot
  (e.g. 3h or 3m , where "s"=second , "m"=minute , "h"=hour , "d"=day)
  
  additional options per specifier :
-<markerStyle> <markerColor> <lineStyle>
+<markerStyle> <markerColor> <lineStyle> (<column>)
+
+ other options in specifierListFile
+TABLE <unixtimeColumn>
+ if TABLE is used data will be treated as text in columns
+ with specifier in columns given (see additional options per specifier)
+DELIMITER <sign>
+ for table-data delimiter is used to separate columns
 
 ///////////////////////////////////////////////////////////////////////////////
 

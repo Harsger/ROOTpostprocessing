@@ -46,25 +46,44 @@ int main(int argc, char *argv[]){
     vector<string> quantities ;
     unsigned int nQuant = 0 ;
 
+    bool tableData = false ;
+    vector<SpecifiedNumber> specifierColumns ;
+    SpecifiedNumber delimiter ;
+    delimiter.specifier = " " ;
+    unsigned int unixColumn = 0 ;
+    unsigned int maxColumns = 1 ;
+    
     if( argc > 4 ){
         specificSpecifier = true ;
         vector< vector<string> > specifierInput = getInput( argv[4] ) ;
         for(unsigned int s=0; s<specifierInput.size(); s++){
             if( specifierInput.at(s).at(0).rfind("#",0) == 0 )
                 continue ;
+            if( specifierInput.at(s).at(0).compare("TABLE") == 0 ){
+                tableData = true ;
+                if( 
+                    specifierInput.at(s).size() > 1
+                    &&
+                    ( (TString)( specifierInput.at(s).at(1) ) ).IsDigit()
+                )
+                    unixColumn = atoi( specifierInput.at(s).at(1).c_str() ) ;
+                continue ;
+            }
+            if( 
+                specifierInput.at(s).at(0).compare("DELIMITER") == 0 
+                &&
+                specifierInput.at(s).size() > 2
+            ){
+                delimiter = 
+                    SpecifiedNumber( specifierInput.at(s).at(1).length() ) ;
+                delimiter.specifier = specifierInput.at(s).at(1) ;
+                continue ;
+            }
             if( specifierInput.at(s).size() < 2 ) continue ;
             specifiersNquantities.push_back( {
                                                 specifierInput.at(s).at(0) ,
                                                 specifierInput.at(s).at(1) 
                                             } ) ;
-            bool toAdd = true ;
-            for(unsigned int q=0; q<quantities.size(); q++ ){
-                if( specifierInput.at(s).at(1) == quantities.at(q) ){
-                    toAdd = false ;
-                    break ;
-                }
-            }
-            if( toAdd ) quantities.push_back( specifierInput.at(s).at(1) ) ;
             specVecDummy.clear() ;
             if( 
                 specifierInput.at(s).size() > 2 
@@ -95,10 +114,19 @@ int main(int argc, char *argv[]){
             else specVecDummy.push_back( SpecifiedNumber() ) ;
             markerNcolorNline.push_back( specVecDummy ) ;
             specVecDummy.clear() ;
+            if( 
+                specifierInput.at(s).size() > 5 
+                &&  
+                specifierInput.at(s).at(5).compare("%") != 0
+            ){
+                specifierColumns.push_back( SpecifiedNumber(
+                    atof( specifierInput.at(s).at(5).c_str() )
+                ) ) ;
+            }
+            else specifierColumns.push_back( SpecifiedNumber() ) ;
         }
         nSpecific = specifiersNquantities.size() ;
-        nQuant = quantities.size() ;
-        if( nSpecific < 1 || nQuant < 1 ){
+        if( nSpecific < 1 ){
             cout << " ERROR :" 
                  << " no specifier found in specifier-file ( argv[4] ) " 
                  << endl;
@@ -168,6 +196,31 @@ int main(int argc, char *argv[]){
         rows = data->GetEntries() ;
     
     }
+    else if( tableData ){
+        textData = getInput( filename.Data() , delimiter.specifier ) ;
+        rows = textData.size() ;
+        for(unsigned int s=0; s<specifierColumns.size(); s++){
+            if( maxColumns < specifierColumns.at(s).number + 1 )
+                maxColumns = specifierColumns.at(s).number + 1 ;
+            size_t bra = specifiersNquantities.at(s).at(1).find('[') ;
+            size_t ket = specifiersNquantities.at(s).at(1).find(']') ;
+            if( bra != std::string::npos && ket != std::string::npos ){
+                string dummyQuantity = "" ;
+                for(unsigned int c=0; c<bra; c++)
+                    dummyQuantity += specifiersNquantities.at(s).at(1)[c] ;
+                string dummyUnit = "" ;
+                for(unsigned int c=bra+1; c<ket; c++)
+                    dummyUnit += specifiersNquantities.at(s).at(1)[c] ;
+                specifiersNquantities.at(s).at(1) = dummyQuantity ;
+                quantityUnits[ dummyQuantity ] = dummyUnit ;
+                
+            }
+            else
+                quantityUnits[ specifiersNquantities.at(s).at(1) ] = "" ;
+        }
+        if( maxColumns < unixColumn + 1 )
+            maxColumns = unixColumn + 1 ;
+    }
     else{
         textData = getInput( filename.Data() ) ;
         rows = textData.size() ;
@@ -177,6 +230,18 @@ int main(int argc, char *argv[]){
         cout << " WARNING : no data found " << endl ;
         return 5 ;
     }
+    
+    for(unsigned int s=0; s<nSpecific; s++){
+        bool toAdd = true ;
+        for(unsigned int q=0; q<quantities.size(); q++ ){
+            if( specifiersNquantities.at(s).at(1) == quantities.at(q) ){
+                toAdd = false ;
+                break ;
+            }
+        }
+        if( toAdd ) quantities.push_back( specifiersNquantities.at(s).at(1) ) ;
+    }
+    nQuant = quantities.size() ;
         
     cout << " => # rows : " << rows << endl ;
     cout << " first iteration  : " ;
@@ -189,6 +254,12 @@ int main(int argc, char *argv[]){
         
         if(rootData){
             data->GetEntry( r ) ;
+        }
+        else if(tableData){
+            if( textData.at(r).size() < unixColumn + 1 ) continue;
+            unixtime = (unsigned int)( atof( 
+                            textData.at(r).at(unixColumn).c_str() 
+                        ) );
         }
         else{
             if( textData.at(r).size() < 5 ) continue;
@@ -244,10 +315,14 @@ int main(int argc, char *argv[]){
     dateString.specifier = dateArray ;
                     
     cout << " second iteration : " ;
+    unsigned int currentSpecifier = 0 ;
+    unsigned int currentColumn ;
         
     for(unsigned int r=0; r<rows; r++){
         
-        if( r % moduloFactor == 0 ) cout << "*" << flush ;
+        if( currentSpecifier >= nSpecific ) currentSpecifier = 0 ;
+        if( currentSpecifier == 0 && r % moduloFactor == 0 ) 
+            cout << "*" << flush ;
         
         if(rootData){
             
@@ -256,6 +331,24 @@ int main(int argc, char *argv[]){
             quantity  = *p_quantity ;
             specifier = *p_specifier ;
             unit      = *p_unit ;
+            
+        }
+        if(tableData){
+            
+            if( textData.at(r).size() < maxColumns ) continue;
+            
+            currentColumn = specifierColumns.at( currentSpecifier ).number ;
+            
+            unixtime = (unsigned int)( atof( 
+                            textData.at(r).at(unixColumn).c_str() 
+                        ) );
+            quantity  = specifiersNquantities.at(currentSpecifier).at(1) ;
+            specifier = specifiersNquantities.at(currentSpecifier).at(0) ;
+            value = atof( textData.at(r).at(currentColumn).c_str() ) ;
+            unit = quantityUnits[ quantity.Data() ] ;
+            
+            currentSpecifier++ ;
+            if( currentSpecifier < nSpecific ) r-- ;
             
         }
         else{
