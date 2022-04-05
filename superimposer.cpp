@@ -388,12 +388,30 @@ int main(int argc, char *argv[]){
                                                 plotRanges[0][0].number , 
                                                 plotRanges[0][1].number 
                                             ) ;
+    else{
+        double low , high ;
+        getLimits( 
+                    plotRanges[0][0].number , 
+                    plotRanges[0][1].number , 
+                    low , high 
+                ) ;
+        extrema->GetXaxis()->SetRangeUser( low , high ) ;
+    }
     if( plotRanges[1][0].setting || plotRanges[1][1].setting )
         extrema->GetYaxis()->SetRangeUser( 
                                                 plotRanges[1][0].number , 
                                                 plotRanges[1][1].number 
                                             ) ;
-    
+    else{
+        double low , high ;
+        getLimits(
+                    plotRanges[1][0].number ,
+                    plotRanges[1][1].number ,
+                    low , high
+                ) ;
+        extrema->GetYaxis()->SetRangeUser( low , high ) ;
+    }    
+
     for(unsigned int g=0; g<nGraphs; g++){
         
         if( !useable[g] ) continue ;
