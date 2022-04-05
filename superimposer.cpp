@@ -410,7 +410,8 @@ int main(int argc, char *argv[]){
                     low , high
                 ) ;
         extrema->GetYaxis()->SetRangeUser( low , high ) ;
-    }    
+    }   
+    extrema->GetXaxis()->SetNdivisions(505) ; 
 
     for(unsigned int g=0; g<nGraphs; g++){
         
