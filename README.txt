@@ -253,6 +253,8 @@ TABLE <unixtimeColumn>
  with specifier in columns given (see additional options per specifier)
 DELIMITER <sign>
  for table-data delimiter is used to separate columns
+XNOTINTEGER <xAxisTitle>
+ for the x-axis double is used instead of unsigned int
 
 ///////////////////////////////////////////////////////////////////////////////
 

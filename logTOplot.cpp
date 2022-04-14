@@ -53,6 +53,9 @@ int main(int argc, char *argv[]){
     unsigned int unixColumn = 0 ;
     unsigned int maxColumns = 1 ;
     
+    bool abscissaInteger = true ;
+    TString xAxisTitle = "" ;
+    
     if( argc > 4 ){
         specificSpecifier = true ;
         vector< vector<string> > specifierInput = getInput( argv[4] ) ;
@@ -77,6 +80,13 @@ int main(int argc, char *argv[]){
                 delimiter = 
                     SpecifiedNumber( specifierInput.at(s).at(1).length() ) ;
                 delimiter.specifier = specifierInput.at(s).at(1) ;
+                continue ;
+            }
+            if( specifierInput.at(s).at(0).compare("XNOTINTEGER") == 0 ){
+                abscissaInteger = false ;
+                if( specifierInput.at(s).size() > 1 )
+                    for(unsigned int c=1; c<specifierInput.at(s).size() ; c++)
+                        xAxisTitle += " "+specifierInput.at(s).at(c) ;
                 continue ;
             }
             if( specifierInput.at(s).size() < 2 ) continue ;
@@ -166,6 +176,8 @@ int main(int argc, char *argv[]){
     double       value ;
     TString      unit ;
     
+    double       xvalue ;
+    
     TString  * p_quantity  = 0 ;
     TString  * p_specifier = 0 ;
     TString  * p_unit      = 0 ;
@@ -187,7 +199,10 @@ int main(int argc, char *argv[]){
             return 4 ;
         }
         
-        data->SetBranchAddress( "unixtime"  , &unixtime    , &b_unixtime  );
+        if( abscissaInteger )
+            data->SetBranchAddress( "unixtime"  , &unixtime , &b_unixtime );
+        else
+            data->SetBranchAddress( "unixtime"  , &xvalue   , &b_unixtime  );
         data->SetBranchAddress( "quantity"  , &p_quantity  , &b_quantity  );
         data->SetBranchAddress( "specifier" , &p_specifier , &b_specifier );
         data->SetBranchAddress( "value"     , &value       , &b_value     );
@@ -247,6 +262,7 @@ int main(int argc, char *argv[]){
     cout << " first iteration  : " ;
     
     unsigned int moduloFactor = rows / 100 ;
+    if( moduloFactor < 1 ) moduloFactor = 1 ;
         
     for(unsigned int r=0; r<rows; r++){
         
@@ -257,24 +273,49 @@ int main(int argc, char *argv[]){
         }
         else if(tableData){
             if( textData.at(r).size() < unixColumn + 1 ) continue;
-            unixtime = (unsigned int)( atof( 
-                            textData.at(r).at(unixColumn).c_str() 
-                        ) );
+            if( abscissaInteger )
+                unixtime = (unsigned int)( atof( 
+                                textData.at(r).at(unixColumn).c_str() 
+                            ) );
+            else
+                xvalue = atof( textData.at(r).at(unixColumn).c_str() );
         }
         else{
             if( textData.at(r).size() < 5 ) continue;
-            unixtime = (unsigned int)( atof( textData.at(r).at(0).c_str() ) );
+            if( abscissaInteger )
+                unixtime = (unsigned int)( atof( 
+                                textData.at(r).at(0).c_str() 
+                            ) );
+            else
+                xvalue = atof( textData.at(r).at(0).c_str() );
         }
         
-        if( !( firstTime.setting ) ){
-            firstTime = SpecifiedNumber( unixtime ) ;
-            lastTime = SpecifiedNumber( unixtime ) ;
-        }
+        if( abscissaInteger ){
         
-        if( firstTime.number > unixtime )
-            firstTime.number = unixtime ;
-        if( lastTime.number < unixtime )
-            lastTime.number = unixtime ;
+            if( !( firstTime.setting ) ){
+                firstTime = SpecifiedNumber( unixtime ) ;
+                lastTime = SpecifiedNumber( unixtime ) ;
+            }
+            
+            if( firstTime.number > unixtime )
+                firstTime.number = unixtime ;
+            if( lastTime.number < unixtime )
+                lastTime.number = unixtime ;
+            
+        }
+        else{
+        
+            if( !( firstTime.setting ) ){
+                firstTime = SpecifiedNumber( xvalue ) ;
+                lastTime = SpecifiedNumber( xvalue ) ;
+            }
+            
+            if( firstTime.number > xvalue )
+                firstTime.number = xvalue ;
+            if( lastTime.number < xvalue )
+                lastTime.number = xvalue ;
+            
+        }
         
     }
     
@@ -339,9 +380,13 @@ int main(int argc, char *argv[]){
             
             currentColumn = specifierColumns.at( currentSpecifier ).number ;
             
-            unixtime = (unsigned int)( atof( 
-                            textData.at(r).at(unixColumn).c_str() 
-                        ) );
+            if( abscissaInteger )
+                unixtime = (unsigned int)( atof( 
+                                textData.at(r).at(unixColumn).c_str() 
+                            ) );
+            else
+                xvalue = atof( textData.at(r).at(unixColumn).c_str() );
+            
             quantity  = specifiersNquantities.at(currentSpecifier).at(1) ;
             specifier = specifiersNquantities.at(currentSpecifier).at(0) ;
             value = atof( textData.at(r).at(currentColumn).c_str() ) ;
@@ -355,7 +400,13 @@ int main(int argc, char *argv[]){
         
             if( textData.at(r).size() < 5 ) continue;
             
-            unixtime = (unsigned int)( atof( textData.at(r).at(0).c_str() ) );
+            if( abscissaInteger )
+                unixtime = (unsigned int)( atof( 
+                                textData.at(r).at(0).c_str() 
+                            ) );
+            else
+                xvalue = atof( textData.at(r).at(0).c_str() );
+            
             quantity = textData.at(r).at(1) ;
             specifier = textData.at(r).at(2) ;
             value = atof( textData.at(r).at(3).c_str() ) ;
@@ -378,10 +429,16 @@ int main(int argc, char *argv[]){
             plots[ quantity ][ specifier ]->SetTitle( worker ) ;
         }
         
-        plots[ quantity ][ specifier ]->SetPoint( 
-            plots[ quantity ][ specifier ]->GetN() ,
-            unixtime , value
-        ) ;
+        if( abscissaInteger )
+            plots[ quantity ][ specifier ]->SetPoint( 
+                plots[ quantity ][ specifier ]->GetN() ,
+                unixtime , value
+            ) ;
+        else
+            plots[ quantity ][ specifier ]->SetPoint( 
+                plots[ quantity ][ specifier ]->GetN() ,
+                xvalue , value
+            ) ;
         
         if( specificSpecifier ){
             bool toSkip = true ;
@@ -438,7 +495,9 @@ int main(int argc, char *argv[]){
                  << endl ;
         }
         
-        if( unixtime < startTime || unixtime > endTime ) continue ;
+        if( abscissaInteger ){ 
+              if( unixtime < startTime || unixtime > endTime ) continue ; }
+        else{ if( xvalue   < startTime || xvalue   > endTime ) continue ; }
         
         if( extrema[0].find( quantity ) == extrema[0].end() ){
             extrema[0][quantity] = SpecifiedNumber( value ) ;
@@ -550,14 +609,20 @@ int main(int argc, char *argv[]){
         g_extrem[q]->SetMarkerStyle(1) ;
         g_extrem[q]->SetMarkerColor(0) ;
         g_extrem[q]->SetLineColor(0) ;
-        g_extrem[q]->GetXaxis()->SetTimeDisplay(1) ;
-        g_extrem[q]->GetXaxis()->SetTimeFormat("%H:%M%F1970-01-01 00:00:00") ;
-        if( ( endTime - startTime ) > 2. * secondsPER["d"] )
+        if( abscissaInteger ){
+            g_extrem[q]->GetXaxis()->SetTimeDisplay(1) ;
             g_extrem[q]->GetXaxis()->SetTimeFormat(
-                "%d.%m.%F1970-01-01 00:00:00"
+                "%H:%M%F1970-01-01 00:00:00"
             ) ;
+            if( ( endTime - startTime ) > 2. * secondsPER["d"] )
+                g_extrem[q]->GetXaxis()->SetTimeFormat(
+                    "%d.%m.%F1970-01-01 00:00:00"
+                ) ;
+            g_extrem[q]->GetXaxis()->SetTitle( dateString.specifier.c_str() ) ;
+        }
+        else
+            g_extrem[q]->GetXaxis()->SetTitle( xAxisTitle ) ;
         g_extrem[q]->GetXaxis()->SetNdivisions(525) ;
-        g_extrem[q]->GetXaxis()->SetTitle( dateString.specifier.c_str() ) ;
         g_extrem[q]->GetXaxis()->SetRangeUser( startTime , endTime ) ;
         g_extrem[q]->GetYaxis()->CenterTitle() ;
         TGaxis::SetExponentOffset( -0.05 , -0.05 , "y" ) ;
