@@ -622,43 +622,39 @@ int main(int argc, char *argv[]){
         extrema[0][1] - extrema[0][0] ,
         extrema[1][1] - extrema[1][0]
     } ;
-    g_extrema->SetPoint( 
-                            g_extrema->GetN() , 
-                            extrema[0][0] - 0.1 * ranges[0] , 
-                            extrema[1][0] - 0.1 * ranges[1] 
-                       ) ;
-    g_extrema->SetPoint( 
-                            g_extrema->GetN() , 
-                            extrema[0][0] - 0.1 * ranges[0] , 
-                            extrema[1][1] + 0.1 * ranges[1] 
-                       ) ;
-    g_extrema->SetPoint( 
-                            g_extrema->GetN() , 
-                            extrema[0][1] + 0.1 * ranges[0] , 
-                            extrema[1][0] - 0.1 * ranges[1] 
-                       ) ;
-    g_extrema->SetPoint( 
-                            g_extrema->GetN() , 
-                            extrema[0][1] + 0.1 * ranges[0] , 
-                            extrema[1][1] + 0.1 * ranges[1] 
-                       ) ;
-    if( 
-        plotRange[0][0].setting 
-        && 
-        plotRange[0][1].setting 
-        &&
-        plotRange[1][0].setting 
-        && 
-        plotRange[1][1].setting 
-    ){
-        for(unsigned int e=0; e<2; e++)
-            g_extrema->SetPoint( 
-                            g_extrema->GetN() , 
-                            plotRange[0][e].number , 
-                            plotRange[1][e].number 
-                       ) ;
+    
+    for(unsigned int x=0; x<2; x++){
+        for(unsigned int y=0; y<2; y++){
             
+            double signs[2] = {
+                                -1. + 2. * (double)x ,
+                                -1. + 2. * (double)y
+                            } ;
+    
+            g_extrema->SetPoint( 
+                                    g_extrema->GetN() , 
+                                    extrema[0][x] + signs[0] * 0.1 * ranges[0] , 
+                                    extrema[1][y] + signs[1] * 0.1 * ranges[1] 
+                                ) ;
+
+        }              
     }
+    
+    for(unsigned int e=0; e<2; e++){
+        if( plotRange[0][e].setting )
+            g_extrema->SetPoint( 
+                                    g_extrema->GetN() , 
+                                    plotRange[0][e].number , 
+                                    extrema[1][e] 
+                                ) ;
+        if( plotRange[1][e].setting )
+            g_extrema->SetPoint( 
+                                    g_extrema->GetN() , 
+                                    extrema[0][e] ,
+                                    plotRange[1][e].number 
+                                ) ;
+    }
+    
     g_extrema->SetMarkerStyle( 1 ) ;
     g_extrema->SetMarkerColor( 0 ) ;
     g_extrema->SetLineColor( 0 ) ;
@@ -682,23 +678,17 @@ int main(int argc, char *argv[]){
     
     double low , high ;
     
-    if( plotRange[0][0].setting && plotRange[0][1].setting ){
-        low  = plotRange[0][0].number ;
-        high = plotRange[0][1].number ;
+    for(unsigned int c=0; c<2; c++){
+    
+        getLimits( extrema[c][0] , extrema[c][1] , low , high ) ;
+        
+        if( plotRange[c][0].setting ) low  = plotRange[c][0].number ;
+        if( plotRange[c][1].setting ) high = plotRange[c][1].number ;
+            
+        if(      c == 0 ) g_extrema->GetXaxis()->SetRangeUser( low , high ) ;
+        else if( c == 1 ) g_extrema->GetYaxis()->SetRangeUser( low , high ) ;
+        
     }
-    else
-        getLimits( extrema[0][0] , extrema[0][1] , low , high ) ;
-    
-    g_extrema->GetXaxis()->SetRangeUser( low , high ) ;
-    
-    if( plotRange[1][0].setting && plotRange[1][1].setting ){
-        low  = plotRange[1][0].number ; 
-        high = plotRange[1][1].number ;
-    }
-    else
-        getLimits( extrema[1][0] , extrema[1][1] , low , high ) ;
-    
-    g_extrema->GetYaxis()->SetRangeUser( low , high ) ;
     
     g_mean->SetName("mean") ;
     g_mean->SetTitle("mean+/-std.dev.") ;
