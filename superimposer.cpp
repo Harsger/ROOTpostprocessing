@@ -27,6 +27,7 @@ int main(int argc, char *argv[]){
     SpecifiedNumber textDataFormat ;
     double markerSize = 1. ;
     SpecifiedNumber legendText ;
+    SpecifiedNumber colorPalette ;
 
     for(unsigned int r=0; r<parameter.size(); r++){
 
@@ -140,6 +141,25 @@ int main(int argc, char *argv[]){
                 legendText.specifier += parameter.at(r).at(w) ;
                 
             }
+            continue ;
+        }
+        
+        if( 
+            parameter.at(r).at(0).compare("PALETTE") == 0 
+            &&
+            parameter.at(r).size() > 1
+        ){
+            if( TString(parameter.at(r).at(1)).IsDec() )
+                colorPalette = 
+                    SpecifiedNumber( atoi( parameter.at(r).at(1).c_str() ) ) ;
+            else 
+                colorPalette = SpecifiedNumber( 55 ) ; // kRainBow
+            if( 
+                parameter.at(r).size() > 2 
+                && 
+                parameter.at(r).at(2).compare("inverted") == 0
+            )
+                colorPalette.specifier = "inverted" ;
             continue ;
         }
 
@@ -356,6 +376,12 @@ int main(int argc, char *argv[]){
                      ) ;
     
     plotOptions() ;
+    
+    if( colorPalette.setting ){
+        gStyle->SetPalette( colorPalette.number ) ;
+        if( colorPalette.specifier.compare("inverted") == 0 )
+            TColor::InvertPalette();
+    }
     
     gStyle->SetOptStat(0) ;
 
