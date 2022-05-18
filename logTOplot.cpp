@@ -374,7 +374,7 @@ int main(int argc, char *argv[]){
             unit      = *p_unit ;
             
         }
-        if(tableData){
+        else if(tableData){
             
             if( textData.at(r).size() < maxColumns ) continue;
             
