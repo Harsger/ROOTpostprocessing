@@ -16,6 +16,7 @@ differentiator
 drawer
 functionFitter
 grapher
+hister
 housekeeper
 logTOplot
 overlayer
@@ -199,6 +200,44 @@ FUNCTION <formula>
 ADJUSTX <scaleX> <offsetX>
  X-values of data are adjusted (after comparison)
  <scaleX> is applied before <offsetX> ( X_new = <scaleX> * X_old + <offsetX> )
+
+///////////////////////////////////////////////////////////////////////////////
+
+hister
+
+ arguments :
+ parameter-file
+
+ output :
+ root-file containing histograms
+
+ reads text-files and/or root-histograms 
+ combines or manipulates these according defined function or specifications 
+ values are matched by bin number
+
+ arguments in parameter-file per output-graph :
+<resultsHistName1> <rawData1> (<additionalSpecifications1>)
+<resultsHistName2> <rawData2> (<additionalSpecifications2>)
+ the <additionalSpecifications> should contain 
+ the histogram-name for root-files 
+ 
+ mandatory options
+WEIGHTS/VALUES (OUTFLOW)
+ either sets the bin-contents to the values in the text-file 
+ or fills these values into the histogram
+ if OUTFLOW is specified end-range is set or filled as specified
+DIMENSION <number>
+ either 1 or 2 dimensional histograms are created or considered
+ 
+ not mandatory options
+BINNING <nXbins> <xlow> <xhigh> (<nYbins> <ylow> <yhigh>)
+ y-binning has only to be provided if DIMENSION is 2
+ROW    <first> <second>
+COLUMN <first> <second>
+ rows and columns to be used from a text-file
+ numbering for these start at zero, whereas bin-numbers start at 1
+ negativ numbers can be provided to skip certain rows/columns
+ -> toskip = - ( line-number + 1 ) [e.g. for zero use -1]
 
 ///////////////////////////////////////////////////////////////////////////////
 
