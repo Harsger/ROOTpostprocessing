@@ -238,6 +238,16 @@ COLUMN <first> <second>
  numbering for these start at zero, whereas bin-numbers start at 1
  negativ numbers can be provided to skip certain rows/columns
  -> toskip = - ( line-number + 1 ) [e.g. for zero use -1]
+FUNCTION <formula>
+ function defined as specified in
+ https://root.cern.ch/doc/master/classTFormula.html
+ depending on number of parameters the histograms theirself are adjusted
+ or if number of parameters plus one is equal to number of data-sets
+ a combination is created called "result"
+ value of "x" in formula is taken from first histogram/data-set
+ parameters are filled with other data-set values (starting at 0)
+ default is "x" (without quotes, understood as f(x)=x , no other parameter)
+ with this no changes are applied
 
 ///////////////////////////////////////////////////////////////////////////////
 
