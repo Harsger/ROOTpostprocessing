@@ -203,7 +203,8 @@ int main(int argc, char *argv[]){
     for(unsigned int d=0; d<nData; d++){
         
         name =  preNsuffix[0][0] ;
-        name += dataSpecifier.at(d).at(1) ;
+        if( dataSpecifier.at(d).at(1) != "%" ) 
+            name += dataSpecifier.at(d).at(1) ;
         name += preNsuffix[0][1] ;
         
         cout << " " << name << endl ;
@@ -781,8 +782,8 @@ int main(int argc, char *argv[]){
     
     TF1 * function = new TF1( "function" , formula.c_str() ) ; 
     unsigned int binRange[2][2] ;
-    TH1D * result1D = NULL ;
-    TH2D * result2D = NULL ;
+    TH1D * result1D = NULL , * reference1D = NULL ;
+    TH2D * result2D = NULL , * reference2D = NULL ;
     
     if( nData > 1 && allCompliant && nData == function->GetNpar() + 1 ){
         if( dimensions == 1 ){
@@ -879,9 +880,9 @@ int main(int argc, char *argv[]){
                 result2D = new TH2D(
                                         dataSpecifier.at(d).at(0).c_str()  ,
                                         dataSpecifier.at(d).at(0).c_str()  ,
-                                        hists1D[d]->GetXaxis()->GetNbins() ,
-                                        hists1D[d]->GetXaxis()->GetXmin()  ,
-                                        hists1D[d]->GetXaxis()->GetXmax()  ,
+                                        hists2D[d]->GetXaxis()->GetNbins() ,
+                                        hists2D[d]->GetXaxis()->GetXmin()  ,
+                                        hists2D[d]->GetXaxis()->GetXmax()  ,
                                         hists2D[d]->GetYaxis()->GetNbins() ,
                                         hists2D[d]->GetYaxis()->GetXmin()  ,
                                         hists2D[d]->GetYaxis()->GetXmax() 
@@ -911,6 +912,183 @@ int main(int argc, char *argv[]){
                 hists2D[d] = result2D ;
                 result2D = NULL ;
             }
+        }
+    }
+    else if( 
+        function->GetNpar() == 1  
+        && 
+        TString( preNsuffix[0][1] ).EndsWith( ".root" ) 
+    ){
+        for(unsigned int d=0; d<nData; d++){
+            if(  dataSpecifier.at(d).size() < 5  ) continue ;
+            name =  preNsuffix[0][0] ;
+            if( dataSpecifier.at(d).at(3) != "%" ) 
+                name += dataSpecifier.at(d).at(3) ;
+            name += preNsuffix[0][1] ;
+            infile = new TFile( name , "READ" ) ;
+            if( infile->IsZombie() ){
+                cout << " ERROR : opening " << name << endl ;
+                infile->Close() ;
+                continue ;
+            }
+            name  = preNsuffix[1][0] ;
+            if( dataSpecifier.at(d).at(4) != "%" ) 
+                name += dataSpecifier.at(d).at(4) ;
+            name += preNsuffix[1][1] ;
+            if( infile->Get(name) == NULL ){
+                cout << " ERROR : reading " << name 
+                     << " in " << infile->GetName() << endl ;
+                infile->Close() ;
+                continue ;
+            }
+            title = infile->Get(name)->ClassName() ;
+            if( !( title.BeginsWith("TH") ) ){
+                cout << " ERROR : wrong class for " << name 
+                     << " in " << infile->GetName() << endl ;
+                infile->Close() ;
+                continue ;
+            }
+            if( atoi( title(2,1).Data() ) != dimensions ){
+                cout << " ERROR : dimensions not fitting for " 
+                     << name << " in " << infile->GetName() << endl ;
+                infile->Close() ;
+                continue ;
+            }
+            if( dimensions == 1 ){
+                reference1D = (TH1D*)infile->Get(name) ;
+                if(  
+                    reference1D->GetXaxis()->GetNbins() 
+                    != hists1D[d]->GetXaxis()->GetNbins()
+                    ||
+                    reference1D->GetXaxis()->GetXmin() 
+                    != hists1D[d]->GetXaxis()->GetXmin()
+                    ||
+                    reference1D->GetXaxis()->GetXmax() 
+                    != hists1D[d]->GetXaxis()->GetXmax()
+                ){
+                    cout << " ERROR : wrong binning for " 
+                         << name << " in " << infile->GetName() << endl ;
+                    infile->Close() ;
+                    reference1D = NULL ;
+                    continue ;
+                }
+                reference1D->SetDirectory(0) ;
+                name = dataSpecifier.at(d).at(0).c_str() ;
+                name += "_ref" ;
+                reference1D->SetName(  name ) ;
+                reference1D->SetTitle( name ) ;
+            }
+            else if( dimensions == 2 ){
+                reference2D = (TH2D*)infile->Get(name) ;
+                if(  
+                    reference2D->GetXaxis()->GetNbins() 
+                    != hists2D[d]->GetXaxis()->GetNbins()
+                    ||
+                    reference2D->GetXaxis()->GetXmin() 
+                    != hists2D[d]->GetXaxis()->GetXmin()
+                    ||
+                    reference2D->GetXaxis()->GetXmax() 
+                    != hists2D[d]->GetXaxis()->GetXmax()
+                    ||
+                    reference2D->GetYaxis()->GetNbins() 
+                    != hists2D[d]->GetYaxis()->GetNbins()
+                    ||
+                    reference2D->GetYaxis()->GetXmin() 
+                    != hists2D[d]->GetYaxis()->GetXmin()
+                    ||
+                    reference2D->GetYaxis()->GetXmax() 
+                    != hists2D[d]->GetYaxis()->GetXmax()
+                ){
+                    cout << " ERROR : wrong binning for " 
+                         << name << " in " << infile->GetName() << endl ;
+                    infile->Close() ;
+                    reference2D = NULL ;
+                    continue ;
+                }
+                reference2D->SetDirectory(0) ;
+                name = dataSpecifier.at(d).at(0).c_str() ;
+                name += "_ref" ;
+                reference2D->SetName(  name ) ;
+                reference2D->SetTitle( name ) ;
+            }
+            infile->Close() ;
+            if( dimensions == 1 ){
+                hists1D[d]->SetName( "old") ;
+                hists1D[d]->SetTitle("old") ;
+                result1D = new TH1D(
+                                        dataSpecifier.at(d).at(0).c_str()  ,
+                                        dataSpecifier.at(d).at(0).c_str()  ,
+                                        hists1D[d]->GetXaxis()->GetNbins() ,
+                                        hists1D[d]->GetXaxis()->GetXmin()  ,
+                                        hists1D[d]->GetXaxis()->GetXmax() 
+                                    ) ;
+                nbins[0] = hists1D[d]->GetNbinsX() ;
+                binRange[0][0] = 1 ;
+                binRange[0][1] = nbins[0] + 1 ;
+                if( useOutflow ){ 
+                    binRange[0][0] = 0 ;
+                    binRange[0][1] = nbins[0] + 2 ;
+                }
+                for(unsigned int b=binRange[0][0]; b<binRange[0][1]; b++){
+                    function->SetParameter( 
+                                    0 , (double)reference1D->GetBinContent( b ) 
+                                ) ;
+                    value = function->Eval( 
+                                    (double)hists1D[d]->GetBinContent( b ) 
+                                ) ;
+                    if( toDiscard( value ) ) continue ;
+                    result1D->SetBinContent( b ,  value ) ;
+                }
+                reference1D->Delete() ;
+                reference1D = NULL ;
+                hists1D[d]->Delete() ;
+                hists1D[d] = result1D ;
+                result1D = NULL ;
+            }
+            else if( dimensions == 2 ){
+                hists2D[d]->SetName( "old") ;
+                hists2D[d]->SetTitle("old") ;
+                result2D = new TH2D(
+                                        dataSpecifier.at(d).at(0).c_str()  ,
+                                        dataSpecifier.at(d).at(0).c_str()  ,
+                                        hists2D[d]->GetXaxis()->GetNbins() ,
+                                        hists2D[d]->GetXaxis()->GetXmin()  ,
+                                        hists2D[d]->GetXaxis()->GetXmax()  ,
+                                        hists2D[d]->GetYaxis()->GetNbins() ,
+                                        hists2D[d]->GetYaxis()->GetXmin()  ,
+                                        hists2D[d]->GetYaxis()->GetXmax() 
+                                    ) ;
+                nbins[0] = hists2D[d]->GetNbinsX() ;
+                binRange[0][0] = 1 ;
+                binRange[0][1] = nbins[0] + 1 ;
+                nbins[1] = hists2D[d]->GetNbinsY() ;
+                binRange[1][0] = 1 ;
+                binRange[1][1] = nbins[1] + 1 ;
+                if( useOutflow ){ 
+                    binRange[0][0] = 0 ;
+                    binRange[0][1] = nbins[0] + 2 ;
+                    binRange[1][0] = 0 ;
+                    binRange[1][1] = nbins[1] + 2 ;
+                }
+                for(unsigned int r=binRange[1][0]; r<binRange[1][1]; r++){
+                    for(unsigned int c=binRange[0][0]; c<binRange[0][1]; c++){
+                        function->SetParameter( 
+                                0 , (double)reference2D->GetBinContent( c , r ) 
+                            ) ;
+                        value = function->Eval( 
+                                    (double)hists2D[d]->GetBinContent( c , r ) 
+                                ) ;
+                        if( toDiscard( value ) ) continue ;
+                        result2D->SetBinContent( c , r ,  value ) ;
+                    }
+                }
+                reference2D->Delete() ;
+                reference2D = NULL ;
+                hists2D[d]->Delete() ;
+                hists2D[d] = result2D ;
+                result2D = NULL ;
+            }
+            
         }
     }
     

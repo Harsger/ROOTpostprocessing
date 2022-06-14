@@ -248,6 +248,9 @@ FUNCTION <formula>
  parameters are filled with other data-set values (starting at 0)
  default is "x" (without quotes, understood as f(x)=x , no other parameter)
  with this no changes are applied
+ if only one parameter is used and in <additionalSpecifications>
+ another root-data-set is given for each data-set the function is
+ evaluated separately (using these two sets)
 
 ///////////////////////////////////////////////////////////////////////////////
 
