@@ -200,6 +200,8 @@ FUNCTION <formula>
 ADJUSTX <scaleX> <offsetX>
  X-values of data are adjusted (after comparison)
  <scaleX> is applied before <offsetX> ( X_new = <scaleX> * X_old + <offsetX> )
+FLIP
+ exchange x- and y-values of result-graphs
 
 ///////////////////////////////////////////////////////////////////////////////
 

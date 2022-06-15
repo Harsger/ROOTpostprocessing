@@ -18,6 +18,7 @@ int main(int argc, char *argv[]){
     SpecifiedNumber textDataFormat ;
     string formula = "x" ;
     vector<double> adjustX = { 1. , 0. } ;
+    bool toFlip = false ;
 
     vector< vector<string> > filesNtitlesNreferences ;
 
@@ -77,6 +78,11 @@ int main(int argc, char *argv[]){
             continue ;
         }
 
+        if( parameter.at(r).at(0).compare("FLIP") == 0 ){
+            toFlip = true ;
+            continue ;
+        }
+
         if( parameter.at(r).size() > 1 ){
             filesNtitlesNreferences.push_back( parameter.at(r) ) ;
         }
@@ -127,7 +133,8 @@ int main(int argc, char *argv[]){
         title = filesNtitlesNreferences.at(s).at(0) ;
 
         name  = preNsuffix[0][0] ;
-        name += filesNtitlesNreferences.at(s).at(1) ;
+        if( filesNtitlesNreferences.at(s).at(1) != "%" )
+            name += filesNtitlesNreferences.at(s).at(1) ;
         name += preNsuffix[0][1] ;
         if( name.EndsWith(".root") ){
             if( nWords < 3 ) continue ; 
@@ -139,7 +146,8 @@ int main(int argc, char *argv[]){
                 continue ;
             }
             name  = preNsuffix[1][0] ;
-            name += filesNtitlesNreferences.at(s).at(2) ;
+            if( filesNtitlesNreferences.at(s).at(2) != "%" )
+                name += filesNtitlesNreferences.at(s).at(2) ;
             name += preNsuffix[1][1] ;
             if( input->Get(name) == NULL ){
                 cout << " ERROR : reading " << name 
@@ -170,7 +178,8 @@ int main(int argc, char *argv[]){
         for(unsigned int c=nextIndex; c<nWords; c++){
 
             name  = preNsuffix[0][0] ;
-            name += filesNtitlesNreferences.at(s).at(c) ;
+            if( filesNtitlesNreferences.at(s).at(c) != "%" )
+                name += filesNtitlesNreferences.at(s).at(c) ;
             name += preNsuffix[0][1] ;
             if( name.EndsWith(".root") ){
                 if( nWords < c+1 ) break ; 
@@ -181,7 +190,8 @@ int main(int argc, char *argv[]){
                     break ;
                 }
                 name  = preNsuffix[1][0] ;
-                name += filesNtitlesNreferences.at(s).at(c+1) ;
+                if( filesNtitlesNreferences.at(s).at(c+1) != "%" )
+                    name += filesNtitlesNreferences.at(s).at(c+1) ;
                 name += preNsuffix[1][1] ;
                 if( input->Get(name) == NULL ){
                     cout << " ERROR : reading " << name 
@@ -263,6 +273,8 @@ int main(int argc, char *argv[]){
             wX = sX * adjustX.at(0) + adjustX.at(1) ;
             wY = function->Eval( sY ) ;
                             
+            if( toFlip ) swap( wX , wY ) ;
+            
             resultGraph->SetPoint( resultGraph->GetN() , wX , wY ) ;
             
         }
