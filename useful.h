@@ -142,6 +142,23 @@ double getNumberWithRange( std::string s , double &low , double &high ){
     
 }
 
+bool containsNonCommonCharacters( std::string word ){
+    bool specialFound = false ;
+    for( auto c : word ){
+        if( 
+            !( isalpha( c ) )
+            &&
+            !( isdigit( c ) )
+            &&
+            c != '_'
+        ){
+            specialFound = true ;
+            break ;
+        }
+    }
+    return specialFound ;
+}
+
 class SpecifiedNumber{
     
     public :
