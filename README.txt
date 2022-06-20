@@ -253,6 +253,10 @@ FUNCTION <formula>
  if only one parameter is used and in <additionalSpecifications>
  another root-data-set is given for each data-set the function is
  evaluated separately (using these two sets)
+FLIP <flipX> <flipY>
+ bin contents are swapped symmetrically along defined axis (=1)
+ if no arguements are given both axis will be flipped
+ additional data-sets for one-parameter-functions will NOT be flipped
 
 ///////////////////////////////////////////////////////////////////////////////
 

@@ -49,6 +49,7 @@ int main(int argc, char *argv[]){
     
     bool useWeights = true ;
     bool useOutflow = false ;
+    bool toFlip[2] = { false , false } ;
     
     string formula = "x" ;
     
@@ -156,6 +157,20 @@ int main(int argc, char *argv[]){
                 if( parameter.at(r).at(c).rfind("#",0) == 0 ) break ;
                 formula += " " ;
                 formula += parameter.at(r).at(c) ;
+            }
+            continue ;
+        }
+        
+        if( parameter.at(r).at(0).compare("FLIP") == 0 ){
+            if( parameter.at(r).size() > 2 ){
+                if( parameter.at(r).at(1).compare("1") == 0 ) 
+                    toFlip[0] = true ;
+                if( parameter.at(r).at(2).compare("1") == 0 )
+                    toFlip[1] = true ;
+            }
+            else{
+                toFlip[0] = true ;
+                toFlip[1] = true ;
             }
             continue ;
         }
@@ -725,6 +740,61 @@ int main(int argc, char *argv[]){
     if( count != nData ){
         cout << " ERROR : not all input data well specified " << endl ;
         return 4 ;
+    }
+    
+    if( toFlip[0] || toFlip[1] ){
+        
+        for(unsigned int d=0; d<nData; d++){
+            if( dimensions == 1 ){
+                nbins[0] = hists1D[d]->GetXaxis()->GetNbins() + 2 ;
+                for(unsigned int b=0; b<nbins[0]; b++){
+                    binOffsets[0] = nbins[0] - b - 1 ;
+                    if( binOffsets[0] <= b ) break ;
+                    value    = hists1D[d]->GetBinContent( b             ) ;
+                    quantity = hists1D[d]->GetBinContent( binOffsets[0] ) ;
+                    hists1D[d]->SetBinContent( b             , quantity ) ;
+                    hists1D[d]->SetBinContent( binOffsets[0] , value    ) ;
+                }
+            }
+            else if( dimensions == 2 ){
+                nbins[0] = hists2D[d]->GetXaxis()->GetNbins() + 2 ;
+                nbins[1] = hists2D[d]->GetYaxis()->GetNbins() + 2 ;
+                if( toFlip[0] ){
+                    for(unsigned int c=0; c<nbins[0]; c++){
+                        binOffsets[0] = nbins[0] - c - 1 ;
+                        if( binOffsets[0] <= c ) break ;
+                        for(unsigned int r=0; r<nbins[1]; r++){
+                            value    = hists2D[d]->GetBinContent( c , r ) ;
+                            quantity = hists2D[d]->GetBinContent( 
+                                                            binOffsets[0] , r 
+                                                        ) ;
+                            hists2D[d]->SetBinContent( c , r , quantity ) ;
+                            hists2D[d]->SetBinContent( 
+                                                    binOffsets[0] , r , value 
+                                                ) ;
+                        }
+                    }
+                }
+                if( toFlip[1] ){
+                    for(unsigned int r=0; r<nbins[1]; r++){
+                        binOffsets[1] = nbins[1] - r - 1 ;
+                        if( binOffsets[1] <= r ) break ;
+                        for(unsigned int c=0; c<nbins[0]; c++){
+                            value    = hists2D[d]->GetBinContent( c , r ) ;
+                            quantity = hists2D[d]->GetBinContent( 
+                                                            c , binOffsets[1]
+                                                        ) ;
+                            hists2D[d]->SetBinContent( c , r , quantity ) ;
+                            hists2D[d]->SetBinContent( 
+                                                    c , binOffsets[1] , value 
+                                                ) ;
+                        }
+                    }
+                }
+            }
+            
+        }
+        
     }
     
     bool allCompliant = true ;
