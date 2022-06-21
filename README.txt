@@ -253,6 +253,13 @@ FUNCTION <formula>
  if only one parameter is used and in <additionalSpecifications>
  another root-data-set is given for each data-set the function is
  evaluated separately (using these two sets)
+PARAMETERARGUMENTS
+ additional to FUNCTION
+ the parameter for the function will be taken 
+ from the <additionalSpecifications>
+ also MEAN , STDV , MIN , MAX , MEDIAN can be defined as parameter
+ the numbering starts at the fourth column 
+ ( third column can be spared using '%' )
 FLIP <flipX> <flipY>
  bin contents are swapped symmetrically along defined axis (=1)
  if no arguements are given both axis will be flipped

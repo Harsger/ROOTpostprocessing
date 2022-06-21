@@ -172,6 +172,29 @@ bool getStats(
     
 }
 
+bool getStats(
+    TH2D * hist ,
+    double &mean ,
+    double &stdv ,
+    double &min ,
+    double &max ,
+    double &median ,
+    unsigned int &number 
+){
+    
+    std::vector<double> toSkip ;
+    SpecifiedNumber lowLimit ;
+    SpecifiedNumber highLimit ; 
+    std::map< std::string , std::map< unsigned int , bool > > useRowsNcolumns ;
+    std::map< unsigned int , std::vector<unsigned int> > pixelList ;
+    
+    return getStats( 
+                        hist , mean , stdv , min , max , median , number ,
+                        toSkip , lowLimit , highLimit , 
+                        useRowsNcolumns , pixelList
+                   ) ;
+}
+
 double getFWHM( 
                 TH1D * distribution , 
                 double maximum , 
