@@ -1,5 +1,6 @@
 #include <TROOT.h>
 #include <TSystem.h>
+#include <TKey.h>
 #include <TApplication.h>
 #include <TSystemDirectory.h>
 #include <TSystemFile.h>
