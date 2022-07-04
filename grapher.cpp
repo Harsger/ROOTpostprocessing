@@ -19,6 +19,7 @@ int main(int argc, char *argv[]){
     string formula = "x" ;
     vector<double> adjustX = { 1. , 0. } ;
     bool toFlip = false ;
+    bool writeErrors[2] = { false , false } ;
 
     vector< vector<string> > filesNtitlesNreferences ;
 
@@ -80,6 +81,17 @@ int main(int argc, char *argv[]){
 
         if( parameter.at(r).at(0).compare("FLIP") == 0 ){
             toFlip = true ;
+            continue ;
+        }
+
+        if( parameter.at(r).at(0).compare("WRITEERRORS") == 0 ){
+            if( parameter.at(r).size() > 2 ){
+                if(      parameter.at(r).at(1) == "Y" ) writeErrors[1] = true ;
+                else if( parameter.at(r).at(1) == "X" ) writeErrors[0] = true ;
+                else                                    writeErrors[1] = true ;
+            }
+            else 
+                writeErrors[1] = true ;
             continue ;
         }
 
@@ -224,7 +236,11 @@ int main(int argc, char *argv[]){
 
         }
         
-        if( referenceGraphs.size() != nParameter ){
+        if( writeErrors[0] || writeErrors[1] ){
+            nParameter = 0 ;
+            referenceGraphs.clear() ;
+        }
+        else if( referenceGraphs.size() != nParameter ){
             cout << " ERROR : at " << title 
                  << " unequal number of parameters and references "
                  << "(" << referenceGraphs.size() << ")" << endl ;
@@ -274,6 +290,11 @@ int main(int argc, char *argv[]){
             wY = function->Eval( sY ) ;
                             
             if( toFlip ) swap( wX , wY ) ;
+            
+            if(      writeErrors[1] )
+                wY = sourceGraph->GetErrorY( p ) ;
+            else if( writeErrors[0] )
+                wY = sourceGraph->GetErrorX( p ) ;
             
             resultGraph->SetPoint( resultGraph->GetN() , wX , wY ) ;
             

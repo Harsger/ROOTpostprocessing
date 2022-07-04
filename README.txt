@@ -202,6 +202,9 @@ ADJUSTX <scaleX> <offsetX>
  <scaleX> is applied before <offsetX> ( X_new = <scaleX> * X_old + <offsetX> )
 FLIP
  exchange x- and y-values of result-graphs
+WRITEERRORS (X/Y)
+ the Y-(or X-)error of the source-graph is used 
+ for the Y-values of the output-graph
 
 ///////////////////////////////////////////////////////////////////////////////
 
