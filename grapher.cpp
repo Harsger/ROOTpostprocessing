@@ -20,6 +20,7 @@ int main(int argc, char *argv[]){
     vector<double> adjustX = { 1. , 0. } ;
     bool toFlip = false ;
     bool writeErrors[2] = { false , false } ;
+    bool setErrors[2]   = { false , false } ;
 
     vector< vector<string> > filesNtitlesNreferences ;
 
@@ -85,7 +86,7 @@ int main(int argc, char *argv[]){
         }
 
         if( parameter.at(r).at(0).compare("WRITEERRORS") == 0 ){
-            if( parameter.at(r).size() > 2 ){
+            if( parameter.at(r).size() > 1 ){
                 if(      parameter.at(r).at(1) == "Y" ) writeErrors[1] = true ;
                 else if( parameter.at(r).at(1) == "X" ) writeErrors[0] = true ;
                 else                                    writeErrors[1] = true ;
@@ -95,10 +96,35 @@ int main(int argc, char *argv[]){
             continue ;
         }
 
+        if( parameter.at(r).at(0).compare("SETERRORS") == 0 ){
+            if( parameter.at(r).size() > 2 ){
+                if( parameter.at(r).at(1) == "1" ) setErrors[0] = true ;
+                if( parameter.at(r).at(2) == "1" ) setErrors[1] = true ;
+            }
+            else if( parameter.at(r).size() > 1 ){
+                if(      parameter.at(r).at(1) == "X" ) setErrors[0] = true ;
+                else if( parameter.at(r).at(1) == "Y" ) setErrors[1] = true ;
+            }
+            else{ 
+                setErrors[0] = true ;
+                setErrors[1] = true ;
+            }
+            continue ;
+        }
+
         if( parameter.at(r).size() > 1 ){
             filesNtitlesNreferences.push_back( parameter.at(r) ) ;
         }
 
+    }
+    
+    if( 
+        ( writeErrors[0] || writeErrors[1] ) 
+        &&
+        (   setErrors[0] ||   setErrors[1] ) 
+    ){
+        cout << " ERROR : either write or set errors - not both " << endl ;
+        return 2 ;
     }
 
     for(unsigned int t=0; t<2; t++){
@@ -121,6 +147,17 @@ int main(int argc, char *argv[]){
     
     TF1 * function = new TF1( "function" , formula.c_str() ) ;
     unsigned int nParameter = function->GetNpar() ;
+    
+    if( setErrors[0] || setErrors[1] ){
+        if( setErrors[0] && setErrors[1] ){
+            nParameter = 2 ;
+            function = new TF1( "function" , "x+0.*[0]+0.*[1]" ) ;
+        }
+        else{
+            nParameter = 1 ;
+            function = new TF1( "function" , "x+0.*[0]" ) ;
+        }
+    }
 
     TGraphErrors * sourceGraph ;
     TGraphErrors * fillGraph ;
@@ -296,7 +333,34 @@ int main(int argc, char *argv[]){
             else if( writeErrors[0] )
                 wY = sourceGraph->GetErrorX( p ) ;
             
+            if( setErrors[0] || setErrors[1]  ) 
+                wY = sY ;
+            
             resultGraph->SetPoint( resultGraph->GetN() , wX , wY ) ;
+            
+            if( setErrors[0] || setErrors[1] ){
+                if( setErrors[0] && setErrors[1] ){
+                    resultGraph->SetPointError( 
+                                                resultGraph->GetN()-1 , 
+                                                function->GetParameter( 0 ) , 
+                                                function->GetParameter( 1 ) 
+                                              ) ;
+                }
+                else if( setErrors[0] ){
+                    resultGraph->SetPointError( 
+                                                resultGraph->GetN()-1 , 
+                                                function->GetParameter( 0 ) , 
+                                                sourceGraph->GetErrorY( p ) 
+                                              ) ;
+                }
+                else if( setErrors[1] ){
+                    resultGraph->SetPointError( 
+                                                resultGraph->GetN()-1 , 
+                                                sourceGraph->GetErrorX( p ) , 
+                                                function->GetParameter( 0 ) 
+                                              ) ;
+                }
+            }
             
         }
         

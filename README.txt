@@ -205,6 +205,11 @@ FLIP
 WRITEERRORS (X/Y)
  the Y-(or X-)error of the source-graph is used 
  for the Y-values of the output-graph
+SETERRORS (X/Y)
+ the values for the output-graph are taken from the source-graph
+ and errors are assigned from the values of the reference-graphs 
+ X or Y or both if not specified
+ correct number of reference-graphs are required
 
 ///////////////////////////////////////////////////////////////////////////////
 
