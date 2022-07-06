@@ -528,6 +528,17 @@ int main(int argc, char *argv[]){
                 ) ;
             }
         }
+        for(unsigned int h=0; h<nHists; h++){
+            spectra->GetXaxis()->SetBinLabel(
+                spectra->GetXaxis()->FindBin(h+1) ,
+                histIdentifier.at(h)
+            ) ;
+        }
+        if( labeblsotpion.setting ){
+            spectra->LabelsOption( 
+                labeblsotpion.specifier.c_str() , "X" 
+            ) ;
+        }
     }
 
     cout << " writing ... " << flush ;
