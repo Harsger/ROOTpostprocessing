@@ -343,6 +343,7 @@ overlayer
  
  additional options in parameter-file :
 AXIS <xAxisTitle> <yAxisTitle>
+ in separate lines AXISX and AXISY with space separated titles
 RANGE <xlow> <xhigh> <ylow> <yhigh>
 LOG <logarithmicX> <logarithmicY> 
  (specified by '0' [->false] or '1' [->true], without quotes)
@@ -422,6 +423,7 @@ plotter
 
  additional options in parameter-file :
 AXIS <xAxisTitle> <yAxisTitle>
+ in separate lines AXISX and AXISY with space separated titles
 RANGE <ylow> <yhigh> / <xlow> <xhigh> <ylow> <yhigh>
  (either only ylow and yhigh or all four)
 SKIP <listOfValuesToBeSkipped> <<lowLimit> ><highLimit>
@@ -535,6 +537,7 @@ superimposer
 
   additional options in parameter-file :
 AXIS <xAxisTitle> <yAxisTitle>
+ in separate lines AXISX and AXISY with space separated titles
 RANGE <xlow> <xhigh> <ylow> <yhigh>
 LOG <logarithmicX> <logarithmicY> 
  (specified by '0' [->false] or '1' [->true], without quotes)

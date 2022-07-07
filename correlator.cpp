@@ -115,12 +115,32 @@ int main(int argc, char *argv[]){
                 }
                 continue ;
             }
+            
+            if( 
+                TString( parameter.at(r).at(0) ).BeginsWith("AXIS") 
+                && 
+                (
+                    TString( parameter.at(r).at(0) ).EndsWith("X") 
+                    ||
+                    TString( parameter.at(r).at(0) ).EndsWith("Y") 
+                )
+                &&
+                parameter.at(r).size() > 1
+            ){
+                unsigned int ax = 0 ;
+                if( TString( parameter.at(r).at(0) ).EndsWith("Y") ) ax = 1;
+                axisTitles[ax] = parameter.at(r).at(1) ;
+                for(unsigned int c=2; c<parameter.at(r).size(); c++){
+                    axisTitles[ax] += " ";
+                    axisTitles[ax] += parameter.at(r).at(c) ;
+                }
+                continue ;
+            }
 
             if( parameter.at(r).at(0).compare("NOERRORS") == 0 ){
                 useErrors = false ;
                 continue ;
             }
-
         
             if( 
                 (
