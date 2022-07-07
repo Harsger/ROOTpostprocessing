@@ -27,6 +27,7 @@ int main(int argc, char *argv[]){
     SpecifiedNumber textDataFormat ;
     double markerSize = 1. ;
     SpecifiedNumber legendText ;
+    SpecifiedNumber legendPosition ;
     SpecifiedNumber colorPalette ;
 
     for(unsigned int r=0; r<parameter.size(); r++){
@@ -161,6 +162,19 @@ int main(int argc, char *argv[]){
                 legendText.specifier += " " ;
                 legendText.specifier += parameter.at(r).at(w) ;
                 
+            }
+            continue ;
+        }
+        
+        if( parameter.at(r).at(0).compare("LEGENDPOSITION") == 0 ){
+            legendPosition = SpecifiedNumber( 0. ) ;
+            if( parameter.at(r).size() > 1 ){
+                legendPosition.specifier = parameter.at(r).at(1) ;
+                for(unsigned int w=2; w<parameter.at(r).size(); w++){
+                    legendPosition.specifier += " " ;
+                    legendPosition.specifier += parameter.at(r).at(w) ;
+                    
+                }
             }
             continue ;
         }
@@ -408,6 +422,7 @@ int main(int argc, char *argv[]){
 
     gStyle->SetPadTopMargin(    0.03 ) ;
     gStyle->SetPadRightMargin(  0.14 ) ;
+    if( legendPosition.setting ) gStyle->SetPadRightMargin( 0.03 ) ;
     gStyle->SetPadBottomMargin( 0.12 ) ;
     gStyle->SetPadLeftMargin(   0.13 ) ;
 
@@ -508,7 +523,24 @@ int main(int argc, char *argv[]){
 //     gPad->SetGridx() ;
     gPad->SetGridy() ;
     
-    TLegend * legend = can->BuildLegend( 0.87 , 0.15 , 0.995 , 0.95 ) ;
+    double legendEdges[4] = { 0.87 , 0.15 , 0.995 , 0.95 } ;
+    if( legendPosition.setting ){
+        legendEdges[0] = 0.76 ;
+        legendEdges[2] = 0.96 ;
+        if(      legendPosition.specifier.find( "top") != std::string::npos ) 
+            legendEdges[1] = 0.55 ;
+        else if( legendPosition.specifier.find( "bot") != std::string::npos ) 
+            legendEdges[3] = 0.55 ;
+        if(      legendPosition.specifier.find("left") != std::string::npos ){
+            legendEdges[0] = 0.16 ;
+            legendEdges[2] = 0.36 ;
+        }
+    }
+    
+    TLegend * legend = can->BuildLegend( 
+                                            legendEdges[0] , legendEdges[1] , 
+                                            legendEdges[2] , legendEdges[3] 
+                                       ) ;
 //     legend->RecursiveRemove( extrema );
 //     legend->Draw() ;
 
