@@ -19,10 +19,13 @@ int main(int argc, char *argv[]){
     vector< vector<string> > filesNhists ;
     vector<string> strVecDummy ;
     vector<string> spectrumName ;
+    vector<SpecifiedNumber> spectrumColors ;
+    vector<SpecifiedNumber> spectrumPoints ;
     string axisTitles[2] = { neverUse , neverUse } ;
     SpecifiedNumber plotRange[2][2] ;
     bool useLogScale[2] = { false , false } ;
     SpecifiedNumber drawPoints ;
+    double markerSize = 1. ;
     
     TString scaleMode = "integral" ;
     
@@ -140,6 +143,15 @@ int main(int argc, char *argv[]){
         }
         
         if( 
+            parameter.at(r).at(0).compare("MARKERSIZE") == 0 
+            &&
+            parameter.at(r).size() > 1
+        ){
+            markerSize = atof( parameter.at(r).at(1).c_str() ) ;
+            continue ;
+        }
+        
+        if( 
             parameter.at(r).at(0).compare("PALETTE") == 0 
             &&
             parameter.at(r).size() > 1
@@ -200,6 +212,26 @@ int main(int argc, char *argv[]){
             filesNhists.push_back( strVecDummy ) ;
             strVecDummy.clear() ;
             spectrumName.push_back( parameter.at(r).at(2) );
+            if( 
+                parameter.at(r).size() > 3 
+                && 
+                parameter.at(r).at(3).compare("%") != 0 
+            ){
+                spectrumColors.push_back( 
+                    SpecifiedNumber( atoi( parameter.at(r).at(3).c_str() ) ) 
+                ) ;
+            }
+            else spectrumColors.push_back( SpecifiedNumber() ) ;
+            if( 
+                parameter.at(r).size() > 4 
+                && 
+                parameter.at(r).at(4).compare("%") != 0 
+            ){
+                spectrumPoints.push_back( 
+                    SpecifiedNumber( atoi( parameter.at(r).at(4).c_str() ) ) 
+                ) ;
+            }
+            else spectrumPoints.push_back( SpecifiedNumber() ) ;
         }
 
     }
@@ -252,7 +284,7 @@ int main(int argc, char *argv[]){
     gStyle->SetTitleOffset( 0.6 , "y" ) ;
     
     TH1D** hists = new TH1D*[nHists] ;
-    TString name ;
+    TString name , title ;
     unsigned int nBins = 0 ;
     double valueRange[2][2] = { { 0. , 0. } , { 0. , 0. } } ;
     unsigned int notFound = 0 ;
@@ -434,9 +466,20 @@ int main(int argc, char *argv[]){
         
         if( !useable[h] ) continue ;
         
-        if( drawPoints.setting ) hists[h]->SetMarkerStyle(drawPoints.number) ;
+        if( spectrumPoints.at(h).setting )
+            hists[h]->SetMarkerStyle(spectrumPoints.at(h).number) ;
+        else if( drawPoints.setting ) 
+            hists[h]->SetMarkerStyle(drawPoints.number) ;
         else hists[h]->SetMarkerStyle(6) ;
+        
         hists[h]->SetLineWidth(3) ;  
+        
+        title = "PLC PMC" ;
+        if( spectrumColors.at(h).setting ){
+            hists[h]->SetLineColor(spectrumColors.at(h).number) ;
+            hists[h]->SetMarkerColor(spectrumColors.at(h).number) ;
+            title = "" ;
+        }
         
         getOutflow( 
                     hists[h] , 
@@ -457,11 +500,17 @@ int main(int argc, char *argv[]){
         hists[h]->SetBinContent( 0       , under ) ;
         hists[h]->SetBinContent( nBins+1 , over  ) ;
         
+        name = "" ;
+        if( spectrumPoints.at(h).setting || drawPoints.setting ){
+            hists[h]->SetMarkerSize( markerSize ) ; 
+            name = "P" ;
+        }
+        else name = "H" ;
+            
         if( firstTOdraw ){ 
             
-            if( drawPoints.setting ) hists[h]->Draw("P PLC PMC") ;
-            else  hists[h]->Draw("PLC PMC") ; 
-            
+            name += title ;
+            hists[h]->Draw(name) ;         
             if( axisTitles[0].compare(neverUse) != 0 )
                 hists[h]->SetXTitle( axisTitles[0].c_str() ) ;
             if( axisTitles[1].compare(neverUse) != 0 )
@@ -472,12 +521,13 @@ int main(int argc, char *argv[]){
             
         }
         else{ 
-            name = "" ;
-            if( drawPoints.setting ) name = "P" ;
+            
             name += "same" ;
             if( statBox.setting ) name += "s" ;
-            name += " PLC PMC" ;
+            name += " " ;
+            name += title ;
             hists[h]->Draw(name) ;
+            
         }
                   
     }

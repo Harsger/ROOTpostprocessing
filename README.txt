@@ -341,6 +341,9 @@ overlayer
  
  takes 1D-histograms (ROOT::TH1 e.g. spectrums) and superimposes them
  
+ additional options per histogram :
+<color> <markerStyle>
+ 
  additional options in parameter-file :
 AXIS <xAxisTitle> <yAxisTitle>
  in separate lines AXISX and AXISY with space separated titles
@@ -356,6 +359,8 @@ PALETTE <number> (inverted)
  optional 'inverted' (high/low color)
 POINTS (<markerStyle>)
  points are used instead of bar-histograms
+MARKERSIZE <size>
+ global size of drawn point-marker (default=1)
 STATBOX <mode> (<position>)
  statboxes for each histogram are drawn with entries according to mode
  (see : https://root.cern.ch/doc/master/classTPaveStats.html)
