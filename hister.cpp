@@ -52,6 +52,7 @@ int main(int argc, char *argv[]){
     bool toFlip[2] = { false , false } ;
     bool parameterArguments = false ;
     bool writeErrors = false ;
+    bool setErrors = false ;
     
     string formula = "x" ;
     
@@ -181,6 +182,11 @@ int main(int argc, char *argv[]){
             writeErrors = true ;
             continue ;
         }
+
+        if( parameter.at(r).at(0).compare("SETERRORS") == 0 ){
+            setErrors = true ;
+            continue ;
+        }
         
         if( parameter.at(r).at(0).compare("PARAMETERARGUMENTS") == 0 ){
             parameterArguments = true ;
@@ -194,6 +200,23 @@ int main(int argc, char *argv[]){
     
     if( dimensions < 1 ){
         cout << " ERROR : specify DIMENSIONS " << endl ;
+        return 2 ;
+    }
+    
+    if( writeErrors && setErrors ){
+        cout << " ERROR : either write or set errors - not both " << endl ;
+        return 2 ;
+    }
+    
+    if( setErrors && parameterArguments ){
+        cout << " ERROR : either set errors" ;
+        cout << " or use parameter arguments - not both " << endl ;
+        return 2 ;
+    }
+    
+    if( setErrors && formula != "x" ){
+        cout << " ERROR : " ;
+        cout << "either set errors or use function - not both " << endl ;
         return 2 ;
     }
 
@@ -863,6 +886,8 @@ int main(int argc, char *argv[]){
     }
     
     TF1 * function = new TF1( "function" , formula.c_str() ) ; 
+    if( setErrors )
+        function = new TF1( "function" , "x+0.*[0]" ) ;
     unsigned int binRange[2][2] , number ;
     double mean , stdv , min , max , median ;
     TH1D * result1D = NULL , * reference1D = NULL ;
@@ -1055,7 +1080,15 @@ int main(int argc, char *argv[]){
             }
         }
     }
-    else if( nData > 1 && allCompliant && nData == function->GetNpar() + 1 ){
+    else if( 
+        nData > 1 
+        && 
+        allCompliant 
+        && 
+        nData == function->GetNpar() + 1 
+        &&
+        !( setErrors )
+    ){
         if( dimensions == 1 ){
             result1D = new TH1D( 
                                     "result" , "result" , 
@@ -1308,6 +1341,10 @@ int main(int argc, char *argv[]){
                                 ) ;
                     if( toDiscard( value ) ) continue ;
                     result1D->SetBinContent( b ,  value ) ;
+                    if( setErrors )
+                        result1D->SetBinError( 
+                            b , function->GetParameter(0) 
+                        ) ;
                 }
                 reference1D->Delete() ;
                 reference1D = NULL ;
@@ -1350,6 +1387,10 @@ int main(int argc, char *argv[]){
                                 ) ;
                         if( toDiscard( value ) ) continue ;
                         result2D->SetBinContent( c , r ,  value ) ;
+                        if( setErrors )
+                            result2D->SetBinError( 
+                                c , r , function->GetParameter(0) 
+                            ) ;
                     }
                 }
                 reference2D->Delete() ;

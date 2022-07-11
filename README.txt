@@ -281,7 +281,11 @@ FLIP <flipX> <flipY>
  additional data-sets for one-parameter-functions will NOT be flipped
 WRITEERRORS
  the bin-contents of the output-histogram are set 
- to the errors source-histogram (no further processing)
+ to the errors of the source-histogram (no further processing)
+SETERRORS
+ the bin-errors of the output-histogram are set 
+ to the bin-contetns of the reference-histogram 
+ from the <additionalSpecifications> (no further processing)
 
 ///////////////////////////////////////////////////////////////////////////////
 
