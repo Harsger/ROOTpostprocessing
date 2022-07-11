@@ -12,33 +12,49 @@ int main(int argc, char *argv[]){
     TString filename = argv[1] ;
     TString histname = argv[2] ;
     
-    SpecifiedNumber lowLimit ;
-    SpecifiedNumber highLimit ;
-    SpecifiedNumber nContours ;
+    bool skipShowing = false ;
     
-    bool show = true ;
+    vector<string> parameter = {
+        "lowLimit" ,
+        "highLimit" ,
+        "nContours" ,
+        "colorPalette" ,
+        "statBox" 
+    } ;
+    map< string , SpecifiedNumber > values ;
     
-    if( argc == 4 ) show = false ;
-    else if( argc > 4 ){
-        TString tester = argv[3] ;
-        if( tester != "%" )
-            lowLimit = SpecifiedNumber( atof( tester.Data() ) ) ;
-        tester = argv[4] ;
-        if( tester != "%" )
-            highLimit = SpecifiedNumber( atof( tester.Data() ) ) ;
-        if( argc > 5 ){ 
-            tester = argv[5] ;
-            if( tester.IsDec() )
-                nContours = SpecifiedNumber( atoi( tester.Data() ) ) ;
-            else show = false ;
-            if( argc > 6 ) show = false ;
+    for(unsigned int p=0; p<parameter.size(); p++){
+        values[parameter.at(p)] = SpecifiedNumber() ;
+        if( argc > p+3 ){
+            string argument = argv[p+3] ; 
+            if( argument == "%" ) continue ;
+            if( argument == "skip" ) skipShowing = true ;
+            else 
+                values[parameter.at(p)] = 
+                                SpecifiedNumber( atof( argument.c_str() ) ) ;
         }
     }
+    if( 
+        argc > parameter.size()+3 
+        && 
+        string( argv[parameter.size()+3] ) == "skip" 
+    )
+        skipShowing = true ;
                   
     TApplication app("app", &argc, argv) ;    
     plotOptions() ;
     
+    if( values["colorPalette"].setting ){
+        if( values["colorPalette"].number < 0 ){
+            gStyle->SetPalette( -values["colorPalette"].number ) ;
+            TColor::InvertPalette() ;
+        }
+        else gStyle->SetPalette( values["colorPalette"].number ) ;
+    }
+    
     gStyle->SetOptStat(0) ;
+    if( values["statBox"].setting ) 
+        gStyle->SetOptStat( values["statBox"].number ) ;
         
     gStyle->SetPadRightMargin(  0.18 ) ;
 
@@ -75,20 +91,24 @@ int main(int argc, char *argv[]){
     double minimum = hist->GetMinimum() ;
     double maximum = hist->GetMaximum() ;
     
-    if( lowLimit.setting ) minimum = lowLimit.number ;
-    if( highLimit.setting ) maximum = highLimit.number ;
+    if( values["lowLimit"].setting ) 
+        minimum = values["lowLimit"].number ;
+    if( values["highLimit"].setting ) 
+        maximum = values["highLimit"].number ;
     
-    if( lowLimit.setting || highLimit.setting )
+    if( values["lowLimit"].setting || values["highLimit"].setting )
         hist->GetZaxis()->SetRangeUser( minimum , maximum ) ;
     
-    if( nContours.setting ){
-        gStyle->SetNumberContours( (unsigned int)( nContours.number ) ) ; 
+    if( values["nContours"].setting ){
+        gStyle->SetNumberContours( 
+            (unsigned int)( values["nContours"].number ) 
+        ) ; 
         hist->GetZaxis()->SetNdivisions(520) ;
     }
     
     hist->Draw("COLZ") ;
         
-    if( show ) showing() ;
+    if( !( skipShowing ) ) showing() ;
     
     name += ".pdf" ;
         

@@ -129,14 +129,21 @@ drawer
  /path/to/file.root histname
  
  optional arguments :
- <lowLimit> <highLimit> <nContours> <skipDrawing>
+ <lowLimit> <highLimit> <nContours> <colorPalette> <statBox> (skip)
  
  output :
  PDF
  
  shows specified 2D-histogram (ROOT::TH2 e.g. heatmap) from file,
- if <lowLimit> <highLimit> is specified Z-range is adjusted
- <nContours> specify number of color countours 
+ if <lowLimit> and/or <highLimit> is specified Z-range is adjusted
+ <nContours> specify number of color countours for Z-axis
+ <colorPalette> can be chosen from
+    https://root.cern.ch/doc/master/classTColor.html#C06 -> Color palettes
+ <statBox> is drawn with entries according to 
+    https://root.cern.ch/doc/master/classTPaveStats.html
+ if at last (or as any positional-argument) 'skip' is specified 
+ no canvas is drawn, but histogram is directly saved as PDF
+ 
  values can be omitted using '%' (without quotes) 
 
 ///////////////////////////////////////////////////////////////////////////////
