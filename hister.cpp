@@ -51,6 +51,7 @@ int main(int argc, char *argv[]){
     bool useOutflow = false ;
     bool toFlip[2] = { false , false } ;
     bool parameterArguments = false ;
+    bool writeErrors = false ;
     
     string formula = "x" ;
     
@@ -173,6 +174,11 @@ int main(int argc, char *argv[]){
                 toFlip[0] = true ;
                 toFlip[1] = true ;
             }
+            continue ;
+        }
+
+        if( parameter.at(r).at(0).compare("WRITEERRORS") == 0 ){
+            writeErrors = true ;
             continue ;
         }
         
@@ -862,7 +868,74 @@ int main(int argc, char *argv[]){
     TH1D * result1D = NULL , * reference1D = NULL ;
     TH2D * result2D = NULL , * reference2D = NULL ;
     
-    if( parameterArguments && function->GetNpar() > 0 ){
+    if( writeErrors ){
+        if( dimensions == 1 ){
+            for(unsigned int d=0; d<nData; d++){
+                hists1D[d]->SetName( "old") ;
+                hists1D[d]->SetTitle("old") ;
+                result1D = new TH1D(
+                                        dataSpecifier.at(d).at(0).c_str()  ,
+                                        dataSpecifier.at(d).at(0).c_str()  ,
+                                        hists1D[d]->GetXaxis()->GetNbins() ,
+                                        hists1D[d]->GetXaxis()->GetXmin()  ,
+                                        hists1D[d]->GetXaxis()->GetXmax() 
+                                    ) ;
+                nbins[0] = hists1D[d]->GetNbinsX() ;
+                binRange[0][0] = 1 ;
+                binRange[0][1] = nbins[0] + 1 ;
+                if( useOutflow ){ 
+                    binRange[0][0] = 0 ;
+                    binRange[0][1] = nbins[0] + 2 ;
+                }
+                for(unsigned int b=binRange[0][0]; b<binRange[0][1]; b++){
+                    result1D->SetBinContent( b , hists1D[d]->GetBinError(b) ) ;
+                }
+                hists1D[d]->Delete() ;
+                hists1D[d] = result1D ;
+                result1D = NULL ;
+            }
+        }
+        else if( dimensions == 2 ){
+            for(unsigned int d=0; d<nData; d++){
+                hists2D[d]->SetName( "old") ;
+                hists2D[d]->SetTitle("old") ;
+                result2D = new TH2D(
+                                        dataSpecifier.at(d).at(0).c_str()  ,
+                                        dataSpecifier.at(d).at(0).c_str()  ,
+                                        hists2D[d]->GetXaxis()->GetNbins() ,
+                                        hists2D[d]->GetXaxis()->GetXmin()  ,
+                                        hists2D[d]->GetXaxis()->GetXmax()  ,
+                                        hists2D[d]->GetYaxis()->GetNbins() ,
+                                        hists2D[d]->GetYaxis()->GetXmin()  ,
+                                        hists2D[d]->GetYaxis()->GetXmax() 
+                                    ) ;
+                nbins[0] = hists2D[d]->GetNbinsX() ;
+                binRange[0][0] = 1 ;
+                binRange[0][1] = nbins[0] + 1 ;
+                nbins[1] = hists2D[d]->GetNbinsY() ;
+                binRange[1][0] = 1 ;
+                binRange[1][1] = nbins[1] + 1 ;
+                if( useOutflow ){ 
+                    binRange[0][0] = 0 ;
+                    binRange[0][1] = nbins[0] + 2 ;
+                    binRange[1][0] = 0 ;
+                    binRange[1][1] = nbins[1] + 2 ;
+                }
+                for(unsigned int r=binRange[1][0]; r<binRange[1][1]; r++){
+                    for(unsigned int c=binRange[0][0]; c<binRange[0][1]; c++){
+                        result2D->SetBinContent( 
+                            c , r , hists2D[d]->GetBinError(c,r) 
+                        ) ;
+                    }
+                }
+                hists2D[d]->Delete() ;
+                hists2D[d] = result2D ;
+                result2D = NULL ;
+            }
+            
+        }
+    }
+    else if( parameterArguments && function->GetNpar() > 0 ){
         if( dimensions == 1 ){
             for(unsigned int d=0; d<nData; d++){
                 if( dataSpecifier.at(d).size() < function->GetNpar() + 3 ){

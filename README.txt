@@ -279,6 +279,9 @@ FLIP <flipX> <flipY>
  bin contents are swapped symmetrically along defined axis (=1)
  if no arguements are given both axis will be flipped
  additional data-sets for one-parameter-functions will NOT be flipped
+WRITEERRORS
+ the bin-contents of the output-histogram are set 
+ to the errors source-histogram (no further processing)
 
 ///////////////////////////////////////////////////////////////////////////////
 
