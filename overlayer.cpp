@@ -377,7 +377,7 @@ int main(int argc, char *argv[]){
     if( name.Contains(".") ) name = name( 0 , name.Last('.') ) ;
     name += ".root" ;
     if( name.Contains("/") ) name = name( name.Last('/')+1 , name.Sizeof() ) ;
-    TFile * outfile = new TFile( name , "RECREATE" ) ;
+    TString outname = name ;
     
     bool resetRange = true ;
     
@@ -628,15 +628,9 @@ int main(int argc, char *argv[]){
 
     cout << " writing ... " ;
     
-    outfile->cd() ;
-    
-    name = outfile->GetName() ;
+    name = outname ;
     name = name.ReplaceAll( ".root" , ".pdf" ) ;
     can->Print(name) ; 
-    can->Write() ;
-    
-    outfile->Write() ;
-    outfile->Close() ;
 
     cout << " done " << endl ;
 

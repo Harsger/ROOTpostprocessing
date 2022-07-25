@@ -335,7 +335,7 @@ int main(int argc, char *argv[]){
     if( name.Contains(".") ) name = name( 0 , name.Last('.') ) ;
     name += ".root" ;
     if( name.Contains("/") ) name = name( name.Last('/')+1 , name.Sizeof() ) ;
-    TFile * outfile = new TFile( name , "RECREATE" ) ;
+    TString outname = name ;
     
     for(unsigned int g=0; g<nGraphs; g++){
         if( ! useable[g] ) continue ;
@@ -378,11 +378,7 @@ int main(int argc, char *argv[]){
         }
     }
     
-//     name = outfile->GetName() ;
-//     name = name.ReplaceAll( ".root" , "" ) ;
     TGraphErrors * extrema = new TGraphErrors() ;
-//     extrema->SetName( name ) ;
-//     extrema->SetTitle( name ) ;
     extrema->SetName( "extrema" ) ;
     extrema->SetTitle( "extrema" ) ;
     if( legendText.setting ){
@@ -431,7 +427,7 @@ int main(int argc, char *argv[]){
     
     TApplication app("app", &argc, argv) ; 
     
-    name = outfile->GetName() ;
+    name = outname ;
     name = name.ReplaceAll( ".root" , "_canvas" ) ;
     
     TCanvas * can = new TCanvas( name , name , 900 , 600 ) ; 
@@ -564,15 +560,9 @@ int main(int argc, char *argv[]){
 
     cout << " writing ... " ;
     
-    outfile->cd() ;
-    
-    name = outfile->GetName() ;
+    name = outname ;
     name = name.ReplaceAll( ".root" , ".pdf" ) ;
     can->Print(name) ; 
-    can->Write() ;
-    
-    outfile->Write() ;
-    outfile->Close() ;
 
     cout << " done " << endl ;
 
