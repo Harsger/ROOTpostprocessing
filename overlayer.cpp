@@ -26,6 +26,7 @@ int main(int argc, char *argv[]){
     bool useLogScale[2] = { false , false } ;
     SpecifiedNumber drawPoints ;
     double markerSize = 1. ;
+    bool narrowCanvas = false ;
     
     TString scaleMode = "integral" ;
     
@@ -206,6 +207,11 @@ int main(int argc, char *argv[]){
             continue ;
         }
 
+        if( parameter.at(r).at(0).compare("NARROWCANVAS") == 0 ){
+            narrowCanvas = true ;
+            continue ;
+        }
+
         if( parameter.at(r).size() > 2 ){
             strVecDummy.push_back( parameter.at(r).at(0) );
             strVecDummy.push_back( parameter.at(r).at(1) );
@@ -282,6 +288,13 @@ int main(int argc, char *argv[]){
 
     gStyle->SetTitleOffset( 1.2 , "x" ) ;
     gStyle->SetTitleOffset( 0.6 , "y" ) ;
+    
+    if( narrowCanvas ){
+        gStyle->SetPadRightMargin( 0.14 ) ;
+        gStyle->SetPadLeftMargin(  0.13 ) ;
+        gStyle->SetTitleOffset( 1.1 , "x" ) ;
+        gStyle->SetTitleOffset( 1.4 , "y" ) ;
+    }
     
     TH1D** hists = new TH1D*[nHists] ;
     TString name , title ;
@@ -448,7 +461,15 @@ int main(int argc, char *argv[]){
         
     }
     
-    TCanvas * can = new TCanvas( "overlay" , "overlay" , 2000 , 500 ) ; 
+    unsigned int canvasSizes[2] = { 2000 , 500 } ; 
+    if( narrowCanvas ){
+        canvasSizes[0] = 800 ;
+        canvasSizes[1] = 600 ;
+    }
+    TCanvas * can = new TCanvas( 
+                                    "overlay" , "overlay" , 
+                                    canvasSizes[0] , canvasSizes[1] 
+                               ) ; 
     if(useLogScale[0] && !( plotRange[0][0].number <= 0. ) ) can->SetLogx() ; 
     if(useLogScale[1] && !( plotRange[1][0].number <= 0. ) ) can->SetLogy() ; 
 
@@ -535,7 +556,13 @@ int main(int argc, char *argv[]){
     gPad->SetGridx() ;
     gPad->SetGridy() ;
     
-    TLegend * legend = can->BuildLegend( 0.90 , 0.15 , 0.995 , 0.95 ) ;
+    double legendEdges[2][2] = { { 0.90 , 0.995 } , { 0.15 , 0.95 } } ;
+    if( narrowCanvas )
+        legendEdges[0][0] = 0.87 ;
+    TLegend * legend = can->BuildLegend( 
+                                        legendEdges[0][0] , legendEdges[1][0] , 
+                                        legendEdges[0][1] , legendEdges[1][1]  
+                                       ) ;
     if( legendText.setting ) 
         legend->SetHeader( legendText.specifier.c_str() , "C" );
 
@@ -544,6 +571,10 @@ int main(int argc, char *argv[]){
         double boxRanges[2][2] = {
             { 0.075 , 0.885 } , { 0.15 , 0.99 }
         } ;
+        if( narrowCanvas ){ 
+            boxRanges[0][0] = 0.16 ;
+            boxRanges[0][1] = 0.85 ;
+        }
         double margins[2] = { 0.003 , 0.007 } ;
         double boxDimensions[2] = { 0.12 , 0.16 } ;
         double boxStarts[2] = { boxRanges[0][0] , boxRanges[1][1] } ;

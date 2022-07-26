@@ -382,6 +382,8 @@ STATBOX <mode> (<position>)
  statboxes are ordered column- or row-wise accordingly
 LEGEND <text>
  adds <text> on top of legend
+NARROWCANVAS
+ same canvas aspect ratio as for superimposer
 
 ///////////////////////////////////////////////////////////////////////////////
 
