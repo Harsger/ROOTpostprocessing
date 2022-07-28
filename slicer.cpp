@@ -53,8 +53,8 @@ int main(int argc, char *argv[]){
     input->Close() ;
     
     unsigned int nBins[2] = { 
-        (unsigned int)hist->GetNbinsX() ,
-        (unsigned int)hist->GetNbinsY() 
+        (unsigned int)hist->GetNbinsX()+1 ,
+        (unsigned int)hist->GetNbinsY()+1 
     } ;
     
     for(unsigned int v=0; v<specifiedValues.size(); v++){
