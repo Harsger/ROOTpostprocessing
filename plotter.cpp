@@ -38,6 +38,7 @@ int main(int argc, char *argv[]){
     SpecifiedNumber labeblsotpion ;
     map< unsigned int , vector<unsigned int> > pixelList ;
     bool exclude = true ;
+    bool broadCanvas = false ;
 
     for(unsigned int r=0; r<parameter.size(); r++){
 
@@ -228,6 +229,11 @@ int main(int argc, char *argv[]){
         ){
             labeblsotpion = SpecifiedNumber(0.);
             labeblsotpion.specifier = parameter.at(r).at(1) ;
+            continue ;
+        }
+
+        if( parameter.at(r).at(0).compare("BROADCANVAS") == 0 ){
+            broadCanvas = true ;
             continue ;
         }
         
@@ -621,12 +627,29 @@ int main(int argc, char *argv[]){
     gStyle->SetTitleOffset( 1.1 , "x" ) ;
     gStyle->SetTitleOffset( 1.4 , "y" ) ;
     
+    if( broadCanvas ){
+        gStyle->SetPadRightMargin( 0.03 ) ;
+        gStyle->SetPadLeftMargin(  0.06 ) ;
+        gStyle->SetTitleOffset( 1.2 , "x" ) ;
+        gStyle->SetTitleOffset( 0.6 , "y" ) ;
+    }
+    
     TApplication app("app", &argc, argv) ;     
     
     name = filename ;
     if( name.Contains(".") ) name = name( 0 , name.Last('.') ) ;
     if( name.Contains("/") ) name = name( name.Last('/')+1 , name.Sizeof() ) ;
-    TCanvas * can = new TCanvas( name , name , 800 , 600 ) ;
+    
+    unsigned int canvasSizes[2] = { 800 , 600 } ; 
+    if( broadCanvas ){
+        canvasSizes[0] = 2000 ;
+        canvasSizes[1] = 500 ;
+    }
+    TCanvas * can = new TCanvas( 
+                                    name , name , 
+                                    canvasSizes[0] , canvasSizes[1] 
+                               ) ; 
+                               
     can->SetGridy() ;
     
     if( unspecifiedHistname == nHists ){
@@ -680,6 +703,7 @@ int main(int argc, char *argv[]){
     g_extrema->SetMarkerColor( 0 ) ;
     g_extrema->SetLineColor( 0 ) ;
     g_extrema->GetYaxis()->SetNdivisions(520) ;
+    if( broadCanvas ) g_extrema->GetXaxis()->SetNdivisions(525) ;
     
     if( setLabels ){
         for(unsigned int h=0; h<nHists; h++){

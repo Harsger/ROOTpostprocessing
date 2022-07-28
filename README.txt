@@ -464,6 +464,8 @@ DELIMITER <string>
 LABELSOPTION <mode>
  X-axis labels can be manipulated according to 
  https://root.cern.ch/doc/v608/classTH1.html -> LabelsOption
+BROADCANVAS
+ same canvas aspect ratio as for overlayer (default)
 
 ///////////////////////////////////////////////////////////////////////////////
  
