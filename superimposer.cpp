@@ -29,6 +29,7 @@ int main(int argc, char *argv[]){
     SpecifiedNumber legendText ;
     SpecifiedNumber legendPosition ;
     SpecifiedNumber colorPalette ;
+    bool broadCanvas = false ;
 
     for(unsigned int r=0; r<parameter.size(); r++){
 
@@ -176,6 +177,11 @@ int main(int argc, char *argv[]){
                     
                 }
             }
+            continue ;
+        }
+
+        if( parameter.at(r).at(0).compare("BROADCANVAS") == 0 ){
+            broadCanvas = true ;
             continue ;
         }
         
@@ -418,19 +424,34 @@ int main(int argc, char *argv[]){
 
     gStyle->SetPadTopMargin(    0.03 ) ;
     gStyle->SetPadRightMargin(  0.14 ) ;
-    if( legendPosition.setting ) gStyle->SetPadRightMargin( 0.03 ) ;
     gStyle->SetPadBottomMargin( 0.12 ) ;
     gStyle->SetPadLeftMargin(   0.13 ) ;
 
     gStyle->SetTitleOffset( 1.1 , "x" ) ;
     gStyle->SetTitleOffset( 1.4 , "y" ) ;
     
+    if( broadCanvas ){
+        gStyle->SetPadRightMargin( 0.11 ) ;
+        gStyle->SetPadLeftMargin(  0.06 ) ;
+        gStyle->SetTitleOffset( 1.2 , "x" ) ;
+        gStyle->SetTitleOffset( 0.6 , "y" ) ;
+    }
+    if( legendPosition.setting ) gStyle->SetPadRightMargin( 0.03 ) ;
+    
     TApplication app("app", &argc, argv) ; 
     
     name = outname ;
     name = name.ReplaceAll( ".root" , "_canvas" ) ;
     
-    TCanvas * can = new TCanvas( name , name , 900 , 600 ) ; 
+    unsigned int canvasSizes[2] = { 900 , 600 } ; 
+    if( broadCanvas ){
+        canvasSizes[0] = 2000 ;
+        canvasSizes[1] = 500 ;
+    }
+    TCanvas * can = new TCanvas( 
+                                    name , name , 
+                                    canvasSizes[0] , canvasSizes[1] 
+                               ) ; 
     if(useLogScale[0]) can->SetLogx() ; 
     if(useLogScale[1]) can->SetLogy() ; 
     
@@ -469,7 +490,8 @@ int main(int argc, char *argv[]){
                 ) ;
         extrema->GetYaxis()->SetRangeUser( low , high ) ;
     }   
-    extrema->GetXaxis()->SetNdivisions(505) ; 
+    if( broadCanvas ) extrema->GetXaxis()->SetNdivisions(525) ; 
+    else              extrema->GetXaxis()->SetNdivisions(505) ; 
 
     for(unsigned int g=0; g<nGraphs; g++){
         
@@ -520,6 +542,7 @@ int main(int argc, char *argv[]){
     gPad->SetGridy() ;
     
     double legendEdges[4] = { 0.87 , 0.15 , 0.995 , 0.95 } ;
+    if( broadCanvas ) legendEdges[0] = 0.90 ;
     if( legendPosition.setting ){
         legendEdges[0] = 0.76 ;
         legendEdges[2] = 0.96 ;
@@ -530,6 +553,10 @@ int main(int argc, char *argv[]){
         if(      legendPosition.specifier.find("left") != std::string::npos ){
             legendEdges[0] = 0.16 ;
             legendEdges[2] = 0.36 ;
+            if( broadCanvas ){
+                legendEdges[0] = 0.09  ;
+                legendEdges[2] = 0.29 ;
+            }
         }
     }
     

@@ -383,7 +383,7 @@ STATBOX <mode> (<position>)
 LEGEND <text>
  adds <text> on top of legend
 NARROWCANVAS
- same canvas aspect ratio as for superimposer
+ same canvas aspect ratio as for superimposer (default)
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -572,6 +572,8 @@ MARKERSIZE <size>
 LEGEND <text>
  adds <text> on top of legend
 LEGENDPOSITION (left/right) (top/bot)
+BROADCANVAS
+ same canvas aspect ratio as for overlayer (default)
 
 ///////////////////////////////////////////////////////////////////////////////
 
