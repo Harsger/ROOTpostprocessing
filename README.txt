@@ -384,6 +384,9 @@ LEGEND <text>
  adds <text> on top of legend
 NARROWCANVAS
  same canvas aspect ratio as for superimposer (default)
+REPLACENAN (<replacement>)
+ search and replace bins with NaN content 
+ default with zero, if specified with <replacement>
 
 ///////////////////////////////////////////////////////////////////////////////
 

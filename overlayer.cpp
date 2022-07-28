@@ -34,6 +34,7 @@ int main(int argc, char *argv[]){
     SpecifiedNumber statBox ;
     SpecifiedNumber boxPosition ; 
     SpecifiedNumber legendText ;
+    SpecifiedNumber replaceNaN ;
 
     for(unsigned int r=0; r<parameter.size(); r++){
 
@@ -211,6 +212,16 @@ int main(int argc, char *argv[]){
             narrowCanvas = true ;
             continue ;
         }
+        
+        if( parameter.at(r).at(0).compare("REPLACENAN") == 0 ){
+            if( parameter.at(r).size() > 1 )
+                replaceNaN = SpecifiedNumber( atof( 
+                                                parameter.at(r).at(1).c_str() 
+                                            ) ) ;
+            else
+                replaceNaN = SpecifiedNumber( 0. ) ;
+            continue ;
+        }
 
         if( parameter.at(r).size() > 2 ){
             strVecDummy.push_back( parameter.at(r).at(0) );
@@ -333,6 +344,21 @@ int main(int argc, char *argv[]){
         
         hists[h]->SetName( spectrumName.at(h).c_str() ) ;
         hists[h]->SetTitle( spectrumName.at(h).c_str() ) ;
+        
+        if( replaceNaN.setting ){
+            unsigned int number = hists[h]->GetNbinsX() ;
+            for(unsigned int b=0; b<number; b++){
+                if( toDiscard( hists[h]->GetBinContent(b+1) ) ){
+                    cout 
+                        << " replace NaN in histogram " << h 
+                        << " (spectrum: " << spectrumName.at(h) 
+                        << ") at bin " << b+1 
+                        << " (center: " << hists[h]->GetBinCenter(b+1) 
+                        << ") " << endl ;
+                    hists[h]->SetBinContent( b+1 , replaceNaN.number ) ;
+                }
+            }
+        }
 
         if( nBins == 0 ){
             nBins = hists[h]->GetNbinsX() ;
