@@ -30,6 +30,8 @@ int main(int argc, char *argv[]){
     SpecifiedNumber legendPosition ;
     SpecifiedNumber colorPalette ;
     bool broadCanvas = false ;
+    SpecifiedNumber replaceNaN[2] ;
+    bool removeNaN = false ;
 
     for(unsigned int r=0; r<parameter.size(); r++){
 
@@ -182,6 +184,25 @@ int main(int argc, char *argv[]){
 
         if( parameter.at(r).at(0).compare("BROADCANVAS") == 0 ){
             broadCanvas = true ;
+            continue ;
+        }
+        
+        if( parameter.at(r).at(0).compare("REPLACENAN") == 0 ){
+            if( parameter.at(r).size() > 2 ){
+                if( parameter.at(r).at(1).compare("%") != 0 ) 
+                    replaceNaN[0] = SpecifiedNumber( atof( 
+                                                parameter.at(r).at(1).c_str() 
+                                            ) ) ;
+                if( parameter.at(r).at(2).compare("%") != 0 )
+                    replaceNaN[1] = SpecifiedNumber( atof( 
+                                                parameter.at(r).at(2).c_str() 
+                                            ) ) ;
+            }
+            else{
+                removeNaN = true ;
+                replaceNaN[0] = SpecifiedNumber( 0. ) ;
+                replaceNaN[1] = SpecifiedNumber( 0. ) ;
+            }
             continue ;
         }
         
@@ -347,8 +368,52 @@ int main(int argc, char *argv[]){
         if( ! useable[g] ) continue ;
         unsigned int nPoints = graphs[g]->GetN() ;
         double x , y ;
-        for(unsigned int p=0; p<nPoints; p++){
+        for(int p=0; p<nPoints; p++){
             graphs[g]->GetPoint( p , x , y ) ;
+            if( replaceNaN[0].setting || replaceNaN[1].setting ){
+                if( toDiscard( x ) ){
+                    if( removeNaN ){
+                        cout 
+                            << " remove in graph " << g 
+                            << " (title: " << filesNgraphsNtitles.at(g).at(2) 
+                            << ") point " << p 
+                            << " due to NaN in X " << endl ; 
+                        graphs[g]->RemovePoint( p );
+                        p--;
+                        nPoints--;
+                        continue;
+                    }
+                    else if( replaceNaN[0].setting ){
+                        cout 
+                            << " replace X in graph " << g 
+                            << " (title: " << filesNgraphsNtitles.at(g).at(2) 
+                            << ") of point " << p << endl ; 
+                        x = replaceNaN[0].number ;
+                        graphs[g]->SetPoint( p , x , y ) ;
+                    }
+                }
+                if( toDiscard( y ) ){
+                    if( removeNaN ){
+                        cout 
+                            << " remove in graph " << g 
+                            << " (title: " << filesNgraphsNtitles.at(g).at(2) 
+                            << ") point " << p 
+                            << " due to NaN in Y " << endl ; 
+                        graphs[g]->RemovePoint( p );
+                        p--;
+                        nPoints--;
+                        continue;
+                    }
+                    else if( replaceNaN[1].setting ){
+                        cout 
+                            << " replace Y in graph " << g 
+                            << " (title: " << filesNgraphsNtitles.at(g).at(2) 
+                            << ") of point " << p << endl ; 
+                        y = replaceNaN[1].number ;
+                        graphs[g]->SetPoint( p , x , y ) ;
+                    }
+                }
+            }
             if( ! plotRanges[0][0].setting ){
                 if( plotRanges[0][0].specifier.empty() ){
                     plotRanges[0][0].specifier = "xlow" ;

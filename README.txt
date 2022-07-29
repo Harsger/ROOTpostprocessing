@@ -579,6 +579,9 @@ LEGEND <text>
 LEGENDPOSITION (left/right) (top/bot)
 BROADCANVAS
  same canvas aspect ratio as for overlayer (default)
+REPLACENAN (<Xreplacement> <Yreplacement>)
+ search and remove points with NaN values (X and Y) 
+ if replacements are specified point will be overwritten
 
 ///////////////////////////////////////////////////////////////////////////////
 
