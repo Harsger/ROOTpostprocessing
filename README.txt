@@ -154,13 +154,14 @@ functionFitter
  <file> <graph/hist> <lowLimit> <highLimit> <function> 
  
  optional arguments :
- <startParameterList> print/skip
+ <startParameterList> print/skip(_auto)
  
  output :
  fit-parameter (std-out) , root-file containing fit-function , PDF
  
  takes either graph (ROOT::TGraph) or histogram (ROOT::TH1) 
  fits function within specified limits to data
+ shows data and fit in canvas
  
  function-formula has to be defined as specified in
  https://root.cern.ch/doc/master/classTFormula.html
@@ -171,8 +172,9 @@ functionFitter
  start-parameter can be given with range-limits, via :
  value[low,high] (all without withspaces) 
  
- for PDF 'print' should be the last argument
  with 'skip' no canvas is drawn
+ for PDF 'print' should be the last argument
+ using 'auto' combined with 'print' PDF is saved without interaction
 
 ///////////////////////////////////////////////////////////////////////////////
 

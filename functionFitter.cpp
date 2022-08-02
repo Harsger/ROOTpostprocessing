@@ -31,14 +31,21 @@ int main(int argc, char *argv[]){
     double value , low , high ;
     bool draw = true ;
     bool print = false ;
+    bool interactionRequired = true ;
     
     for(unsigned int a=6; a<argc; a++){
         if( argv[a] == "%" ) startParameter.push_back( {} ) ;
         else if( a == argc-1 && string( argv[a] ) == "skip" ){
             draw = false ;
         }
-        else if( a == argc-1 && string( argv[a] ) == "print" ){
+        else if( 
+            a == argc-1 
+            && 
+            string( argv[a] ).find("print") != std::string::npos 
+        ){
             print = true ;
+            if( string( argv[a] ).find("auto") != std::string::npos ) 
+                interactionRequired = false ;
         }
         else{
             value = getNumberWithRange( argv[a] , low , high ) ;
@@ -170,7 +177,6 @@ int main(int argc, char *argv[]){
     
     if( draw ){
 
-        
         if( dataClass.Contains("TH1") ){ 
             ( (TH1*)data )->SetTitle( functionString ) ;
             ( (TH1*)data )->GetXaxis()
@@ -181,6 +187,8 @@ int main(int argc, char *argv[]){
             ( (TGraphErrors*)data )->SetTitle( functionString ) ;
             ( (TGraphErrors*)data )->GetXaxis()
                                 ->SetRangeUser( fitRange[0] , fitRange[1] ) ;
+            ( (TGraphErrors*)data )->SetMarkerStyle(8) ;                    
+            ( (TGraphErrors*)data )->SetMarkerSize(1.5) ;                    
             ( (TGraphErrors*)data )->Draw("AP") ;
         }
         
@@ -190,6 +198,10 @@ int main(int argc, char *argv[]){
         gPad->Update() ;
 
         if( print ){
+            if( interactionRequired ){
+                gSystem->RedirectOutput( 0 , 0 ) ;
+                showing() ;
+            }
             name = outfile->GetName() ;
             name = name.ReplaceAll( ".root" , ".pdf" ) ;
             gPad->GetCanvas()->Print( name ) ;
