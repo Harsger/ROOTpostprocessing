@@ -303,8 +303,9 @@ int main(int argc, char *argv[]){
                     mean += reference ;
                     stdv += ( reference * reference ) ;
                     number++ ;
-                    if( reference == 0. ) reference = 1. ;
+                    if( reference == 0. ) continue ;
                     differenceTOeach[0][h]->Fill( o+1 , difference/abs(reference) ) ;
+                    if( h >= o ) continue ;
                     if( setMinMax[1] ){
                         minMax[1][0] = difference ;
                         minMax[1][1] = difference ;
@@ -367,8 +368,8 @@ int main(int argc, char *argv[]){
                                     "differenceTOmean_absolute" ,
                                     nHists , 0.5 , nHists+0.5 ,
                                     ranges["difference_absolute"].at(0) ,
-                                    ranges["difference_absolute"].at(1) ,
-                                    ranges["difference_absolute"].at(2) 
+                                    -ranges["difference_absolute"].at(2) ,
+                                     ranges["difference_absolute"].at(2) 
                                 );
 
     differenceTOeach[1] = new TH2I*[nHists] ;
@@ -379,8 +380,8 @@ int main(int argc, char *argv[]){
                                         name , name ,
                                         nHists , 0.5 , nHists+0.5 ,
                                         ranges["difference_absolute"].at(0) ,
-                                        ranges["difference_absolute"].at(1) ,
-                                        ranges["difference_absolute"].at(2) 
+                                        -ranges["difference_absolute"].at(2) ,
+                                         ranges["difference_absolute"].at(2) 
                                     );
     }
 
