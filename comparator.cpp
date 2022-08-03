@@ -23,6 +23,7 @@ int main(int argc, char *argv[]){
     vector< vector<string> > filesNhists ;
     vector<string> strVecDummy ;
     vector<TString> histIdentifier ;
+    vector<TString> histName ;
     unsigned int nIdentified = 0 ;
     SpecifiedNumber labeblsotpion ;
     
@@ -222,9 +223,7 @@ int main(int argc, char *argv[]){
         }
         else
             name = histIdentifier.at(h) ;
-        name = name.ReplaceAll( "."  , "" ) ;
-        name = name.ReplaceAll( "-"  , "" ) ;
-        name = name.ReplaceAll( "/"  , "" ) ;
+        name = replaceBadChars( name ) ;
         if( name == "" ){
             name = "default" ;
             if( tooManyDefault ){
@@ -236,7 +235,7 @@ int main(int argc, char *argv[]){
         }
         TString test = name(0,1) ;
         if( test.IsDec() ) name = "h"+name ;
-        histIdentifier.at(h) = name ;
+        histName.push_back( name ) ;
     }
 
     outfile->cd() ;
@@ -254,7 +253,7 @@ int main(int argc, char *argv[]){
     TH2I *** differenceTOeach = new TH2I**[2] ;
     differenceTOeach[0] = new TH2I*[nHists] ;
     for(unsigned int h=0; h<filesNhists.size(); h++){
-        name = histIdentifier.at( h ) ;
+        name = histName.at( h ) ;
         name += "_diffRelative" ;
         differenceTOeach[0][h] = new TH2I(
                                         name , name ,
@@ -374,7 +373,7 @@ int main(int argc, char *argv[]){
 
     differenceTOeach[1] = new TH2I*[nHists] ;
     for(unsigned int h=0; h<filesNhists.size(); h++){
-        name = histIdentifier.at( h ) ;
+        name = histName.at( h ) ;
         name += "_diffAbsolute" ;
         differenceTOeach[1][h] = new TH2I(
                                         name , name ,
@@ -491,9 +490,9 @@ int main(int argc, char *argv[]){
             if( h == o ) continue ;
             can->cd( h * nHists + o + 1 ) ;
             TH2D * diffHist = (TH2D*)hists[h]->Clone() ;
-            name = histIdentifier.at(h) ;
+            name = histName.at(h) ;
             name += "_minus_" ;
-            name += histIdentifier.at(o) ;
+            name += histName.at(o) ;
             diffHist->SetTitle(name);
             diffHist->SetName(name);
             diffHist->Add( hists[h] , hists[o] , 1. , -1. ) ;
