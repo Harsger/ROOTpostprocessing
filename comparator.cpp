@@ -241,13 +241,17 @@ int main(int argc, char *argv[]){
     outfile->cd() ;
 
     TH2I ** differenceTOmean = new TH2I*[2] ;
+    double sigmaFactor = 5.;
+    if( rangeSetting["difference_relative"] ) sigmaFactor = 1. ;
     differenceTOmean[0] = new TH2I( 
                                     "differenceTOmean_relative" ,
                                     "differenceTOmean_relative" ,
                                     nHists , 0.5 , nHists+0.5 ,
                                     ranges["difference_relative"].at(0) ,
-                                    ranges["difference_relative"].at(1) ,
-                                    ranges["difference_relative"].at(2) 
+                                    sigmaFactor 
+                                    * ranges["difference_relative"].at(1) ,
+                                    sigmaFactor 
+                                    * ranges["difference_relative"].at(2) 
                                 );
 
     TH2I *** differenceTOeach = new TH2I**[2] ;
@@ -303,8 +307,10 @@ int main(int argc, char *argv[]){
                     mean += reference ;
                     stdv += ( reference * reference ) ;
                     number++ ;
-                    if( reference == 0. ) continue ;
-                    differenceTOeach[0][h]->Fill( o+1 , difference/abs(reference) ) ;
+                    if( reference != 0. )
+                        differenceTOeach[0][h]->Fill( 
+                                            o+1 , difference/abs(reference) 
+                        ) ;
                     if( h >= o ) continue ;
                     if( setMinMax[1] ){
                         minMax[1][0] = difference ;
@@ -324,10 +330,6 @@ int main(int argc, char *argv[]){
                                 ) ; 
                 else
                     stdv = 0. ;
-                difference = content - mean ;
-                if( mean == 0. ) mean = 1. ;
-                differenceTOmean[0]->Fill( h+1 , difference/abs(mean) ) ;
-                variationDistribution[0]->Fill( h+1 , stdv/abs(mean) ) ;
                 if( setMinMax[2] ){
                     minMax[2][0] = stdv ;
                     minMax[2][1] = stdv ;
@@ -335,6 +337,10 @@ int main(int argc, char *argv[]){
                 }
                 if( minMax[2][0] > stdv ) minMax[2][0] = stdv ;
                 if( minMax[2][1] < stdv ) minMax[2][1] = stdv ;
+                difference = content - mean ;
+                differenceTOmean[0]->Fill( h+1 , difference/abs(stdv) ) ;
+                if( mean == 0. ) continue ;
+                variationDistribution[0]->Fill( h+1 , stdv/abs(mean) ) ;
             }
         }
     }
@@ -445,7 +451,6 @@ int main(int argc, char *argv[]){
                     mean += reference ;
                     stdv += ( reference * reference ) ;
                     number++ ;
-                    if( reference == 0. ) reference = 1. ;
                     differenceTOeach[1][h]->Fill( o+1 , difference ) ;
                 }
                 if( number != nToUse-1 ) continue ;
@@ -459,7 +464,6 @@ int main(int argc, char *argv[]){
                 else
                     stdv = 0. ;
                 difference = content - mean ;
-                if( mean == 0. ) mean = 1. ;
                 differenceTOmean[1]->Fill( h+1 , difference ) ;
                 variationDistribution[1]->Fill( h+1 , stdv ) ;
             }
@@ -488,8 +492,6 @@ int main(int argc, char *argv[]){
 
     for(unsigned int h=0; h<nHists; h++){
         for(unsigned int o=1; o<nHists; o++){
-            if( h >= o ) continue ;
-            can->cd( h * (nHists-1) + o ) ;
             TH2D * diffHist = (TH2D*)hists[h]->Clone() ;
             name = histName.at(h) ;
             name += "_minus_" ;
@@ -500,6 +502,8 @@ int main(int argc, char *argv[]){
             name += histIdentifier.at(o) ;
             diffHist->SetTitle(name);
             diffHist->Add( hists[h] , hists[o] , 1. , -1. ) ;
+            if( h >= o ) continue ;
+            can->cd( h * (nHists-1) + o ) ;
             diffHist->Draw("COLZ");
             diffHist->GetZaxis()->SetRangeUser( 
                                         ranges["difference_absolute"].at(1) ,
