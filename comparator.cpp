@@ -514,6 +514,12 @@ int main(int argc, char *argv[]){
                     differenceTOmean[r]->GetXaxis()->FindBin(h+1) ,
                     histIdentifier.at(h)
                 ) ;
+                for(unsigned int o=0; o<nHists; o++){
+                    differenceTOeach[r][h]->GetXaxis()->SetBinLabel(
+                        differenceTOeach[r][h]->GetXaxis()->FindBin(o+1) ,
+                        histIdentifier.at(o)
+                    ) ;
+                }
                 variationDistribution[r]->GetXaxis()->SetBinLabel(
                     variationDistribution[r]->GetXaxis()->FindBin(h+1) ,
                     histIdentifier.at(h)
@@ -523,6 +529,11 @@ int main(int argc, char *argv[]){
                 differenceTOmean[r]->LabelsOption( 
                     labeblsotpion.specifier.c_str() , "X" 
                 ) ;
+                for(unsigned int h=0; h<nHists; h++){
+                    differenceTOeach[r][h]->LabelsOption( 
+                        labeblsotpion.specifier.c_str() , "X" 
+                    ) ;
+                }
                 variationDistribution[r]->LabelsOption( 
                     labeblsotpion.specifier.c_str() , "X" 
                 ) ;
