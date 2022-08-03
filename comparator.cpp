@@ -6,6 +6,16 @@ int main(int argc, char *argv[]){
 
     if( argc < 2 ) return 1 ;
 
+    plotOptions() ;
+    gStyle->SetPadRightMargin( 0.18 ) ;
+    gStyle->SetPadTopMargin(   0.07 ) ;
+    gStyle->SetTitleOffset( 1.0 , "x" ) ;
+    gStyle->SetTitleOffset( 1.2 , "y" ) ;
+    gStyle->SetTitleOffset( 1.4 , "z" ) ;
+    gStyle->SetOptTitle(1) ;
+    gStyle->SetTitleX(0.5);
+    gStyle->SetTitleAlign(23);
+
     TString filename = argv[1] ;
 
     vector< vector<string> > parameter = getInput( filename.Data() );
