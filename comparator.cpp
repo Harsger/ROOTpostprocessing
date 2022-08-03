@@ -480,21 +480,24 @@ int main(int argc, char *argv[]){
     name = outfile->GetName() ;
     name = name.ReplaceAll( ".root" , "" ) ;
     name += "_difference_maps" ;
-    TCanvas * can = new TCanvas( name , name ) ;
-    can->Divide( nHists , nHists ) ;
+    TCanvas * can = new TCanvas( name , name , 1000 , 800 ) ;
+    can->Divide( nHists-1 , nHists-1 ) ;
 
     gStyle->SetOptStat(0) ;
 
     for(unsigned int h=0; h<nHists; h++){
-        for(unsigned int o=0; o<nHists; o++){
-            if( h == o ) continue ;
-            can->cd( h * nHists + o + 1 ) ;
+        for(unsigned int o=1; o<nHists; o++){
+            if( h >= o ) continue ;
+            can->cd( h * (nHists-1) + o ) ;
             TH2D * diffHist = (TH2D*)hists[h]->Clone() ;
             name = histName.at(h) ;
             name += "_minus_" ;
             name += histName.at(o) ;
-            diffHist->SetTitle(name);
             diffHist->SetName(name);
+            name = histIdentifier.at(h) ;
+            name += " - " ;
+            name += histIdentifier.at(o) ;
+            diffHist->SetTitle(name);
             diffHist->Add( hists[h] , hists[o] , 1. , -1. ) ;
             diffHist->Draw("COLZ");
             diffHist->GetZaxis()->SetRangeUser( 
