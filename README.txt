@@ -72,6 +72,9 @@ RANGE <type> <nbins> <low> <high>
  "variation_relative"  , "variation_absolute"
   or "spectra" (all without quotes)
 
+ additional options in parameter-file (see plotter):
+ROWS , COLUMNS , PIXELS
+
 ///////////////////////////////////////////////////////////////////////////////
  
 correlator 

@@ -52,6 +52,11 @@ int main(int argc, char *argv[]){
         { "spectra"             , false } ,
     } ;
 
+    map< string , map< unsigned int , bool > > useRowsNcolumns ;
+    map< string , vector<int> > givenRowsNcolumns ;
+    map< unsigned int , vector<unsigned int> > pixelList ;
+    bool exclude = true ;
+
     for(unsigned int r=0; r<parameter.size(); r++){
 
         if( parameter.at(r).at(0).rfind("#",0) == 0 ){ 
@@ -95,6 +100,80 @@ int main(int argc, char *argv[]){
             }
             rangeSetting[parameter.at(r).at(1)] = true ;
             continue ;
+        }
+
+        if( 
+            (
+                parameter.at(r).at(0).compare("ROWS") == 0  
+                ||
+                parameter.at(r).at(0).compare("COLUMNS") == 0  
+            )
+            &&
+            parameter.at(r).size() > 1
+        ){
+            
+            for(unsigned int c=1; c<parameter.at(r).size(); c++){
+                
+                TString tester = parameter.at(r).at(c) ;
+                if( tester.EndsWith(".txt") ){
+                    tester = filename ;
+                    tester = tester( 0 , tester.Last('/')+1 ) ;
+                    tester += parameter.at(r).at(c) ;
+                    vector< vector<string> > numberStrings = 
+                        getInput( tester.Data() ) ;
+                    for(unsigned int n=0; n<numberStrings.size(); n++){
+                        givenRowsNcolumns[parameter.at(r).at(0)].push_back(
+                            atoi( numberStrings.at(n).at(0).c_str() )
+                        );
+                    }
+                }
+                else if( tester == "%" ) break ;
+                else
+                    givenRowsNcolumns[parameter.at(r).at(0)].push_back(
+                        atoi( parameter.at(r).at(c).c_str() )
+                    );
+            }
+            
+            continue ;
+            
+        }
+
+        if(
+            parameter.at(r).at(0).compare("PIXELS") == 0  
+            &&
+            parameter.at(r).size() > 1
+        ){
+
+            vector< vector<string> > pixelStringList = 
+                getInput( parameter.at(r).at(1) ) ;
+            unsigned int nPixel = pixelStringList.size() ;
+            if( nPixel == 0 ){
+                TString pixelFile = filename ;
+                pixelFile = pixelFile( 0 , pixelFile.Last('/')+1 ) ;
+                pixelFile += parameter.at(r).at(1) ;
+                pixelStringList = getInput( pixelFile.Data() ) ;
+                nPixel = pixelStringList.size() ;
+                if( nPixel > 0 )
+                    cout << " -> found at parameter-file " << endl ;
+            }
+            for(unsigned int p=0; p<nPixel; p++){
+                if( pixelStringList.size() < 2 ) continue ;
+                pixelList[ 
+                        atoi( pixelStringList.at(p).at(1).c_str() ) 
+                    ]
+                    .push_back( 
+                        atoi( pixelStringList.at(p).at(0).c_str() ) 
+                    ) ;
+            }
+            if( 
+                parameter.at(r).size() > 2 
+                && 
+                parameter.at(r).at(2).compare("select") == 0 
+            )
+                exclude = false ;
+
+            continue ;
+
         }
 
         if( parameter.at(r).size() > 1 ){
@@ -196,6 +275,40 @@ int main(int argc, char *argv[]){
         cout << " ERROR : empty histograms " << endl ;
         return 3 ;
     }
+ 
+    for(unsigned int i=0; i<2; i++){
+        string toUse = "ROWS" ;
+        if( i == 1 ) toUse = "COLUMNS" ;
+        bool overwrite = true ;
+        if( 
+            givenRowsNcolumns.find( toUse ) 
+            == 
+            givenRowsNcolumns.end() 
+        ) 
+            overwrite = false ;
+        bool toSet = true ;
+        if( overwrite && givenRowsNcolumns[toUse].at(0) > 0 ) 
+            toSet = false ;
+        for(unsigned int b=0; b<rowsNcolumns[i]; b++)
+            useRowsNcolumns[toUse][b+1] = toSet ;
+        if( overwrite ){
+            unsigned int nSpecifiedLines = 
+                givenRowsNcolumns[toUse].size() ;
+            for(unsigned int s=0; s<nSpecifiedLines; s++)
+                useRowsNcolumns[toUse][
+                    abs( givenRowsNcolumns[toUse].at(s) )
+                ] = !( toSet ) ;
+        }
+    }
+    
+    if( givenRowsNcolumns.size() < 1 )
+        useRowsNcolumns.clear() ;
+
+    bool discardRowsOrColumns[2] = { false , false } ;
+    if( useRowsNcolumns.find("ROWS") != useRowsNcolumns.end() )
+        discardRowsOrColumns[0] = true ;
+    if( useRowsNcolumns.find("COLUMNS") != useRowsNcolumns.end() )
+        discardRowsOrColumns[1] = true ;
 
     unsigned int nToUse = nHists - notFound ;
 
@@ -293,7 +406,31 @@ int main(int argc, char *argv[]){
     bool setMinMax[3] = { true , true , true } ;
 
     for(unsigned int r=1; r<=rowsNcolumns[0]; r++){
+        if( discardRowsOrColumns[0] && !( useRowsNcolumns["ROWS"][r-1] ) )
+            continue ;
         for(unsigned int c=1; c<=rowsNcolumns[1]; c++){
+            if( 
+                discardRowsOrColumns[1] 
+                && 
+                !( useRowsNcolumns["COLUMNS"][r-1] ) 
+            )
+                continue ;
+            if( 
+                pixelList.find(r-1) != pixelList.end() 
+                && 
+                std::find( 
+                            pixelList[r-1].begin() , 
+                            pixelList[r-1].end() , 
+                            c-1 
+                         )
+                    !=
+                        pixelList[r-1].end()
+            ){
+                if( exclude ) continue ;
+            }
+            else{
+                if( !( exclude ) ) continue ;
+            }
             for(unsigned int h=0; h<nHists; h++){
                 if( ! useable[h] ) continue ;
                 content = hists[h]->GetBinContent( c , r ) ;
@@ -437,7 +574,31 @@ int main(int argc, char *argv[]){
     double average , variation ;
 
     for(unsigned int r=1; r<=rowsNcolumns[0]; r++){
+        if( discardRowsOrColumns[0] && !( useRowsNcolumns["ROWS"][r-1] ) )
+            continue ;
         for(unsigned int c=1; c<=rowsNcolumns[1]; c++){
+            if( 
+                discardRowsOrColumns[1] 
+                && 
+                !( useRowsNcolumns["COLUMNS"][r-1] ) 
+            )
+                continue ;
+            if( 
+                pixelList.find(r-1) != pixelList.end() 
+                && 
+                std::find( 
+                            pixelList[r-1].begin() , 
+                            pixelList[r-1].end() , 
+                            c-1 
+                         )
+                    !=
+                        pixelList[r-1].end()
+            ){
+                if( exclude ) continue ;
+            }
+            else{
+                if( !( exclude ) ) continue ;
+            }
             count = 0 ;
             average = 0. ;
             variation = 0. ;
