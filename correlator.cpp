@@ -65,13 +65,22 @@ int main(int argc, char *argv[]){
         if( name.Contains("/") ) 
             name = name( name.Last('/')+1 , name.Sizeof() ) ;
         outname = name ;
-        outname += "_" ;
-        outname += filesNdata[0][1] ;
-        outname += "_VS_" ;
+        if( filesNdata[1][1] != "%" ){
+            outname += "_" ;
+            outname += filesNdata[0][1] ;
+        }
+        outname += "_VS" ;
         name = filesNdata[1][0] ;                                               
         if( name.Contains("/") )                                                
             name = name( name.Last('/')+1 , name.Sizeof() ) ;
-        outname += name ;
+        if( name == "%" )
+            filesNdata[1][0] = filesNdata[0][0] ;
+        else{ 
+            outname += "_" ;
+            outname += name ;
+        }
+        if( filesNdata[1][1] == "%" )
+            filesNdata[1][1] = filesNdata[0][1] ;
         outname += "_" ;
         outname += filesNdata[1][1] ;
         outname.ReplaceAll( ".root" , "" ) ;
@@ -529,7 +538,7 @@ int main(int argc, char *argv[]){
                 if( ranges[0][0].setting && a < ranges[0][0].number ) continue ;
                 if( ranges[0][1].setting && a > ranges[0][1].number ) continue ;
                 if( ranges[1][0].setting && b < ranges[1][0].number ) continue ;
-                if( ranges[1][1].setting && b < ranges[1][1].number ) continue ;
+                if( ranges[1][1].setting && b > ranges[1][1].number ) continue ;
                 g_correlation->SetPoint( g_correlation->GetN() , a , b ) ;
                 a = hists[0]->GetBinError( x , y )  ;
                 b = hists[1]->GetBinError( x , y ) ;
@@ -582,7 +591,7 @@ int main(int argc, char *argv[]){
             if( ranges[0][0].setting && a < ranges[0][0].number ) continue ;
             if( ranges[0][1].setting && a > ranges[0][1].number ) continue ;
             if( ranges[1][0].setting && b < ranges[1][0].number ) continue ;
-            if( ranges[1][1].setting && b < ranges[1][1].number ) continue ;
+            if( ranges[1][1].setting && b > ranges[1][1].number ) continue ;
             g_correlation->SetPoint( g_correlation->GetN() , a , b ) ;
             a = e[0] ;
             b = e[1] ;
@@ -596,7 +605,7 @@ int main(int argc, char *argv[]){
         }
 
     }
-    
+
     outfile->cd() ;
     
     h_correlation->Write() ;
