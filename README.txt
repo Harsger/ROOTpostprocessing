@@ -82,13 +82,13 @@ correlator
  standard-parameter-file
  
  optional arguments :
- <low1> <high1> <low2> <high2> <divisions1> <divisions2>
+ <low1> <high1> <low2> <high2> <divisions1> <divisions2> <maxDifference>
  
  output :
  root-file containing histogram , PDF
  
  takes two 2D-histograms (ROOT::TH2) or graphs and 
- plots corresponding (bin-)values agianst each other
+ plots corresponding (bin- or X-)values agianst each other
  
  parameter-file-format :
 <file1> <hist1> (<low1> <high1> <divisions1>)
@@ -97,9 +97,21 @@ correlator
  low and high values define correlation-histogram range 
  and which values are plotted in correlation-graph
  
+ <maxDifference> is the allowed difference of the X-values between the graphs
+ without specification only X-value-combinations which match exactly are used
+ if multiple values match no data is written, instead an error is given
+ this can be omitted by specifying the value negative
+ (same effect as USEFIRSTOCCURENCE in parameter-file)
+
  if only one additional argument is given or 
  if more optional arguments than specified are given
  plotting is omitted
+
+ additional options in parameter-file :
+MAXDIFFERENCE <maxDifference>
+USEFIRSTOCCURENCE
+ if multiple X-values match the first occurence 
+ in the second graph will be used
  
  additional options in parameter-file (see plotter):
  FILE , HIST , AXIS , ROWS , COLUMNS , PIXELS , NOERRORS

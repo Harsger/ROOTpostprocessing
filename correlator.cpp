@@ -20,6 +20,7 @@ int main(int argc, char *argv[]){
     TString filesNdata[2][2] ;
     SpecifiedNumber ranges[2][2] ;
     SpecifiedNumber divisions[2] ;
+    SpecifiedNumber maxDifference ;
     TString outname ;
     TString name ;
 
@@ -35,6 +36,7 @@ int main(int argc, char *argv[]){
     map< string , vector<int> > givenRowsNcolumns ;
     map< unsigned int , vector<unsigned int> > pixelList ;
     bool exclude = true ;
+    bool useFirstOccurence = false ;
 
     unsigned int count = 0 ;
     
@@ -60,7 +62,14 @@ int main(int argc, char *argv[]){
             if( string( argv[10] ).compare( "%" ) != 0  )
                 divisions[1] = SpecifiedNumber( atof( argv[10] ) ) ;
         }
-        if( argc > 11 ) draw = false ;
+        if( argc > 11 && string( argv[11] ).compare( "%" ) != 0 ){
+            maxDifference = SpecifiedNumber( atof( argv[11] ) ) ;
+            if( maxDifference.number < 0. ){
+                maxDifference.number = abs( maxDifference.number ) ;
+                useFirstOccurence = true ;
+            }
+        }
+        if( argc > 12 ) draw = false ;
         name = filesNdata[0][0] ;
         if( name.Contains("/") ) 
             name = name( name.Last('/')+1 , name.Sizeof() ) ;
@@ -225,6 +234,22 @@ int main(int argc, char *argv[]){
                 
             }
             
+            if(
+                parameter.at(r).at(0).compare("MAXDIFFERENCE") == 0  
+                &&
+                parameter.at(r).size() > 1
+            ){
+                maxDifference = SpecifiedNumber( 
+                                    atof( parameter.at(r).at(1).c_str() ) 
+                                ) ;
+                continue ;
+            }
+
+            if( parameter.at(r).at(0).compare("USEFIRSTOCCURENCE") == 0 ){
+                useFirstOccurence = true ;
+                continue ;
+            }
+    
             if( parameter.at(r).size() < 2 ) continue ;
             
             if( count > 1 ) continue ;
@@ -559,6 +584,8 @@ int main(int argc, char *argv[]){
 
         double x[2] , y[2] , e[2] ;
         unsigned int equalXpoint ;
+        unsigned int startIndex , stops ;
+        int useIndex ;
         for(unsigned int p=0; p<bins[0]; p++){
             graphs[0]->GetPoint( p , x[0] , y[0] ) ;
             e[0] = graphs[0]->GetErrorY( p ) ;
@@ -568,16 +595,53 @@ int main(int argc, char *argv[]){
             }
             if( p >= bins[1] || x[1] != x[0] ){
                 count = 0 ;
-                for(unsigned int o=0; o<bins[1]; o++){
-                    graphs[1]->GetPoint( o , x[1] , y[1] ) ;
-                    if( x[1] == x[0] ){
-                        equalXpoint = o ;
-                        count++ ;
+                if( maxDifference.setting ){
+                    if( p < bins[1] ) startIndex = p ;
+                    else{
+                        startIndex = (unsigned int)( 
+                                (double)p / (double)bins[0] * (double)bins[1] 
+                        ) ;
+                    }
+                    for(unsigned int o=0; o<bins[1]; o++){
+                        stops = 0 ;
+                        for(int s=-1; s<2; s+=2){
+                            useIndex = (int)startIndex + s * (int)o ;
+                            if( useIndex < 0 || useIndex >= bins[1] ){ 
+                                stops++ ;
+                                continue ;
+                            }
+                            graphs[1]->GetPoint( useIndex , x[1] , y[1] ) ;
+                            if( 
+                                x[1] == x[0] 
+                                || 
+                                abs( x[1] - x[0] ) < maxDifference.number 
+                            ){
+                                equalXpoint = useIndex ;
+                                count++ ;
+                                if( useFirstOccurence ){
+                                    stops = 2 ;
+                                    break ;
+                                }
+                            }
+                        }
+                        if( stops > 1 ) break ;
+                    }
+                }
+                else{
+                    for(unsigned int o=0; o<bins[1]; o++){
+                        graphs[1]->GetPoint( o , x[1] , y[1] ) ;
+                        if( x[1] == x[0] ){
+                            equalXpoint = o ;
+                            count++ ;
+                            if( useFirstOccurence ) break ;
+                        }
                     }
                 }
                 if( count < 1 ) continue ;
                 if( count > 1 ){
                     cout << " ERROR : data ambiguous " << endl ;
+                    h_correlation->Delete() ;
+                    outfile->Delete() ;
                     return 11 ;
                 }
                 graphs[1]->GetPoint( equalXpoint , x[1] , y[1] ) ;
@@ -612,7 +676,19 @@ int main(int argc, char *argv[]){
     g_correlation->Write() ;
         
     if( draw ){
-    
+   
+        if( !histData && g_correlation->GetN() < 1 ){
+            cout << " no compatible data found " << endl ;
+            if( h_correlation->GetEntries() > 1 ){
+                gStyle->SetOptStat(10000) ;
+                histData = true ;
+            }
+            else{
+                outfile->Close() ;
+                return -1 ;
+            }
+        }
+ 
         TApplication app("app", &argc, argv) ; 
         name = outname ;
         name = name.ReplaceAll( ".root" , "" ) ;
