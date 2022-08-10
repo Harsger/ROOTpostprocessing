@@ -360,6 +360,11 @@ DELIMITER <sign>
 XNOTINTEGER <xAxisTitle>
  for the x-axis double is used instead of unsigned int
 
+ if 'skip' (without quotes) is given at position of <specifierListFile> 
+ no canvas is drawn and no PDF is created
+ with this X-axis-range of output graphs can be controlled via 
+ <timeOffset> and <duration> (otherwise full data-set is stored)
+
 ///////////////////////////////////////////////////////////////////////////////
 
 overlayer 

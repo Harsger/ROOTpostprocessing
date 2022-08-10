@@ -24,6 +24,7 @@ int main(int argc, char *argv[]){
     if( filename.EndsWith(".root") ) rootData = true ;
     
     SpecifiedNumber plotTime , duration ;
+    bool draw = true ;
     
     if( argc > 3 ){
         for(unsigned int a=2; a<4; a++){
@@ -57,8 +58,16 @@ int main(int argc, char *argv[]){
     TString xAxisTitle = "" ;
     
     if( argc > 4 ){
-        specificSpecifier = true ;
-        vector< vector<string> > specifierInput = getInput( argv[4] ) ;
+        string parameter = argv[4] ;
+        vector< vector<string> > specifierInput ;
+        if( parameter.compare("skip") == 0 ){ 
+            parameter = "" ;
+            draw = false ;
+        }
+        else{ 
+            specifierInput = getInput( parameter ) ;
+            specificSpecifier = true ;
+        }
         for(unsigned int s=0; s<specifierInput.size(); s++){
             if( specifierInput.at(s).at(0).rfind("#",0) == 0 )
                 continue ;
@@ -136,7 +145,7 @@ int main(int argc, char *argv[]){
             else specifierColumns.push_back( SpecifiedNumber() ) ;
         }
         nSpecific = specifiersNquantities.size() ;
-        if( nSpecific < 1 ){
+        if( draw && nSpecific < 1 ){
             cout << " ERROR :" 
                  << " no specifier found in specifier-file ( argv[4] ) " 
                  << endl;
@@ -414,6 +423,12 @@ int main(int argc, char *argv[]){
             
         }
         
+        if( !draw ){
+            if( abscissaInteger ){ 
+                if( unixtime < startTime || unixtime > endTime ) continue ; }
+            else{ if( xvalue   < startTime || xvalue   > endTime ) continue ; }
+        }
+        
         if( 
             plots.find( quantity ) == plots.end()  
             ||
@@ -554,6 +569,18 @@ int main(int argc, char *argv[]){
         for( auto s : q.second ){
             s.second->Write() ;
         }
+    }
+    
+    if( !draw ){
+
+        cout << " closing ... " << flush ;
+        
+        outfile->Close();
+        
+        cout << " done " << endl ;
+        
+        return 0 ;
+    
     }
     
     cout << " drawing ... " << flush ;
@@ -723,7 +750,7 @@ int main(int argc, char *argv[]){
 
     cout << " showing ... " << flush ;
     
-   showing() ;    
+    showing() ;    
 
     name = can->GetName() ;
     name += ".pdf" ;
