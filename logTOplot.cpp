@@ -65,7 +65,7 @@ int main(int argc, char *argv[]){
             parameter = "" ;
             draw = false ;
         }
-        if( parameter.compare("print") == 0 ){ 
+        else if( parameter.compare("print") == 0 ){ 
             parameter = "" ;
             formatRequest = false ;
         }
