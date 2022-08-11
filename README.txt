@@ -325,7 +325,7 @@ housekeeper
 logTOplot 
 
  arguments :
- /path/to/file.dat (<timeOffset> <duration> <specifierListFile>)
+ /path/to/file.dat (<timeOffset> <duration> <specifierListFile> <noRequest>)
  
  output :
  root-file containing canvas , PDF
@@ -364,6 +364,10 @@ XNOTINTEGER <xAxisTitle>
  no canvas is drawn and no PDF is created
  with this X-axis-range of output graphs can be controlled via 
  <timeOffset> and <duration> (otherwise full data-set is stored)
+ 
+ if 'print' (without quotes) is given at position of <specifierListFile> 
+ PDF is created without further request from the user
+ same procedure if more arguements are given after an <specifierListFile>
 
 ///////////////////////////////////////////////////////////////////////////////
 

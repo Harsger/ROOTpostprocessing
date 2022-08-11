@@ -25,6 +25,7 @@ int main(int argc, char *argv[]){
     
     SpecifiedNumber plotTime , duration ;
     bool draw = true ;
+    bool formatRequest = true ;
     
     if( argc > 3 ){
         for(unsigned int a=2; a<4; a++){
@@ -63,6 +64,10 @@ int main(int argc, char *argv[]){
         if( parameter.compare("skip") == 0 ){ 
             parameter = "" ;
             draw = false ;
+        }
+        if( parameter.compare("print") == 0 ){ 
+            parameter = "" ;
+            formatRequest = false ;
         }
         else{ 
             specifierInput = getInput( parameter ) ;
@@ -145,13 +150,15 @@ int main(int argc, char *argv[]){
             else specifierColumns.push_back( SpecifiedNumber() ) ;
         }
         nSpecific = specifiersNquantities.size() ;
-        if( draw && nSpecific < 1 ){
+        if( draw && formatRequest && nSpecific < 1 ){
             cout << " ERROR :" 
                  << " no specifier found in specifier-file ( argv[4] ) " 
                  << endl;
             return 2 ;
         }
     }
+    
+    if( argc > 5 ) formatRequest = false ;
     
     TString name = filename ;
     if( name.Contains(".") ) name = name( 0 , name.Last('.') ) ;
@@ -750,7 +757,7 @@ int main(int argc, char *argv[]){
 
     cout << " showing ... " << flush ;
     
-    showing() ;    
+    if( formatRequest ) showing() ;    
 
     name = can->GetName() ;
     name += ".pdf" ;
