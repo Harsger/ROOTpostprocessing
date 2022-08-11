@@ -447,18 +447,23 @@ int main(int argc, char *argv[]){
     name += filesNdata[1][1] ;
     name += "_VS_" ;
     name += filesNdata[0][1] ;
+    double upLimit[2] = { ranges[0][1].number , ranges[1][1].number } ;
+    if( ! ranges[0][1].setting )
+        upLimit[0] = ranges[0][1].number 
+                        + (ranges[0][1].number-ranges[0][0].number)
+                        / divisions[0].number ;
+    if( ! ranges[1][1].setting )
+        upLimit[1] = ranges[1][1].number 
+                        + (ranges[1][1].number-ranges[1][0].number)
+                        / divisions[1].number ;
     TH2I * h_correlation = new TH2I( 
                             name , name ,
                             (unsigned int)divisions[0].number , 
                             ranges[0][0].number , 
-                            ranges[0][1].number 
-                                + (ranges[0][1].number-ranges[0][0].number)
-                                    /divisions[0].number ,
+                            upLimit[0] ,
                             (unsigned int)divisions[1].number , 
                             ranges[1][0].number , 
-                            ranges[1][1].number 
-                                + (ranges[1][1].number-ranges[1][0].number)
-                                    /divisions[1].number
+                            upLimit[1]
                         ) ;
     
     name = "g_" ;
