@@ -32,6 +32,7 @@ int main(int argc, char *argv[]){
     bool broadCanvas = false ;
     SpecifiedNumber replaceNaN[2] ;
     bool removeNaN = false ;
+    SpecifiedNumber fitting ;
 
     for(unsigned int r=0; r<parameter.size(); r++){
 
@@ -222,6 +223,16 @@ int main(int argc, char *argv[]){
                 parameter.at(r).at(2).compare("inverted") == 0
             )
                 colorPalette.specifier = "inverted" ;
+            continue ;
+        }
+
+        if(
+            parameter.at(r).at(0).compare("FUNCTION") == 0
+            &&
+            parameter.at(r).size() > 1
+        ){
+            fitting = SpecifiedNumber( 0. ) ;
+            fitting.specifier = parameter.at(r).at(1) ;
             continue ;
         }
 
@@ -502,6 +513,11 @@ int main(int argc, char *argv[]){
         gStyle->SetTitleOffset( 0.6 , "y" ) ;
     }
     if( legendPosition.setting ) gStyle->SetPadRightMargin( 0.03 ) ;
+    if( fitting.setting ){
+        gStyle->SetOptFit(1) ;
+        gStyle->SetPadRightMargin( 0.3 ) ;
+        if( broadCanvas) gStyle->SetPadRightMargin( 0.2 ) ;
+    }
     
     TApplication app("app", &argc, argv) ; 
     
@@ -558,10 +574,23 @@ int main(int argc, char *argv[]){
     if( broadCanvas ) extrema->GetXaxis()->SetNdivisions(525) ; 
     else              extrema->GetXaxis()->SetNdivisions(505) ; 
 
+    TF1 * function ;
+
     for(unsigned int g=0; g<nGraphs; g++){
         
         if( !useable[g] ) continue ;
         
+        if( fitting.setting ){
+            name = "function" ;
+            name += g ;
+            function = new TF1(
+                                name.Data() , fitting.specifier.c_str() ,
+                                plotRanges[1][0].number ,
+                                plotRanges[1][1].number
+                              ) ;
+            graphs[g]->Fit( function ) ;
+        }
+
         name = "graph" ;
         name += g ;
         graphs[g]->SetName( name ) ;
@@ -646,6 +675,39 @@ int main(int argc, char *argv[]){
                 legendEntries->RemoveAt( legendEntries->IndexOf( obj ) ) ;
         }
         
+    }
+
+    if( fitting.setting ){
+
+        gPad->Modified() ;
+        gPad->Update() ;
+
+        TPaveStats * box ;
+
+        double boxRanges[2][2] = {
+            { 0.71 , 0.99 } , { 0.12 , 0.97 }
+        } ;
+        if( broadCanvas ) boxRanges[0][0] = 0.81 ;
+        double margin = 0.007 ;
+        double boxHeight =
+                            (
+                                boxRanges[1][1] - boxRanges[1][0]
+                                                - margin * ( nGraphs - 1. )
+                            ) / (double)nGraphs ;
+        double stepSize = boxHeight + margin  ;
+
+        for(unsigned int g=0; g<nGraphs; g++){
+
+            if( !useable[g] ) continue ;
+
+            box = (TPaveStats*)graphs[g]->FindObject("stats") ;
+
+            box->SetX1NDC( boxRanges[0][0] ) ;
+            box->SetX2NDC( boxRanges[0][1] ) ;
+            box->SetY1NDC( boxRanges[1][1] - stepSize * g - boxHeight ) ;
+            box->SetY2NDC( boxRanges[1][1] - stepSize * g ) ;
+
+        }
     }
         
     showing() ;

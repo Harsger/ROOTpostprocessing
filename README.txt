@@ -608,6 +608,10 @@ BROADCANVAS
 REPLACENAN (<Xreplacement> <Yreplacement>)
  search and remove points with NaN values (X and Y) 
  if replacements are specified point will be overwritten
+FUNCTION <formula>
+ function defined as specified in
+ https://root.cern.ch/doc/master/classTFormula.html
+ fit-results will be displayed on canvas and in console
 
 ///////////////////////////////////////////////////////////////////////////////
 
