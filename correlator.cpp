@@ -37,6 +37,7 @@ int main(int argc, char *argv[]){
     map< unsigned int , vector<unsigned int> > pixelList ;
     bool exclude = true ;
     bool useFirstOccurence = false ;
+    vector< vector< SpecifiedNumber > > intervals ;
 
     unsigned int count = 0 ;
     
@@ -242,6 +243,28 @@ int main(int argc, char *argv[]){
                 maxDifference = SpecifiedNumber( 
                                     atof( parameter.at(r).at(1).c_str() ) 
                                 ) ;
+                continue ;
+            }
+            
+            if(
+                parameter.at(r).at(0).compare("INTERVAL") == 0  
+                &&
+                parameter.at(r).size() > 2
+            ){
+                vector< SpecifiedNumber > specVecDummy ;
+                for(unsigned int i=1; i<3; i++){
+                    if( TString( parameter.at(r).at(i).c_str() ).IsFloat() ) 
+                        specVecDummy.push_back( 
+                            SpecifiedNumber( 
+                                atof( 
+                                    parameter.at(r).at(i).c_str() 
+                                ) 
+                            ) 
+                        ) ;
+                    else
+                        specVecDummy.push_back( SpecifiedNumber() ) ;
+                }
+                intervals.push_back( specVecDummy ) ;
                 continue ;
             }
 
@@ -586,6 +609,11 @@ int main(int argc, char *argv[]){
     else{
 
         gStyle->SetPadRightMargin( 0.08 ) ;
+        
+        bool intervalsSpecified = false ;
+        unsigned int nIntervals = intervals.size() ;
+        if( nIntervals > 0 ) intervalsSpecified = true ;
+        bool pointInInterval , pointInLow , pointInHigh ;
 
         double x[2] , y[2] , e[2] ;
         unsigned int equalXpoint ;
@@ -593,6 +621,28 @@ int main(int argc, char *argv[]){
         int useIndex ;
         for(unsigned int p=0; p<bins[0]; p++){
             graphs[0]->GetPoint( p , x[0] , y[0] ) ;
+            if( intervalsSpecified ){
+                pointInInterval = false ;
+                for(unsigned int i=0; i<nIntervals; i++){
+                    pointInLow  = false ;
+                    pointInHigh = false ;
+                    if( intervals.at(i).at(0).setting ){
+                        if( intervals.at(i).at(0).number <= x[0] )
+                            pointInLow = true ;
+                    }
+                    else pointInLow = true ;
+                    if( intervals.at(i).at(1).setting ){
+                        if( intervals.at(i).at(1).number >= x[0] )
+                            pointInHigh = true ;
+                    }
+                    else pointInHigh = true ;
+                    if( pointInLow && pointInHigh ){ 
+                        pointInInterval = true ;
+                        break ;
+                    }
+                }
+                if( !( pointInInterval ) ) continue ;
+            }
             e[0] = graphs[0]->GetErrorY( p ) ;
             if( p < bins[1] ){ 
                 graphs[1]->GetPoint( p , x[1] , y[1] ) ;
@@ -652,6 +702,28 @@ int main(int argc, char *argv[]){
                 graphs[1]->GetPoint( equalXpoint , x[1] , y[1] ) ;
                 if( useErrors ) e[1] = graphs[1]->GetErrorY( equalXpoint ) ;
             } 
+            if( intervalsSpecified ){
+                pointInInterval = false ;
+                for(unsigned int i=0; i<nIntervals; i++){
+                    pointInLow  = false ;
+                    pointInHigh = false ;
+                    if( intervals.at(i).at(0).setting ){
+                        if( intervals.at(i).at(0).number <= x[1] )
+                            pointInLow = true ;
+                    }
+                    else pointInLow = true ;
+                    if( intervals.at(i).at(1).setting ){
+                        if( intervals.at(i).at(1).number >= x[1] )
+                            pointInHigh = true ;
+                    }
+                    else pointInHigh = true ;
+                    if( pointInLow && pointInHigh ){ 
+                        pointInInterval = true ;
+                        break ;
+                    }
+                }
+                if( !( pointInInterval ) ) continue ;
+            }
             a = y[0] ;
             b = y[1] ;
             if( toDiscard( a ) ) continue ;

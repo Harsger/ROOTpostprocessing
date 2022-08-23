@@ -115,6 +115,12 @@ MAXDIFFERENCE <maxDifference>
 USEFIRSTOCCURENCE
  if multiple X-values match the first occurence 
  in the second graph will be used
+INTERVAL <lowLimit> <highLimit>
+ can be specified multiple times
+ only graph points with X-values within <lowLimit> and <highLimit>
+ (included) will be used for correlations
+ if one value is omitted via '%' (without quotes) 
+ only other boundary is considered
  
  additional options in parameter-file (see plotter):
  FILE , HIST , AXIS , ROWS , COLUMNS , PIXELS , NOERRORS
