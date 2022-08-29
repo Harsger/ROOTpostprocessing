@@ -371,19 +371,22 @@ void plotOptions(){
     
 }
 
+void padWaiting(){
+
+    gPad->Modified() ;
+    gPad->Update() ;
+    gPad->WaitPrimitive() ;
+
+}
+
 void showing(){
     
     bool toBeEdited = true ;
     
     while( toBeEdited ){
         
-        gPad->Modified() ;
-        gPad->Update() ;
-        gPad->WaitPrimitive() ;
-        
-        gPad->Modified() ;
-        gPad->Update() ;
-        gPad->WaitPrimitive() ;
+        padWaiting() ;
+        padWaiting() ;
         
         std::cout << " plot OK ? (y/n) : " ;
         std::string answer ;
