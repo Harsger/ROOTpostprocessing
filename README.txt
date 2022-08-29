@@ -85,7 +85,7 @@ correlator
  standard-parameter-file
  
  optional arguments :
- <low1> <high1> <low2> <high2> <divisions1> <divisions2> <maxDifference>
+ <HIST/GRAPH(skip)> <divisions1[low1,high1]> <divisions2[low2,high2]> <maxDifference>
  
  output :
  root-file containing histogram , PDF
@@ -97,18 +97,23 @@ correlator
 <file1> <hist1> (<low1> <high1> <divisions1>)
 <file2> <hist2> (<low2> <high2> <divisions2>)
 
+ data from source 1 is on X-axis and data from source 2 on Y-axis
+ of resulting correlations
+
+ either the correlation is plotted as 2D-histogram (via option HIST)
+ or as graph (via option GRAPH, default)
+ if 'skip' (without quotes) is specified additionally the plot is not saved
+ if only 'skip' (without quotes) is specified no canvas is shown
+
  low and high values define correlation-histogram range 
  and which values are plotted in correlation-graph
+ the divisions specifiy the correlation-histogram-binning (default=2000)
  
  <maxDifference> is the allowed difference of the X-values between the graphs
  without specification only X-value-combinations which match exactly are used
  if multiple values match no data is written, instead an error is given
  this can be omitted by specifying the value negative
  (same effect as USEFIRSTOCCURENCE in parameter-file)
-
- if only one additional argument is given or 
- if more optional arguments than specified are given
- plotting is omitted
 
  additional options in parameter-file :
 MAXDIFFERENCE <maxDifference>

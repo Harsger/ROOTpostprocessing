@@ -25,7 +25,9 @@ int main(int argc, char *argv[]){
     TString name ;
 
     bool draw = true ;
+    bool print = true ;
     bool useErrors = true ;
+    TString toDraw = "GRAPH" ;
     string neverUse = "neverUseThisPhrase" ;
     string preNsuffix[2][2] = { 
                                 { neverUse , neverUse } ,
@@ -42,35 +44,44 @@ int main(int argc, char *argv[]){
     unsigned int count = 0 ;
     
     if( argc > 4 && filename.EndsWith(".root") ){
+
         filesNdata[0][0] = argv[1] ;
         filesNdata[0][1] = argv[2] ;
         filesNdata[1][0] = argv[3] ;
         filesNdata[1][1] = argv[4] ;
-        if( argc == 6 ) draw = false ;
-        if( argc > 8 ){
-            if( string( argv[5] ).compare( "%" ) != 0  )
-                ranges[0][0] = SpecifiedNumber( atof( argv[5] ) ) ;
-            if( string( argv[6] ).compare( "%" ) != 0  )
-                ranges[0][1] = SpecifiedNumber( atof( argv[6] ) ) ;
-            if( string( argv[7] ).compare( "%" ) != 0  )
-                ranges[1][0] = SpecifiedNumber( atof( argv[7] ) ) ;
-            if( string( argv[8] ).compare( "%" ) != 0  )
-                ranges[1][1] = SpecifiedNumber( atof( argv[8] ) ) ;
+
+        if( argc > 5 ){
+            name = argv[5] ;
+            if( name == "skip" ) draw = false ;
+            else if( name.Contains("skip") ) print = false ;
+            if( name.Contains("HIST") ) toDraw = "HIST" ;
         }
-        if( argc > 10 ){
-            if( string( argv[9] ).compare( "%" ) != 0  )
-                divisions[0] = SpecifiedNumber( atof( argv[9] ) ) ;
-            if( string( argv[10] ).compare( "%" ) != 0  )
-                divisions[1] = SpecifiedNumber( atof( argv[10] ) ) ;
+        if( argc > 7 ){
+            double value , low , high ;
+            for(unsigned int c=0; c<2; c++){
+                if( string( argv[6+c] ).compare( "%" ) != 0  ){
+                    value = getNumberWithRange(
+                                                string( argv[6+c] ) ,
+                                                low ,
+                                                high
+                                              ) ;
+                    if( !( toDiscard(value) ) )
+                        divisions[c] = SpecifiedNumber( value ) ;
+                    if( !( toDiscard(low)   ) )
+                        ranges[c][0] = SpecifiedNumber( low   ) ;
+                    if( !( toDiscard(high)  ) )
+                        ranges[c][1] = SpecifiedNumber( high  ) ;
+                }
+            }
         }
-        if( argc > 11 && string( argv[11] ).compare( "%" ) != 0 ){
-            maxDifference = SpecifiedNumber( atof( argv[11] ) ) ;
+        if( argc > 8 && string( argv[8] ).compare( "%" ) != 0 ){
+            maxDifference = SpecifiedNumber( atof( argv[8] ) ) ;
             if( maxDifference.number < 0. ){
                 maxDifference.number = abs( maxDifference.number ) ;
                 useFirstOccurence = true ;
             }
         }
-        if( argc > 12 ) draw = false ;
+
         if( filesNdata[1][0] == "%" && filesNdata[1][1] == "%" ){
             cout << " ERROR : input not well specified " << endl ;
             return 2 ;
@@ -99,12 +110,18 @@ int main(int argc, char *argv[]){
         outname += ".root" ;
         if( filesNdata[1][0] == "%" ) filesNdata[1][0] = filesNdata[0][0] ;
         if( filesNdata[1][1] == "%" ) filesNdata[1][1] = filesNdata[0][1] ;
+
     }
     else{
         
         vector< vector<string> > parameter = getInput( filename.Data() ) ;
 
-        if( argc > 2 ) draw = false ;
+        if( argc > 2 ){
+            name = argv[2] ;
+            if( name == "skip" ) draw = false ;
+            else if( name.Contains("skip") ) print = false ;
+            if( name.Contains("HIST") ) toDraw = "HIST" ;
+        }
         
         for(unsigned int r=0; r<parameter.size(); r++){
 
@@ -749,11 +766,11 @@ int main(int argc, char *argv[]){
         
     if( draw ){
    
-        if( !histData && g_correlation->GetN() < 1 ){
+        if( toDraw == "GRAPH" && g_correlation->GetN() < 1 ){
             cout << " no compatible data found " << endl ;
             if( h_correlation->GetEntries() > 1 ){
                 gStyle->SetOptStat(10000) ;
-                histData = true ;
+                toDraw = "HIST" ;
             }
             else{
                 outfile->Close() ;
@@ -766,7 +783,7 @@ int main(int argc, char *argv[]){
         name = name.ReplaceAll( ".root" , "" ) ;
         TCanvas * can = new TCanvas( name , name , 700 , 600 ) ;
         
-        if( histData ){
+        if( toDraw == "HIST" ){
 
             h_correlation->GetXaxis()->SetTitle( axisTitles[0].c_str() ) ;
             h_correlation->GetYaxis()->SetTitle( axisTitles[1].c_str() ) ;
@@ -786,12 +803,14 @@ int main(int argc, char *argv[]){
             g_correlation->Draw("AP") ;
 
         }
-                
-        showing() ;
         
-        name += ".pdf" ;
-        can->Print(name);
-        can->Close() ;
+        if( print ){
+            showing() ;
+            name += ".pdf" ;
+            can->Print(name);
+            can->Close() ;
+        }
+        else padWaiting() ;
 
     }
     
