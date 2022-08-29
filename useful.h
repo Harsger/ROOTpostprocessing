@@ -114,28 +114,53 @@ double getNumberWithUnit( std::string s , std::string &unit ){
 
 double getNumberWithRange( std::string s , double &low , double &high ){
     
-    if( s.length() < 1 ){ 
-        low = nan("") ;
+    unsigned int nChars = s.length() ;
+    
+    if( nChars < 1 ){ 
+        low  = nan("") ;
         high = nan("") ;
         return nan("") ;
     }
     
     double value ;
     
-    unsigned int nChars = s.length() ;
+    std::size_t bra = s.find("[") ;
     
-    if( s[ nChars - 1 ] == ']' ){
-        std::size_t bra = s.find("[") ;
+    if( bra != std::string::npos && s[ nChars-1 ] == ']' ){
         std::size_t comma = s.find(",") ;
-        value = atof( s.substr( 0       , bra            ).c_str() ) ;
-        low   = atof( s.substr( bra+1   , comma-bra-1    ).c_str() ) ;
-        high  = atof( s.substr( comma+1 , nChars-comma-1 ).c_str() ) ;
-        if( low > high) std::swap( low , high ) ;
+        if( bra == 0 ){
+            if( comma != std::string::npos ){
+                value = nan("") ;
+                low   = atof( s.substr( 1       , comma-1        ).c_str() ) ;
+                high  = atof( s.substr( comma+1 , nChars-comma-1 ).c_str() ) ;
+            }
+            else{
+                value = atof( s.substr( 1       , nChars-1       ).c_str() ) ;
+                low   = value ;
+                high  = value ;
+            }
+        }
+        else{
+            value = atof( s.substr( 0 , bra ).c_str() ) ;
+            if( comma != std::string::npos && comma > bra ){
+                low   = atof( s.substr( bra+1   , comma-bra-1    ).c_str() ) ;
+                high  = atof( s.substr( comma+1 , nChars-comma-1 ).c_str() ) ;
+            }
+            else if( nChars-1 == bra+1 ){
+                low   = nan("") ;
+                high  = nan("") ;
+            }
+            else{
+                low   = atof( s.substr( bra+1   , nChars-1       ).c_str() ) ;
+                high  = low ;
+            }
+        }
+        if( low > high ) std::swap( low , high ) ;
     }
     else{
         value = atof( s.c_str() ) ;
-        low = nan("") ;
-        high = nan("") ;
+        low   = nan("") ;
+        high  = nan("") ;
     }
     
     return value ;
