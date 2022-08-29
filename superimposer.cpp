@@ -575,6 +575,8 @@ int main(int argc, char *argv[]){
     else              extrema->GetXaxis()->SetNdivisions(505) ; 
 
     TF1 * function ;
+    unsigned int count ;
+    double chi2ndf ;
 
     for(unsigned int g=0; g<nGraphs; g++){
         
@@ -585,10 +587,19 @@ int main(int argc, char *argv[]){
             name += g ;
             function = new TF1(
                                 name.Data() , fitting.specifier.c_str() ,
-                                plotRanges[1][0].number ,
-                                plotRanges[1][1].number
+                                plotRanges[0][0].number ,
+                                plotRanges[0][1].number
                               ) ;
-            graphs[g]->Fit( function ) ;
+            graphs[g]->Fit( function , "RQB" ) ;
+    
+            count = 1 ;
+            chi2ndf = function->GetChisquare() / function->GetNDF() ;
+            while( count < 10 && ( chi2ndf < 0.5 || chi2ndf > 2. ) ){
+                graphs[g]->Fit( function , "RQB" ) ;
+                chi2ndf = function->GetChisquare() / function->GetNDF() ;
+                count++ ;
+            }  
+            graphs[g]->Fit( function , "RB" ) ;
         }
 
         name = "graph" ;
