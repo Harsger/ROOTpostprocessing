@@ -71,31 +71,34 @@ int main(int argc, char *argv[]){
             }
         }
         if( argc > 12 ) draw = false ;
-        name = filesNdata[0][0] ;
+        if( filesNdata[1][0] == "%" && filesNdata[1][1] == "%" ){
+            cout << " ERROR : input not well specified " << endl ;
+            return 2 ;
+        }
+        if( filesNdata[1][0] == "%" ) name = filesNdata[0][0] ;
+        else                          name = filesNdata[1][0] ;
         if( name.Contains("/") ) 
             name = name( name.Last('/')+1 , name.Sizeof() ) ;
         outname = name ;
         if( filesNdata[1][1] != "%" ){
             outname += "_" ;
-            outname += filesNdata[0][1] ;
+            outname += filesNdata[1][1] ;
         }
         outname += "_VS" ;
-        name = filesNdata[1][0] ;                                               
+        name = filesNdata[0][0] ;
         if( name.Contains("/") )                                                
             name = name( name.Last('/')+1 , name.Sizeof() ) ;
-        if( name == "%" )
-            filesNdata[1][0] = filesNdata[0][0] ;
-        else{ 
+        if( filesNdata[1][0] != "%" ){
             outname += "_" ;
             outname += name ;
         }
-        if( filesNdata[1][1] == "%" )
-            filesNdata[1][1] = filesNdata[0][1] ;
         outname += "_" ;
-        outname += filesNdata[1][1] ;
+        outname += filesNdata[0][1] ;
         outname.ReplaceAll( ".root" , "" ) ;
         outname = replaceBadChars( outname ) ;
         outname += ".root" ;
+        if( filesNdata[1][0] == "%" ) filesNdata[1][0] = filesNdata[0][0] ;
+        if( filesNdata[1][1] == "%" ) filesNdata[1][1] = filesNdata[0][1] ;
     }
     else{
         
@@ -466,10 +469,6 @@ int main(int argc, char *argv[]){
         
     TFile * outfile = new TFile( outname , "RECREATE" ) ;
     
-    name = "h_" ;
-    name += filesNdata[1][1] ;
-    name += "_VS_" ;
-    name += filesNdata[0][1] ;
     double upLimit[2] = { ranges[0][1].number , ranges[1][1].number } ;
     if( ! ranges[0][1].setting )
         upLimit[0] = ranges[0][1].number 
@@ -480,7 +479,7 @@ int main(int argc, char *argv[]){
                         + (ranges[1][1].number-ranges[1][0].number)
                         / divisions[1].number ;
     TH2I * h_correlation = new TH2I( 
-                            name , name ,
+                            "histogram" , "histogram" ,
                             (unsigned int)divisions[0].number , 
                             ranges[0][0].number , 
                             upLimit[0] ,
@@ -489,13 +488,9 @@ int main(int argc, char *argv[]){
                             upLimit[1]
                         ) ;
     
-    name = "g_" ;
-    name += filesNdata[1][1] ;
-    name += "_VS_" ;
-    name += filesNdata[0][1] ;
     TGraphErrors * g_correlation = new TGraphErrors() ; 
-    g_correlation->SetName( name ) ;
-    g_correlation->SetTitle( name ) ;
+    g_correlation->SetName(  "graph" ) ;
+    g_correlation->SetTitle( "graph" ) ;
   
     double a , b ;
 
