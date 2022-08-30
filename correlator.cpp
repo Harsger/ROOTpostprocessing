@@ -9,7 +9,7 @@ int main(int argc, char *argv[]){
     plotOptions() ;
 
     gStyle->SetPadTopMargin(    0.055 ) ;
-    gStyle->SetPadRightMargin(  0.16 ) ;
+    gStyle->SetPadRightMargin(  0.08 ) ;
     gStyle->SetPadBottomMargin( 0.10 ) ;
     gStyle->SetPadLeftMargin(   0.14 ) ;
 
@@ -34,6 +34,8 @@ int main(int argc, char *argv[]){
                                 { neverUse , neverUse }
                             };
     string axisTitles[2] = { neverUse , neverUse } ;
+    bool titlesDefined = false ;
+    bool sameSource[2] = { false , false } ;
     map< string , map< unsigned int , bool > > useRowsNcolumns ;
     map< string , vector<int> > givenRowsNcolumns ;
     map< unsigned int , vector<unsigned int> > pixelList ;
@@ -144,8 +146,14 @@ int main(int argc, char *argv[]){
         outname.ReplaceAll( ".root" , "" ) ;
         outname = replaceBadChars( outname ) ;
         outname += ".root" ;
-        if( filesNdata[1][0] == "%" ) filesNdata[1][0] = filesNdata[0][0] ;
-        if( filesNdata[1][1] == "%" ) filesNdata[1][1] = filesNdata[0][1] ;
+        if( filesNdata[1][0] == "%" ){
+            filesNdata[1][0] = filesNdata[0][0] ;
+            sameSource[0] = true ;
+        }
+        if( filesNdata[1][1] == "%" ){
+            filesNdata[1][1] = filesNdata[0][1] ;
+            sameSource[1] = true ;
+        }
 
     }
     else{
@@ -188,6 +196,7 @@ int main(int argc, char *argv[]){
                 else if( specifier == 2 ){
                     axisTitles[0] = parameter.at(r).at(1) ;
                     axisTitles[1] = parameter.at(r).at(2) ;
+                    titlesDefined = true ;
                 }
                 continue ;
             }
@@ -210,6 +219,7 @@ int main(int argc, char *argv[]){
                     axisTitles[ax] += " ";
                     axisTitles[ax] += parameter.at(r).at(c) ;
                 }
+                titlesDefined = true ;
                 continue ;
             }
 
@@ -415,12 +425,15 @@ int main(int argc, char *argv[]){
         )
             axisTitles[c] = "" ;
     }
+
+    if( toDraw == "HIST" ) gStyle->SetPadRightMargin( 0.18 ) ;
     
     count = 0 ; 
     unsigned int bins[2] ;   
  
     TH2D ** hists = new TH2D*[2]{ NULL , NULL } ;
     TGraphErrors ** graphs = new TGraphErrors*[2]{ NULL , NULL } ;
+    TString sourceNames[2][2] ;
     
     for(unsigned int h=0; h<2; h++){
 
@@ -432,6 +445,7 @@ int main(int argc, char *argv[]){
             cout << " ERROR : opening " << input->GetName() << endl ;
             return 4 ;
         }
+        sourceNames[h][0] = name ;
 
         name = preNsuffix[1][0] ;
         name += filesNdata[h][1] ;
@@ -441,6 +455,7 @@ int main(int argc, char *argv[]){
                  << " in " << input->GetName() << endl ;
             return 5 ;
         }
+        sourceNames[h][1] = name ;
         
         TString dataClass = input->Get( name )->ClassName() ;
         double min , max ;
@@ -680,8 +695,6 @@ int main(int argc, char *argv[]){
 
     }
     else{
-
-        gStyle->SetPadRightMargin( 0.08 ) ;
         
         bool intervalsSpecified = false ;
         unsigned int nIntervals = intervals.size() ;
@@ -821,6 +834,28 @@ int main(int argc, char *argv[]){
 
     }
 
+    if( !( titlesDefined ) ){
+        if(      sameSource[0] || sourceNames[0][0] == sourceNames[1][0] ){
+            axisTitles[0] = sourceNames[0][1] ;
+            axisTitles[1] = sourceNames[1][1] ;
+        }
+        else if( sameSource[1] || sourceNames[0][1] == sourceNames[1][1] ){
+            axisTitles[0] = sourceNames[0][0] ;
+            axisTitles[1] = sourceNames[1][0] ;
+        }
+        else{
+            axisTitles[0] = sourceNames[0][0]+" "+sourceNames[0][1] ;
+            axisTitles[1] = sourceNames[1][0]+" "+sourceNames[1][1] ;
+        }
+        for(unsigned int a=0; a<2; a++){
+            name = axisTitles[a] ;
+            name = name.ReplaceAll( ".root" , "" ) ;
+            if( name.Contains("/") )
+                name = name( name.Last('/')+1 , name.Sizeof() ) ;
+            axisTitles[a] = name.Data() ;
+        }
+    }
+
     outfile->cd() ;
     
     h_correlation->Write() ;
@@ -865,7 +900,18 @@ int main(int argc, char *argv[]){
         }
         else if( toDraw == "DIFF" ){
 
-            h_differences->Draw("COLZ") ;
+            if( titlesDefined ){
+                h_differences->GetXaxis()->SetTitle( axisTitles[0].c_str() ) ;
+                h_differences->GetYaxis()->SetTitle( axisTitles[1].c_str() ) ;
+            }
+            else{
+                name = axisTitles[1] + " - " + axisTitles[0] ;
+                h_differences->GetXaxis()->SetTitle( name ) ;
+                h_differences->GetYaxis()->SetTitle( "#" ) ;
+            }
+            gStyle->SetOptStat(1111110) ;
+
+            h_differences->Draw() ;
 
         }
         else{
@@ -883,6 +929,7 @@ int main(int argc, char *argv[]){
         
         if( print ){
             showing() ;
+            name = can->GetName() ;
             name += ".pdf" ;
             can->Print(name);
             can->Close() ;
