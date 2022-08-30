@@ -40,12 +40,14 @@ int main(int argc, char *argv[]){
     bool exclude = true ;
     bool useFirstOccurence = false ;
     vector< vector< SpecifiedNumber > > intervals ;
+    vector< SpecifiedNumber > specVecDummy ;
 
     bool calculateDifferences = false ;
     unsigned int diffBins ;
     double diffRange[2] ;
 
     unsigned int count = 0 ;
+    double value , low , high ;
     
     if( argc > 4 && filename.EndsWith(".root") ){
 
@@ -62,7 +64,6 @@ int main(int argc, char *argv[]){
             else if( name.Contains("DIFF") ) toDraw = "DIFF" ;
         }
         if( argc > 7 ){
-            double value , low , high ;
             for(unsigned int c=0; c<2; c++){
                 if( string( argv[6+c] ).compare( "%" ) != 0  ){
                     value = getNumberWithRange(
@@ -100,6 +101,21 @@ int main(int argc, char *argv[]){
                 !( toDiscard( diffRange[1] ) )
             )
                 calculateDifferences = true ;
+        }
+
+        for(unsigned int a=10; a<argc; a++){
+            name = argv[a] ;
+            if( name.BeginsWith("[") && name.EndsWith("]") ){
+                value = getNumberWithRange( string( argv[a] ) , low , high ) ;
+                if( toDiscard( low ) )
+                     specVecDummy.push_back( SpecifiedNumber() ) ;
+                else specVecDummy.push_back( SpecifiedNumber( low )  ) ;
+                if( toDiscard( high ) )
+                     specVecDummy.push_back( SpecifiedNumber() ) ;
+                else specVecDummy.push_back( SpecifiedNumber( high )  ) ;
+                intervals.push_back( specVecDummy ) ;
+                specVecDummy.clear() ;
+            }
         }
 
         if( filesNdata[1][0] == "%" && filesNdata[1][1] == "%" ){
@@ -313,7 +329,6 @@ int main(int argc, char *argv[]){
                 &&
                 parameter.at(r).size() > 2
             ){
-                vector< SpecifiedNumber > specVecDummy ;
                 for(unsigned int i=1; i<3; i++){
                     if( TString( parameter.at(r).at(i).c_str() ).IsFloat() ) 
                         specVecDummy.push_back( 
@@ -327,6 +342,7 @@ int main(int argc, char *argv[]){
                         specVecDummy.push_back( SpecifiedNumber() ) ;
                 }
                 intervals.push_back( specVecDummy ) ;
+                specVecDummy.clear() ;
                 continue ;
             }
     

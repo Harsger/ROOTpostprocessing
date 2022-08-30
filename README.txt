@@ -86,7 +86,7 @@ correlator
  
  optional arguments :
  <HIST/GRAPH(skip)> <divisions1[low1,high1]> <divisions2[low2,high2]>
- <maxDistance> <diffBining[diffLow,diffHigh]>
+ <maxDistance> <diffBining[diffLow,diffHigh]> <intervalList>
  
  output :
  root-file containing histogram , PDF
@@ -109,6 +109,8 @@ correlator
  a difference-histogram is filled with data2-data1, only if also
  <diffBining>, <diffHigh> and <diffBining> is specified
  (either as arguements or in the parameter-file)
+ <intervalList> can contain any number of intervals (specified as [low,high])
+ separated by spaces, which define the allowed X-values from the source-data
 
  low and high values define correlation-histogram range 
  and which values are plotted in correlation-graph
