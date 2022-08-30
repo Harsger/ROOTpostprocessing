@@ -85,7 +85,8 @@ correlator
  standard-parameter-file
  
  optional arguments :
- <HIST/GRAPH(skip)> <divisions1[low1,high1]> <divisions2[low2,high2]> <maxDifference>
+ <HIST/GRAPH(skip)> <divisions1[low1,high1]> <divisions2[low2,high2]>
+ <maxDistance> <diffBining[diffLow,diffHigh]>
  
  output :
  root-file containing histogram , PDF
@@ -94,8 +95,8 @@ correlator
  plots corresponding (bin- or X-)values agianst each other
  
  parameter-file-format :
-<file1> <hist1> (<low1> <high1> <divisions1>)
-<file2> <hist2> (<low2> <high2> <divisions2>)
+<file1> <hist/graph1> (<low1> <high1> <divisions1>)
+<file2> <hist/graph2> (<low2> <high2> <divisions2>)
 
  data from source 1 is on X-axis and data from source 2 on Y-axis
  of resulting correlations
@@ -104,6 +105,10 @@ correlator
  or as graph (via option GRAPH, default)
  if 'skip' (without quotes) is specified additionally the plot is not saved
  if only 'skip' (without quotes) is specified no canvas is shown
+ if 'DIFF' (without quotes) is specified instead of 'HIST' or 'GRAPH'
+ a difference-histogram is filled with data2-data1, only if also
+ <diffBining>, <diffHigh> and <diffBining> is specified
+ (either as arguements or in the parameter-file)
 
  low and high values define correlation-histogram range 
  and which values are plotted in correlation-graph
@@ -116,10 +121,11 @@ correlator
  (same effect as USEFIRSTOCCURENCE in parameter-file)
 
  additional options in parameter-file :
-MAXDIFFERENCE <maxDifference>
+MAXDISTANCE <maxDistance>
 USEFIRSTOCCURENCE
  if multiple X-values match the first occurence 
  in the second graph will be used
+DIFFERENCES <diffLow> <diffHigh> <diffBining>
 INTERVAL <lowLimit> <highLimit>
  can be specified multiple times
  only graph points with X-values within <lowLimit> and <highLimit>

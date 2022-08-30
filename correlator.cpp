@@ -20,7 +20,7 @@ int main(int argc, char *argv[]){
     TString filesNdata[2][2] ;
     SpecifiedNumber ranges[2][2] ;
     SpecifiedNumber divisions[2] ;
-    SpecifiedNumber maxDifference ;
+    SpecifiedNumber maxDistance ;
     TString outname ;
     TString name ;
 
@@ -41,6 +41,10 @@ int main(int argc, char *argv[]){
     bool useFirstOccurence = false ;
     vector< vector< SpecifiedNumber > > intervals ;
 
+    bool calculateDifferences = false ;
+    unsigned int diffBins ;
+    double diffRange[2] ;
+
     unsigned int count = 0 ;
     
     if( argc > 4 && filename.EndsWith(".root") ){
@@ -54,7 +58,8 @@ int main(int argc, char *argv[]){
             name = argv[5] ;
             if( name == "skip" ) draw = false ;
             else if( name.Contains("skip") ) print = false ;
-            if( name.Contains("HIST") ) toDraw = "HIST" ;
+            if(      name.Contains("HIST") ) toDraw = "HIST" ;
+            else if( name.Contains("DIFF") ) toDraw = "DIFF" ;
         }
         if( argc > 7 ){
             double value , low , high ;
@@ -75,11 +80,26 @@ int main(int argc, char *argv[]){
             }
         }
         if( argc > 8 && string( argv[8] ).compare( "%" ) != 0 ){
-            maxDifference = SpecifiedNumber( atof( argv[8] ) ) ;
-            if( maxDifference.number < 0. ){
-                maxDifference.number = abs( maxDifference.number ) ;
+            maxDistance = SpecifiedNumber( atof( argv[8] ) ) ;
+            if( maxDistance.number < 0. ){
+                maxDistance.number = abs( maxDistance.number ) ;
                 useFirstOccurence = true ;
             }
+        }
+        if( argc > 9 && string( argv[9] ).compare( "%" ) != 0 ){
+            diffBins = getNumberWithRange(
+                                            string( argv[9] ) ,
+                                            diffRange[0] ,
+                                            diffRange[1]
+                                        ) ;
+            if(
+                !( toDiscard( diffBins     ) )
+                &&
+                !( toDiscard( diffRange[0] ) )
+                &&
+                !( toDiscard( diffRange[1] ) )
+            )
+                calculateDifferences = true ;
         }
 
         if( filesNdata[1][0] == "%" && filesNdata[1][1] == "%" ){
@@ -120,7 +140,8 @@ int main(int argc, char *argv[]){
             name = argv[2] ;
             if( name == "skip" ) draw = false ;
             else if( name.Contains("skip") ) print = false ;
-            if( name.Contains("HIST") ) toDraw = "HIST" ;
+            if(      name.Contains("HIST") ) toDraw = "HIST" ;
+            else if( name.Contains("DIFF") ) toDraw = "DIFF" ;
         }
         
         for(unsigned int r=0; r<parameter.size(); r++){
@@ -256,13 +277,34 @@ int main(int argc, char *argv[]){
             }
             
             if(
-                parameter.at(r).at(0).compare("MAXDIFFERENCE") == 0  
+                parameter.at(r).at(0).compare("MAXDISTANCE") == 0
                 &&
                 parameter.at(r).size() > 1
             ){
-                maxDifference = SpecifiedNumber( 
+                maxDistance = SpecifiedNumber(
                                     atof( parameter.at(r).at(1).c_str() ) 
                                 ) ;
+                if( maxDistance.number < 0. ){
+                    maxDistance.number = abs( maxDistance.number ) ;
+                    useFirstOccurence = true ;
+                }
+                continue ;
+            }
+
+            if( parameter.at(r).at(0).compare("USEFIRSTOCCURENCE") == 0 ){
+                useFirstOccurence = true ;
+                continue ;
+            }
+
+            if(
+                parameter.at(r).at(0).compare("DIFFERENCES") == 0
+                &&
+                parameter.at(r).size() > 3
+            ){
+                calculateDifferences = true ;
+                diffRange[0] = atof( parameter.at(r).at(1).c_str() ) ;
+                diffRange[1] = atof( parameter.at(r).at(2).c_str() ) ;
+                diffBins     = atoi( parameter.at(r).at(3).c_str() ) ;
                 continue ;
             }
             
@@ -285,11 +327,6 @@ int main(int argc, char *argv[]){
                         specVecDummy.push_back( SpecifiedNumber() ) ;
                 }
                 intervals.push_back( specVecDummy ) ;
-                continue ;
-            }
-
-            if( parameter.at(r).at(0).compare("USEFIRSTOCCURENCE") == 0 ){
-                useFirstOccurence = true ;
                 continue ;
             }
     
@@ -508,6 +545,13 @@ int main(int argc, char *argv[]){
     TGraphErrors * g_correlation = new TGraphErrors() ; 
     g_correlation->SetName(  "graph" ) ;
     g_correlation->SetTitle( "graph" ) ;
+
+    TH1I * h_differences ;
+    if( calculateDifferences )
+        h_differences = new TH1I(
+                                "differences" , "differences" ,
+                                diffBins , diffRange[0] , diffRange[1]
+                              ) ;
   
     double a , b ;
 
@@ -605,6 +649,7 @@ int main(int argc, char *argv[]){
                 if( ranges[1][0].setting && b < ranges[1][0].number ) continue ;
                 if( ranges[1][1].setting && b > ranges[1][1].number ) continue ;
                 g_correlation->SetPoint( g_correlation->GetN() , a , b ) ;
+                if( calculateDifferences ) h_differences->Fill( b - a ) ;
                 a = hists[0]->GetBinError( x , y )  ;
                 b = hists[1]->GetBinError( x , y ) ;
                 if( toDiscard( a ) || a == -1. ) a = 0. ;
@@ -662,7 +707,7 @@ int main(int argc, char *argv[]){
             }
             if( p >= bins[1] || x[1] != x[0] ){
                 count = 0 ;
-                if( maxDifference.setting ){
+                if( maxDistance.setting ){
                     if( p < bins[1] ) startIndex = p ;
                     else{
                         startIndex = (unsigned int)( 
@@ -681,7 +726,7 @@ int main(int argc, char *argv[]){
                             if( 
                                 x[1] == x[0] 
                                 || 
-                                abs( x[1] - x[0] ) < maxDifference.number 
+                                abs( x[1] - x[0] ) < maxDistance.number
                             ){
                                 equalXpoint = useIndex ;
                                 count++ ;
@@ -746,6 +791,7 @@ int main(int argc, char *argv[]){
             if( ranges[1][0].setting && b < ranges[1][0].number ) continue ;
             if( ranges[1][1].setting && b > ranges[1][1].number ) continue ;
             g_correlation->SetPoint( g_correlation->GetN() , a , b ) ;
+            if( calculateDifferences ) h_differences->Fill( b - a ) ;
             a = e[0] ;
             b = e[1] ;
             if( toDiscard( a ) || a == -1. ) a = 0. ;
@@ -763,11 +809,21 @@ int main(int argc, char *argv[]){
     
     h_correlation->Write() ;
     g_correlation->Write() ;
+    if( calculateDifferences ) h_differences->Write() ;
         
     if( draw ){
+
+        if( toDraw == "DIFF" && !( calculateDifferences) ){
+            cout << " WARNING : no difference-range specified " << endl ;
+            toDraw = "GRAPH" ;
+        }
    
-        if( toDraw == "GRAPH" && g_correlation->GetN() < 1 ){
-            cout << " no compatible data found " << endl ;
+        if(
+            ( toDraw == "GRAPH" && g_correlation->GetN() < 1 )
+            ||
+            ( toDraw == "DIFF"  && h_differences->GetEntries() < 1 )
+        ){
+            cout << " WARNING : no compatible data found " << endl ;
             if( h_correlation->GetEntries() > 1 ){
                 gStyle->SetOptStat(10000) ;
                 toDraw = "HIST" ;
@@ -789,6 +845,11 @@ int main(int argc, char *argv[]){
             h_correlation->GetYaxis()->SetTitle( axisTitles[1].c_str() ) ;
             
             h_correlation->Draw("COLZ") ;
+
+        }
+        else if( toDraw == "DIFF" ){
+
+            h_differences->Draw("COLZ") ;
 
         }
         else{
