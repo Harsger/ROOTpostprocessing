@@ -240,6 +240,10 @@ FUNCTION <formula>
  value of "x" in formula is taken from <rawData> Y-values
  parameters are filled from <additionalDataList> (for each point separat)
  default is "x" (without quotes, understood as f(x)=x , no other parameter)
+PARAMETERARGUMENTS
+ additional to FUNCTION
+ the parameter for the function will be taken 
+ from the <additionalDataList> as fixed numbers
 ADJUSTX <scaleX> <offsetX>
  X-values of data are adjusted (after comparison)
  <scaleX> is applied before <offsetX> ( X_new = <scaleX> * X_old + <offsetX> )

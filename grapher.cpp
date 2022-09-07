@@ -21,6 +21,7 @@ int main(int argc, char *argv[]){
     bool toFlip = false ;
     bool writeErrors[2] = { false , false } ;
     bool setErrors[2]   = { false , false } ;
+    bool parameterArguments = false ;
 
     vector< vector<string> > filesNtitlesNreferences ;
 
@@ -111,6 +112,11 @@ int main(int argc, char *argv[]){
             }
             continue ;
         }
+        
+        if( parameter.at(r).at(0).compare("PARAMETERARGUMENTS") == 0 ){
+            parameterArguments = true ;
+            continue ;
+        }
 
         if( parameter.at(r).size() > 1 ){
             filesNtitlesNreferences.push_back( parameter.at(r) ) ;
@@ -167,6 +173,7 @@ int main(int argc, char *argv[]){
     TString title ;    
     unsigned int nSets = filesNtitlesNreferences.size() ;
     unsigned int nWords , nextIndex ;
+    vector<double> functionParameter ;
     
     for(unsigned int s=0; s<nSets; s++){
 
@@ -175,6 +182,7 @@ int main(int argc, char *argv[]){
                 referenceGraphs.at(r)->Delete() ;
             referenceGraphs.clear() ;
         }
+        functionParameter.clear() ;
         
         nWords = filesNtitlesNreferences.at(s).size() ;
         if( nWords < 2 ) continue ;
@@ -225,6 +233,13 @@ int main(int argc, char *argv[]){
         sourceGraph->SetTitle( name ) ;
         
         for(unsigned int c=nextIndex; c<nWords; c++){
+            
+            if( parameterArguments ){
+                name = filesNtitlesNreferences.at(s).at(c) ;
+                if( name.IsFloat() ) 
+                    functionParameter.push_back( atof( name.Data() ) ) ;
+                continue ;
+            }
 
             name  = preNsuffix[0][0] ;
             if( filesNtitlesNreferences.at(s).at(c) != "%" )
@@ -277,6 +292,14 @@ int main(int argc, char *argv[]){
             nParameter = 0 ;
             referenceGraphs.clear() ;
         }
+        else if( parameterArguments ){
+            if( functionParameter.size() != nParameter ){
+                cout << " ERROR : at " << title 
+                    << " unequal number of parameters and arguments "
+                    << "(" << functionParameter.size() << ")" << endl ;
+                continue ;
+            }
+        }
         else if( referenceGraphs.size() != nParameter ){
             cout << " ERROR : at " << title 
                  << " unequal number of parameters and references "
@@ -286,18 +309,20 @@ int main(int argc, char *argv[]){
         
         unsigned int nPoints = sourceGraph->GetN() ;
         cout << " " << title << " \t #: " << nPoints << endl ;
-        bool problematicReference = false ;
-        for(unsigned int p=0; p<nParameter; p++){
-            if( referenceGraphs.at(p)->GetN() != nPoints ){
-                cout << " ERROR : at " << title
-                     << " unequal points in reference " << p
-                     << "(nPoints=" << referenceGraphs.at(p)->GetN() 
-                     << ")" << endl ;
-                problematicReference = true ;
-                break ;  
+        if( !parameterArguments ){
+            bool problematicReference = false ;
+            for(unsigned int p=0; p<nParameter; p++){
+                if( referenceGraphs.at(p)->GetN() != nPoints ){
+                    cout << " ERROR : at " << title
+                        << " unequal points in reference " << p
+                        << "(nPoints=" << referenceGraphs.at(p)->GetN() 
+                        << ")" << endl ;
+                    problematicReference = true ;
+                    break ;  
+                }
             }
+            if( problematicReference ) continue ;
         }
-        if( problematicReference ) continue ;
         
         resultGraph = new TGraphErrors() ;
         resultGraph->SetName(  title ) ;
@@ -313,11 +338,14 @@ int main(int argc, char *argv[]){
             
             skipPoint = false ;
             for(r=0; r<nParameter; r++){ 
-                referenceGraphs.at(r)->GetPoint( p , rX , rY ) ;
-                if( sX != rX ){
-                    differentXcount++ ;
-                    skipPoint = true ;
-                    break ;
+                if( parameterArguments ) rY = functionParameter.at(r) ;
+                else{
+                    referenceGraphs.at(r)->GetPoint( p , rX , rY ) ;
+                    if( sX != rX ){
+                        differentXcount++ ;
+                        skipPoint = true ;
+                        break ;
+                    }
                 }
                 function->SetParameter( r , rY ) ;
             }
@@ -369,11 +397,16 @@ int main(int argc, char *argv[]){
 
         outfile->cd() ;
         sourceGraph->Write() ;
-        for(r=0; r<nParameter; r++){
-            referenceGraphs.at(r)->Write() ;
-            referenceGraphs.at(r)->Delete() ;
+        if( !parameterArguments ){
+            for(r=0; r<nParameter; r++){
+                referenceGraphs.at(r)->Write() ;
+                referenceGraphs.at(r)->Delete() ;
+            }
         }
-        if( nParameter > 0 ) referenceGraphs.clear() ;
+        if( nParameter > 0 ){ 
+            referenceGraphs.clear() ;
+            functionParameter.clear() ;
+        }
         resultGraph->Write() ;
         
     }
