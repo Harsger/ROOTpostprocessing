@@ -33,6 +33,8 @@ int main(int argc, char *argv[]){
     SpecifiedNumber replaceNaN[2] ;
     bool removeNaN = false ;
     SpecifiedNumber fitting ;
+    vector< vector<SpecifiedNumber> > startParameter ;
+    double value , low , high ;
 
     for(unsigned int r=0; r<parameter.size(); r++){
 
@@ -233,6 +235,26 @@ int main(int argc, char *argv[]){
         ){
             fitting = SpecifiedNumber( 0. ) ;
             fitting.specifier = parameter.at(r).at(1) ;
+            for(unsigned int c=2; c<parameter.at(r).size(); c++){
+                value = getNumberWithRange(
+                                            parameter.at(r).at(c) , low , high
+                                          ) ;
+                specVecDummy.clear() ;
+                if( toDiscard( value ) )
+                    specVecDummy.push_back( SpecifiedNumber() ) ;
+                else
+                    specVecDummy.push_back( SpecifiedNumber( value ) ) ;
+                if( toDiscard( low ) )
+                    specVecDummy.push_back( SpecifiedNumber() ) ;
+                else
+                    specVecDummy.push_back( SpecifiedNumber( low ) ) ;
+                if( toDiscard( high ) )
+                    specVecDummy.push_back( SpecifiedNumber() ) ;
+                else
+                    specVecDummy.push_back( SpecifiedNumber( high ) ) ;
+                startParameter.push_back( specVecDummy ) ;
+                specVecDummy.clear() ;
+            }
             continue ;
         }
 
@@ -549,7 +571,6 @@ int main(int argc, char *argv[]){
                                                 plotRanges[0][1].number 
                                             ) ;
     else{
-        double low , high ;
         getLimits( 
                     plotRanges[0][0].number , 
                     plotRanges[0][1].number , 
@@ -563,7 +584,6 @@ int main(int argc, char *argv[]){
                                                 plotRanges[1][1].number 
                                             ) ;
     else{
-        double low , high ;
         getLimits(
                     plotRanges[1][0].number ,
                     plotRanges[1][1].number ,
@@ -590,6 +610,39 @@ int main(int argc, char *argv[]){
                                 plotRanges[0][0].number ,
                                 plotRanges[0][1].number
                               ) ;
+
+            if( function->GetNpar() > 0. && startParameter.size() > 0. ){
+                for(unsigned int p=0; p<startParameter.size(); p++){
+                    if( p >= function->GetNpar() ) break ;
+                    if( startParameter.at(p).size() > 2 ){
+                        if( startParameter.at(p).at(0).setting )
+                            function->SetParameter(
+                                p , startParameter.at(p).at(0).number
+                            ) ;
+                        if(
+                            startParameter.at(p).at(1).setting
+                            &&
+                            startParameter.at(p).at(2).setting
+                        ){
+                            if(
+                                startParameter.at(p).at(1).number
+                                ==
+                                startParameter.at(p).at(2).number
+                            )
+                                function->FixParameter(
+                                    p , startParameter.at(p).at(1).number
+                                ) ;
+                            else
+                                function->SetParLimits(
+                                    p ,
+                                    startParameter.at(p).at(1).number ,
+                                    startParameter.at(p).at(2).number
+                                ) ;
+                        }
+                    }
+                }
+            }
+
             graphs[g]->Fit( function , "RQB" ) ;
     
             count = 1 ;

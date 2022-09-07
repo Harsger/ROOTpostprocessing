@@ -631,10 +631,12 @@ BROADCANVAS
 REPLACENAN (<Xreplacement> <Yreplacement>)
  search and remove points with NaN values (X and Y) 
  if replacements are specified point will be overwritten
-FUNCTION <formula>
+FUNCTION <formula> (<startParameterList>)
  function defined as specified in
  https://root.cern.ch/doc/master/classTFormula.html
  fit-results will be displayed on canvas and in console
+ <startParameterList> could contain value[low,high] for
+ the parameters of the function and their limits
 
 ///////////////////////////////////////////////////////////////////////////////
 
