@@ -172,6 +172,55 @@ int main(int argc, char *argv[]){
     
     TFile * outfile = new TFile( name , "RECREATE" ) ;
     outfile->cd() ;
+    if( dataClass.Contains("TH1") ){
+        TH1D * hist = (TH1D*)data ;
+        unsigned int nBins = hist->GetNbinsX() ;
+        Double_t binEdges[ nBins + 1 ] ;
+        hist->GetXaxis()->GetLowEdge( binEdges ) ;
+        TH1D * difference = new TH1D(
+                                        "difference" , "difference" ,
+                                        nBins , binEdges
+                                    ) ;
+        nBins++ ;
+        double x , y , ey ;
+        for(unsigned int b=1; b<nBins; b++){
+            x = hist->GetXaxis()->GetBinCenter( b ) ;
+            y = hist->GetBinContent( b ) ;
+            difference->SetBinContent( b , y - function->Eval( x ) ) ;
+            ey = hist->GetBinError( b ) ;
+            if( ey > 0. ){
+                difference->SetBinError(
+                    b , sqrt( ey * ey + pow( function->Derivative( x ) , 2 ) )
+                ) ;
+            }
+        }
+        difference->Write() ;
+    }
+    else if( dataClass.Contains("Graph") ){
+        TGraphErrors * graph = (TGraphErrors*)data ;
+        TGraphErrors * difference = new TGraphErrors() ;
+        difference->SetName(  "difference" ) ;
+        difference->SetTitle( "difference" ) ;
+        unsigned int nPoints = graph->GetN() ;
+        double x , y  , ex , ey ;
+        bool withErrors = dataClass.Contains("Errors") ;
+        for(unsigned int p=0; p<nPoints; p++){
+            graph->GetPoint( p , x , y ) ;
+            difference->SetPoint( p , x , y - function->Eval( x ) ) ;
+            if( withErrors ){
+                ex = graph->GetErrorX( p ) ;
+                ey = graph->GetErrorY( p ) ;
+                if( ey > 0. ){
+                    if( !( ex > 0. ) ) ex = 0. ;
+                    difference->SetPointError(
+                        p , ex ,
+                        sqrt( ey * ey + pow( function->Derivative( x ) , 2 ) )
+                    ) ;
+                }
+            }
+        }
+        difference->Write() ;
+    }
     function->Write() ;
     outfile->Close() ;
     

@@ -191,7 +191,8 @@ functionFitter
  <startParameterList> print/skip(_auto)
  
  output :
- fit-parameter (std-out) , root-file containing fit-function , PDF
+ fit-parameter (std-out) , PDF ,
+ root-file containing fit-function and difference to data
  
  takes either graph (ROOT::TGraph) or histogram (ROOT::TH1) 
  fits function within specified limits to data
