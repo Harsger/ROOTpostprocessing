@@ -552,14 +552,18 @@ rootTOtext
  /path/to/file.root  
  
  optional arguments :
- rootObjectName
+ <rootObjectName>/WRITE (WRITE)
  
  output :
  text-files containing data from histograms and graphs
  
- iterates over objects in root-file and writes data to text-file
+ iterates over objects in root-file and
+ either lists all objects (and fillings) in stdout or
+ writes data to text-file (via option 'WRITE')
  graphs are stored column-wise ( third and fourth column represent errors )
  for histograms also bin-edges are stored ( in 'X' and 'Y' row )
+ with specified <rootObjectName> only the specified obejct
+ will be written or shown
 
 ///////////////////////////////////////////////////////////////////////////////
  

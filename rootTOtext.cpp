@@ -8,11 +8,18 @@ int main(int argc, char *argv[]){
 
     TString filename = argv[1] ;
     
+    bool writeTOfile = false ;
+    
     SpecifiedNumber objectName ;
     if( argc > 2 ){
-        objectName = SpecifiedNumber( 0 ) ;
-        objectName.specifier = argv[2] ;
+        if( string( argv[2] ) == "WRITE" ) writeTOfile = true ;
+        else{
+            objectName = SpecifiedNumber( 0 ) ;
+            objectName.specifier = argv[2] ;
+        }
     }
+    
+    if( argc > 3 && string( argv[3] ) == "WRITE" ) writeTOfile = true ;
     
     TFile * infile = new TFile( filename , "READ" ) ;
     if( infile->IsZombie() ){
@@ -23,7 +30,6 @@ int main(int argc, char *argv[]){
     
     unsigned int nbins[2] ;
     TString name , title ;
-    ofstream outfile ;
     
     TString outname = filename , writename ;
     if( outname.Contains(".") ) 
@@ -63,16 +69,52 @@ int main(int argc, char *argv[]){
             !( title.BeginsWith( "TGraph" ) )
         )
             continue ;
-            
-        cout << " " << title << " * " << name ;
         
-        writename  = outname ;
-        writename += "_" ;
-        writename += name ;
-        writename += ".txt" ;
+        if( writeTOfile || !objectName.setting )
+            cout << " " << title << " * " << name << " \t " ;
         
-        outfile.open( writename.Data() ) ;
+        if( !writeTOfile && !objectName.setting ){
+            if( title.BeginsWith( "TH1" ) ){
+                TH1D * hist = (TH1D*)obj ;
+                cout << hist->GetNbinsX() << " [ " ;
+                cout << hist->GetXaxis()->GetXmin() << " , " ;
+                cout << hist->GetXaxis()->GetXmax() << " ] " ;
+                cout << " \t # : " << hist->GetEntries() ;
+            }
+            else if( title.BeginsWith( "TH2" ) ){
+                TH2D * hist = (TH2D*)obj ;
+                cout << hist->GetNbinsX() << " [ " ;
+                cout << hist->GetXaxis()->GetXmin() << " , " ;
+                cout << hist->GetXaxis()->GetXmax() << " ] " ;
+                cout << " \t " ;
+                cout << hist->GetNbinsY() << " [ " ;
+                cout << hist->GetYaxis()->GetXmin() << " , " ;
+                cout << hist->GetYaxis()->GetXmax() << " ] " ;
+                cout << " \t # : " << hist->GetEntries() ;
+            }
+            else if( title.BeginsWith( "TGraph" ) ){
+                TGraphErrors * graph = (TGraphErrors*)obj ;
+                cout << " \t # : " << graph->GetN() ;
+            }
+            cout << endl ;
+            continue ;
+        }
         
+        streambuf * buffer ;
+        ofstream fileTOstream ;
+
+        if( writeTOfile ){
+            writename  = outname ;
+            writename += "_" ;
+            writename += name ;
+            writename += ".txt" ;
+            fileTOstream.open( writename.Data() ) ;
+            buffer = fileTOstream.rdbuf() ;
+        }
+        else buffer = cout.rdbuf() ;
+
+        ostream outfile( buffer ) ;
+
         if( title.BeginsWith( "TH1" ) ){
             TH1D * hist = (TH1D*)obj ;
             nbins[0] = hist->GetNbinsX() ;
@@ -135,10 +177,13 @@ int main(int argc, char *argv[]){
             }
         }
         
-        cout << " \t > \t " << writename << endl ;
-        
-        outfile.close() ;
-        
+        if( writeTOfile ){ 
+            cout << " \t > \t " << writename << endl ;
+            fileTOstream.close() ;
+        }
+
+        if( objectName.setting ) break ;
+
     }
     
     infile->Close() ;
