@@ -291,7 +291,10 @@ double getFWHM(
     
 }
 
-void project( TH2D * hist , TH1D * projection , unsigned int axis = 0 ){
+void project(
+                TH2D * hist , TH1D * projection ,
+                unsigned int axis = 0 , bool toAverage = true
+){
     
     if( axis == 1 ){
         if( projection->GetNbinsX() != hist->GetNbinsY() ) return ;
@@ -301,20 +304,28 @@ void project( TH2D * hist , TH1D * projection , unsigned int axis = 0 ){
     }
     
     double value , mean = 0. , error = 0. ;
-    unsigned int number = 0 ;
+    unsigned int number = 1 ;
     
     unsigned int bins[2] = { 
-        (unsigned int)hist->GetNbinsX() , 
-        (unsigned int)hist->GetNbinsY() 
+        (unsigned int)hist->GetNbinsX()+1 ,
+        (unsigned int)hist->GetNbinsY()+1
     } ;
     unsigned int other = 1 , x , y ;
     if( axis == 1 ) other = 0 ;
     
-    for(unsigned int b=1; b<=bins[axis]; b++){
+    unsigned int start[2] = { 1 , 1 } ;
+    if( !( toAverage )  ){
+        bins[0]++ ;
+        bins[1]++ ;
+        start[0] = 0 ;
+        start[1] = 0 ;
+    }
+
+    for(unsigned int b=start[axis]; b<bins[axis]; b++){
         mean = 0. ;
         error = 0. ;
-        number = 0 ;
-        for(unsigned int o=1; o<=bins[other]; o++){
+        if( toAverage ) number = 0 ;
+        for(unsigned int o=start[other]; o<bins[other]; o++){
             x = b ;
             y = o ;
             if( axis == 1 ){
@@ -325,7 +336,7 @@ void project( TH2D * hist , TH1D * projection , unsigned int axis = 0 ){
             if( toDiscard( value ) ) continue ;
             mean += value ;
             error += hist->GetBinError( x , y ) ;
-            number++ ;
+            if( toAverage ) number++ ;
         }
         mean /= (double)number ;
         projection->SetBinContent( b , mean ) ;

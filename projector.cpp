@@ -4,7 +4,7 @@ using namespace std;
 
 int main(int argc, char *argv[]){
 
-    if( argc < 4 ) return 1 ;
+    if( argc < 3 ) return 1 ;
 
     TString filename = argv[1] ;
     TString histname = argv[2] ;
@@ -14,40 +14,46 @@ int main(int argc, char *argv[]){
     SpecifiedNumber highThreshold ;
     SpecifiedNumber nBins ;
     
-    bool show = true ;
-    bool print = true ;
+    bool show          = true  ;
+    bool print         = false ;
+    bool toAverage     = true  ;
+    bool writeOutliers = false ;
     
-    if( argc == 4 ){
-        TString threshString = argv[3] ;
-        TString tester = threshString( 0 , 1 ) ;
-        if( tester.IsDec() ){
-            threshold = SpecifiedNumber( atof( threshString.Data() ) ) ;
-        }
-        else{ 
-            show = false ;
-            print = false ;
-        }
-    }
-    else if( argc > 4 ){
-        TString tester = argv[3] ;
-        if( tester != "%" )
-            lowThreshold = SpecifiedNumber( atof( tester.Data() ) ) ;
-        tester = argv[4] ;
-        if( tester != "%" )
-            highThreshold = SpecifiedNumber( atof( tester.Data() ) ) ;
-        if( argc > 5 ){ 
-            tester = argv[5] ;
+    if( argc > 3 ){
+        TString tester ;
+        if( argc == 4 ){
+            tester = argv[3] ;
             TString firstChar = tester( 0 , 1 ) ;
-            if( !( firstChar.IsDec() ) ) show = false ;
-            else nBins = SpecifiedNumber( atof( tester.Data() ) ) ;
+            if( firstChar.IsDec() ){
+                threshold = SpecifiedNumber( atof( tester.Data() ) ) ;
+            }
+            else{
+                if( tester.Contains("skip"      ) ) show          = false ;
+                if( tester.Contains("print"     ) ) print         = true  ;
+                if( tester.Contains("accumulate") ) toAverage     = false ;
+                if( tester.Contains("write"     ) ) writeOutliers = true  ;
+            }
+        }
+        else if( argc > 5 ){
+            tester = argv[3] ;
+            if( tester != "%" )
+                lowThreshold  = SpecifiedNumber( atof( tester.Data() ) ) ;
+            tester = argv[4] ;
+            if( tester != "%" )
+                highThreshold = SpecifiedNumber( atof( tester.Data() ) ) ;
+            tester = argv[5] ;
+            if( tester != "%" )
+                nBins         = SpecifiedNumber( atoi( tester.Data() ) ) ;
             if( argc > 6 ){ 
-                show = false ;
-                string option = argv[6] ;
-                if( option.compare("skip") == 0 ) print = false ;
+                tester = argv[6] ;
+                if( tester.Contains("skip"      ) ) show          = false ;
+                if( tester.Contains("print"     ) ) print         = true  ;
+                if( tester.Contains("accumulate") ) toAverage     = false ;
+                if( tester.Contains("write"     ) ) writeOutliers = true  ;
             }
         }
     }
-                  
+
     TApplication app("app", &argc, argv) ;    
     plotOptions() ;
     
@@ -128,7 +134,8 @@ int main(int argc, char *argv[]){
     name += "_" ;
     name += "noisyBins.txt" ;
     
-    ofstream textout( name.Data() , std::ofstream::out ) ;
+    ofstream textout ;
+    if( writeOutliers ) textout.open( name.Data() , std::ofstream::out ) ;
     
     TString proName = name ;
     proName = proName.ReplaceAll( "_noisyBins.txt" , "" ) ;
@@ -155,6 +162,7 @@ int main(int argc, char *argv[]){
         for(unsigned int y=0; y<bins[1]; y++){
             double content = hist->GetBinContent( x+1 , y+1 ) ;
             spectrum->Fill( content ) ;
+            if( !writeOutliers ) continue ;
             if( 
                 (
                     lowThreshold.setting
@@ -180,7 +188,7 @@ int main(int argc, char *argv[]){
         }
     }
     
-    textout.close() ;
+    if( writeOutliers ) textout.close() ;
     
     spectrum->Draw("HIST") ;
     
@@ -205,8 +213,11 @@ int main(int argc, char *argv[]){
         lineHigh->SetLineColor(kRed) ;
         lineHigh->Draw() ;
     }
-    
-    if( show ) showing() ;
+        
+    if( show ){ 
+        if( print ) showing() ;
+        else        padWaiting() ;
+    }
     
     proName += "_spectrum.pdf" ;
     if( print ) can->Print( proName ) ;
@@ -240,7 +251,7 @@ int main(int argc, char *argv[]){
             replacement = "noisyRows.txt" ;
         }
         
-        project( hist , projection , c ) ;
+        project( hist , projection , c , toAverage ) ;
         
         TString nameHist = replacement ;
         nameHist = nameHist.ReplaceAll( "noisy" , "" ) ;
@@ -252,29 +263,31 @@ int main(int argc, char *argv[]){
 //         projection->Scale(1./bins[(c+1)%2]) ; 
         
         proName = proName.ReplaceAll( "noisyBins.txt" , replacement ) ;
-        textout.open( proName.Data() , std::ofstream::out ) ;
-        
-        for(unsigned int b=0; b<bins[c]; b++){
-            double content = projection->GetBinContent( b+1 ) ;
-            if( 
-                (
-                    lowThreshold.setting
-                    &&
-                    content < lowThreshold.number
-                )
-                ||
-                (
-                    highThreshold.setting
-                    &&
-                    content > highThreshold.number
-                )
-            ){
-                textout << projection->GetXaxis()->GetBinCenter( b+1 ) 
-                        << " " << content << endl ;
+        if( writeOutliers ){
+            textout.open( proName.Data() , std::ofstream::out ) ;
+            for(unsigned int b=0; b<bins[c]; b++){
+                double content = projection->GetBinContent( b+1 ) ;
+                if(
+                    (
+                        lowThreshold.setting
+                        &&
+                        content < lowThreshold.number
+                    )
+                    ||
+                    (
+                        highThreshold.setting
+                        &&
+                        content > highThreshold.number
+                    )
+                ){
+                    textout << projection->GetXaxis()->GetBinCenter( b+1 )
+                            << " " << content << endl ;
+                }
             }
+            textout.close() ;
         }
         
-        textout.close() ;
+        if( !show && !print ) continue ;
         
         proName = replacement ;
         proName = proName.ReplaceAll( "noisy" , "" ) ;
@@ -300,7 +313,10 @@ int main(int argc, char *argv[]){
             highLine->Draw("same") ;
         }
         
-        if( show ) showing() ;
+        if( show ){ 
+            if( print ) showing() ;
+            else        padWaiting() ;
+        }
         
         replacement = proName ;
         proName = name ;

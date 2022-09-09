@@ -530,7 +530,7 @@ projector
  optional arguments :
  <thresholdfactor> 
  or
- <lowThresh> <highThresh> <nBins> (<skipPlotting>)
+ <lowThresh> <highThresh> <nBins> (<writeOptions>)
  
  output :
  root-file containing histograms , PDFs , text-files
@@ -544,6 +544,13 @@ projector
  or exceeding the <lowThresh> <highThresh> (one or both can be omitted using %)
  
  if <nBins> is specified bin-value-spectrum is ranged to lowThresh to highThresh
+
+ at position of <thresholdfactor> or <writeOptions> additionally specifications
+  - 'skip'       no canvas is draw
+  - 'print'      spectrum and projections are saved as PDFs
+  - 'accumulate' projections are not averaged
+  - 'write'      bins, columns and rows deviating are written to text-files
+ (all without quotes), options can be combined in single string (no whitespaces)
 
 ///////////////////////////////////////////////////////////////////////////////
  
