@@ -32,7 +32,8 @@ int main(int argc, char *argv[]){
     SpecifiedNumber lowLimit , highLimit , plotRange[2][2] ;
     map< string , map< unsigned int , bool > > useRowsNcolumns ;
     map< string , vector<int> > givenRowsNcolumns ;
-    string delimiter = " ";
+    SpecifiedNumber delimiter ;
+    delimiter.specifier = " " ;
     vector<string> axisLabels ;
     bool setLabels = false ;
     SpecifiedNumber labeblsotpion ;
@@ -218,7 +219,8 @@ int main(int argc, char *argv[]){
             &&
             parameter.at(r).size() > 1
         ){
-            delimiter = parameter.at(r).at(1) ;
+            delimiter = SpecifiedNumber( parameter.at(r).at(1).length() ) ;
+            delimiter.specifier = parameter.at(r).at(1) ;
             continue ;
         }
         
@@ -434,8 +436,9 @@ int main(int argc, char *argv[]){
         else{
             
             vector<vector<string> > input = getInput( 
-                                                        name.Data() , 
-                                                        delimiter 
+                                                        name.Data() ,
+                                                        delimiter.setting ,
+                                                        delimiter.specifier 
                                                     ) ;
             unsigned int nLines = input.size() ;
             if( nLines < 1 ){

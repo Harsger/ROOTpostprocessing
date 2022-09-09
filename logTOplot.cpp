@@ -89,7 +89,7 @@ int main(int argc, char *argv[]){
             if( 
                 specifierInput.at(s).at(0).compare("DELIMITER") == 0 
                 &&
-                specifierInput.at(s).size() > 2
+                specifierInput.at(s).size() > 1
             ){
                 delimiter = 
                     SpecifiedNumber( specifierInput.at(s).at(1).length() ) ;
@@ -228,7 +228,11 @@ int main(int argc, char *argv[]){
     
     }
     else if( tableData ){
-        textData = getInput( filename.Data() , delimiter.specifier ) ;
+        textData = getInput( 
+                                filename.Data() , 
+                                delimiter.setting , 
+                                delimiter.specifier 
+                           ) ;
         rows = textData.size() ;
         for(unsigned int s=0; s<specifierColumns.size(); s++){
             if( maxColumns < specifierColumns.at(s).number + 1 )

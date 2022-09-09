@@ -19,59 +19,79 @@ std::map< std::string , unsigned int > secondsPER = {
 } ;
 
 std::vector< std::vector<std::string> > getInput( 
-                                                    std::string filename ,
-                                                    std::string delimiter = " "
-                                                ){
+                                            std::string filename ,
+                                            bool useNonSpaceDelimiter = false ,
+                                            std::string delimiter = " "
+                                        ){
     
     std::vector< std::vector<std::string> > input;
     
     if( filename.compare("") == 0 ){ 
-        std::cout << " WARNING : no input to read from " << std::endl;
-        return input;
+        std::cout << " WARNING : no input to read from " << std::endl ;
+        return input ;
     }
     
-    std::ifstream ifile(filename.c_str());
+    std::ifstream ifile( filename.c_str() ) ;
     if( !( ifile ) ){ 
         std::cout << " WARNING : could not read input file " 
-                  << filename << std::endl;
-        return input;
+                  << filename << std::endl ;
+        return input ;
     }
     
-    bool swapDelimiter = false ;
-    if( delimiter != " " ) swapDelimiter = true ;
+    bool multiCharDelimiter = false ;
+    char delimiterChar ;
+    unsigned int nDelimiterChars = delimiter.length() ;
+    bool emptyDelimiter = false ;
+    if( nDelimiterChars > 1 ) multiCharDelimiter = true ;
+    else if( nDelimiterChars == 0 ) emptyDelimiter = true ;
+    else delimiterChar = delimiter[0] ;
     
-    std::string line = "";
-    std::string word = "";
-    std::vector<std::string> dummy;
+    std::string line = "" ;
+    std::string word = "" ;
+    std::vector<std::string> dummy ;
     std::size_t found ;
     
-    while( getline( ifile, line) ){
+    while( getline( ifile , line ) ){
         
-        if(swapDelimiter){
-            found = line.find( delimiter ) ;
-            while( found != std::string::npos ){
-                line.replace( found , delimiter.length() , " " ) ;
+        std::stringstream sline( line ) ;
+
+        if( useNonSpaceDelimiter ){
+            if( multiCharDelimiter ){
                 found = line.find( delimiter ) ;
+                while( found != std::string::npos ){
+                    word = line.substr( 0 , found ) ;
+                    if( word != "" ) dummy.push_back( word ) ;
+                    line.erase( 0 , found + nDelimiterChars ) ;
+                    found = line.find( delimiter ) ;
+                }
+                if( line != "" ) dummy.push_back( line ) ;
+            }
+            else if( emptyDelimiter ){
+                dummy.push_back( line ) ;
+            }
+            else{
+                while( getline( sline , word , delimiterChar ) ){
+                    if( word != "" ) dummy.push_back( word ) ;
+                    word = "" ;
+                }
+            }
+        }
+        else{
+            while( !( sline.eof() ) ){ 
+                sline >> std::skipws >> word ;
+                if( word != "" ) dummy.push_back( word ) ;
+                word = "" ;
             }
         }
         
-        std::stringstream sline(line);
+        if( dummy.size() > 0 ) input.push_back(dummy) ;
+        dummy.clear() ;
         
-        while( !( sline.eof() ) ){ 
-            
-            sline >> std::skipws >> word;
-            if( word != "" ) dummy.push_back(word);
-            word="";
-            
-        }
-        
-        if( dummy.size() > 0 ) input.push_back(dummy);
-        dummy.clear();
     }
     
-    ifile.close();
+    ifile.close() ;
     
-    return input;
+    return input ;
     
 }
 
