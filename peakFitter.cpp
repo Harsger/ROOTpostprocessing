@@ -241,6 +241,9 @@ int main(int argc, char *argv[]){
     TF1 * fitfunction ;
     double fwhm , halfLow , halfHigh ;
     TLine * lineLow , * lineHigh ;
+    TH1D * difference ;
+    Double_t binEdges[ nBins + 1 ] ;
+    double x , y , ey ;
     
     TApplication app("app", &argc, argv) ; 
     
@@ -470,13 +473,34 @@ int main(int argc, char *argv[]){
 
         hists[h]->SetTitle( hists[h]->GetName() ) ;
 
+        hists[h]->GetXaxis()->GetLowEdge( binEdges ) ;
+        binEdges[ nBins ] = range[1] ;
+        name = "difference" ;
+        name += h ;
+        difference = new TH1D( name , name , nBins , binEdges ) ;
+        for(unsigned int b=1; b<nBins+2; b++){
+            x = hists[h]->GetXaxis()->GetBinCenter( b ) ;
+            y = hists[h]->GetBinContent( b ) ;
+            difference->SetBinContent( b , y - fitfunction->Eval( x ) ) ;
+            ey = hists[h]->GetBinError( b ) ;
+            if( ey > 0. ){
+                difference->SetBinError(
+                    b , sqrt(
+                                ey * ey
+                                +
+                                pow( fitfunction->Derivative( x ) , 2 )
+                            )
+                ) ;
+            }
+        }
+
 //        if( chi2ndf > 10. ){ 
 //            outfile->cd() ;
 //            hists[h]->Write() ;
 //            fitfunction->Write() ;
 //            continue ;
 //        }
-        
+
         double position = plotPosition.at(h).number ;
         double posError = 0 ;
         if( ! plotPosition.at(h).setting ){
@@ -536,6 +560,8 @@ int main(int argc, char *argv[]){
         outfile->cd() ;
         hists[h]->Write() ;
         fitfunction->Write() ;
+        difference->Write() ;
+        difference->Delete() ;
         
     }
 
