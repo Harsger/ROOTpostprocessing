@@ -177,6 +177,7 @@ int main(int argc, char *argv[]){
         unsigned int nBins = hist->GetNbinsX() ;
         Double_t binEdges[ nBins + 1 ] ;
         hist->GetXaxis()->GetLowEdge( binEdges ) ;
+        binEdges[ nBins ] = hist->GetXaxis()->GetXmax() ;
         TH1D * difference = new TH1D(
                                         "difference" , "difference" ,
                                         nBins , binEdges
