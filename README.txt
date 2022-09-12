@@ -575,6 +575,30 @@ rootTOtext
 
 ///////////////////////////////////////////////////////////////////////////////
  
+setData 
+
+ arguments :
+ /path/to/file.root <objectName> <mode> <argumentList>
+ 
+ output :
+ root-file containing histogram or graph as specified
+ 
+ depending on <mode> root objects can be manipulated or created
+ <mode> can be :
+ - HIST <nBins[lowLimit,highLimit]> ( <nYBins[lowYLimit,highYLimit]> )
+ - FILL   <Xvalue> (<Yvalue>/ <weight>) 
+ - WEIGHT <Xvalue> (<Yvalue>) <weight>
+ - POINT (<index>) <Xvalue> <Yvalue> (<Xerror> <Yerror>)
+ - REMOVE <index>/<xValue[xLow,xHigh]> ( <yValue[yLow,yHigh]> )
+ difference between FILL and WEIGHT is by adding (for FILL)
+ or setting (for WEIGHT) the respective bin-value
+ for these two modes (FILL and WEIGHT) Xvalue and Yvalue can specify
+ bin-numbers if 'BIN' (without quotes) is appended to the <mode>
+ HIST creates new histograms (either one- or two-dimensional)
+ POINT creates graph if no graph with specified name is found
+
+///////////////////////////////////////////////////////////////////////////////
+ 
 slicer 
 
  arguments :
