@@ -73,14 +73,14 @@ int main(int argc, char *argv[]){
                                     nBins[0] , range[0][0] , range[0][1] ,
                                     nBins[1] , range[1][0] , range[1][1] 
                                   ) ;
-            hist->Write() ;
+            hist->Write( hist->GetName() , TObject::kWriteDelete ) ;
         }
         else{
             TH1D * hist = new TH1D( 
                                     dataname , dataname , 
                                     nBins[0] , range[0][0] , range[0][1] 
                                   ) ;
-            hist->Write() ;
+            hist->Write( hist->GetName() , TObject::kWriteDelete ) ;
         }
     }
     else if( mode.Contains("FILL") || mode.Contains("WEIGHT") ){
@@ -132,7 +132,7 @@ int main(int argc, char *argv[]){
                 else if( mode.Contains("FILL") )
                     hist->Fill( value ) ;
             }
-            hist->Write() ;
+            hist->Write( hist->GetName() , TObject::kWriteDelete ) ;
         }
         else if( dimension == "2" ){
             if( argc < 6 ){
@@ -178,7 +178,7 @@ int main(int argc, char *argv[]){
                 else if( mode.Contains("FILL") )
                     hist->Fill( value[0] , value[1] ) ;
             }
-            hist->Write() ;
+            hist->Write( hist->GetName() , TObject::kWriteDelete ) ;
         }
     }
     else if( mode.Contains("POINT") ){
@@ -215,7 +215,7 @@ int main(int argc, char *argv[]){
             if( !( dataClass.Contains( "Errors" ) ) ) withErrors[0] = false ;
         }
         unsigned int index = graph->GetN() ;
-        double xNy[2] = { atof( argv[4] ) , atof( argv[5] ) } ;
+        double xNy[2] ;
         double errors[2] = { 0. , 0. } ;
         if( mode.Contains("INDEX") ){
             if( argc < 7 ){
@@ -225,34 +225,49 @@ int main(int argc, char *argv[]){
                 return 5 ;
             }
             index  = atoi( argv[4] ) ;
-            xNy[0] = atof( argv[5] ) ;
-            xNy[1] = atof( argv[6] ) ;
+            if( index >= graph->GetN() ){
+                cout << " ERROR : graph does not contain point"
+                             << " at index " << index << endl ;
+                file->Close() ;
+                return 6 ;
+            }
+            double foundXY[2] ;
+            graph->GetPoint( index , foundXY[0] , foundXY[1] ) ;
+            if( string( argv[5] ) != "%" ) xNy[0] = atof( argv[5] ) ;
+            else                           xNy[0] = foundXY[0] ;
+            if( string( argv[6] ) != "%" ) xNy[1] = atof( argv[6] ) ;
+            else                           xNy[1] = foundXY[1] ;
             if( argc == 8 ){
                 withErrors[1] = true ;
+                errors[0] = graph->GetErrorX( index ) ;
                 errors[1] = atof( argv[7] ) ;
             }
             else if( argc > 8 ){
                 withErrors[1] = true ;
-                errors[0] = atof( argv[7] ) ;
-                errors[1] = atof( argv[8] ) ;
+                if( string( argv[7] ) != "%" ) errors[0] = atof( argv[7] ) ;
+                else errors[0] = graph->GetErrorX( index ) ;
+                if( string( argv[8] ) != "%" ) errors[1] = atof( argv[8] ) ;
+                else errors[1] = graph->GetErrorY( index ) ;
             }
         }
         else{
+            xNy[0] = atof( argv[4] ) ;
+            xNy[1] = atof( argv[5] ) ;
             if( argc == 7 ){
                 withErrors[1] = true ;
-                errors[1] = atof( argv[7] ) ;
+                errors[1] = atof( argv[6] ) ;
             }
-            else if( argc > 8 ){
+            else if( argc > 7 ){
                 withErrors[1] = true ;
-                errors[0] = atof( argv[7] ) ;
-                errors[1] = atof( argv[8] ) ;
+                errors[0] = atof( argv[6] ) ;
+                errors[1] = atof( argv[7] ) ;
             }
         }
         graph->SetPoint( index , xNy[0] , xNy[1] ) ;
         if( withErrors[0] && withErrors[1] )
             graph->SetPointError( index , errors[0] , errors[1] ) ;
         file->cd() ;
-        graph->Write() ;
+        graph->Write( graph->GetName() , TObject::kWriteDelete ) ;
     }
     else if( mode.Contains("REMOVE") ){
         if( file->Get(dataname) == NULL ){
@@ -301,7 +316,7 @@ int main(int argc, char *argv[]){
             double range[2][2] ;
             double value[2] ;
             value[axis] = getNumberWithRange( 
-                                                firstArgument.Data() , 
+                                                argv[4] ,
                                                 range[axis][0] , 
                                                 range[axis][1] 
                                               ) ;
@@ -313,7 +328,7 @@ int main(int argc, char *argv[]){
                 toCheck[axis][2] = SpecifiedNumber( range[axis][1] ) ;
             if( argc > 5 && axis != 1 ){
                 value[1] = getNumberWithRange( 
-                                                    firstArgument.Data() , 
+                                                    argv[5] ,
                                                     range[1][0] , 
                                                     range[1][1] 
                                                 ) ;
@@ -326,7 +341,7 @@ int main(int argc, char *argv[]){
             }
             unsigned int nPoints = graph->GetN() ;
             double xNy[2] ;
-            for(unsigned int p=0; p<nPoints; p++){
+            for(int p=0; p<nPoints; p++){
                 graph->GetPoint( p , xNy[0] , xNy[1] ) ;
                 for(unsigned int a=0; a<2; a++){
                     if(
@@ -373,8 +388,12 @@ int main(int argc, char *argv[]){
                                 toCheck[a][2].number > xNy[a]
                             )
                         )
-                    )
+                    ){
                         graph->RemovePoint( p ) ;
+                        p-- ;
+                        nPoints-- ;
+                        break ;
+                    }
                 }
             }
         }
@@ -385,7 +404,7 @@ int main(int argc, char *argv[]){
             return 6 ;
         }
         file->cd() ;
-        graph->Write() ;
+        graph->Write( graph->GetName() , TObject::kWriteDelete ) ;
     }
     else{
         cout << " ERROR : no availaible mode specified " << endl ;
