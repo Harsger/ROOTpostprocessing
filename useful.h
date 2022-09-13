@@ -145,42 +145,85 @@ double getNumberWithRange( std::string s , double &low , double &high ){
     double value ;
     
     std::size_t bra = s.find("[") ;
+    std::size_t com = s.find(",") ;
+    std::size_t ket = s.find("]") ;
     
-    if( bra != std::string::npos && s[ nChars-1 ] == ']' ){
-        std::size_t comma = s.find(",") ;
-        if( bra == 0 ){
-            if( comma != std::string::npos ){
+    if(
+        bra != std::string::npos
+        &&
+        ket != std::string::npos
+    ){
+        if(
+            bra != s.rfind("[")
+            ||
+            com != s.rfind(",")
+            ||
+            ket != s.rfind("]")
+            ||
+            ket != nChars-1
+        ){
+            low  = nan("") ;
+            high = nan("") ;
+            return nan("") ;
+        }
+        if( com != std::string::npos ){
+            if( com < bra ){
+                low  = nan("") ;
+                high = nan("") ;
+                return nan("") ;
+            }
+            if( bra == 0 )
                 value = nan("") ;
-                low   = atof( s.substr( 1       , comma-1        ).c_str() ) ;
-                high  = atof( s.substr( comma+1 , nChars-comma-1 ).c_str() ) ;
-            }
-            else{
-                value = atof( s.substr( 1       , nChars-1       ).c_str() ) ;
-                low   = value ;
-                high  = value ;
-            }
+            else
+                value = atof( s.substr( 0 , bra ).c_str() ) ;
+            if( com-1 == bra )
+                low = nan("") ;
+            else
+                low = atof( s.substr( bra+1 , com-(bra+1) ).c_str() ) ;
+            if( com+1 == ket )
+                high = nan("") ;
+            else
+                high = atof( s.substr( com+1 , ket-(com+1) ).c_str() ) ;
         }
         else{
-            value = atof( s.substr( 0 , bra ).c_str() ) ;
-            if( comma != std::string::npos && comma > bra ){
-                low   = atof( s.substr( bra+1   , comma-bra-1    ).c_str() ) ;
-                high  = atof( s.substr( comma+1 , nChars-comma-1 ).c_str() ) ;
-            }
-            else if( nChars-1 == bra+1 ){
-                low   = nan("") ;
-                high  = nan("") ;
+            if( bra == 0 ){
+                if( bra+1 == ket ){
+                    low  = nan("") ;
+                    high = nan("") ;
+                    return nan("") ;
+                }
+                else{
+                    value = atof( s.substr( bra+1 , ket-1 ).c_str() ) ;
+                    low   = value ;
+                    high  = value ;
+                }
             }
             else{
-                low   = atof( s.substr( bra+1   , nChars-1       ).c_str() ) ;
-                high  = low ;
+                value = atof( s.substr( 0 , bra ).c_str() ) ;
+                if( bra+1 == ket )
+                    low = nan("") ;
+                else
+                    low = atof( s.substr( bra+1 , ket-1 ).c_str() ) ;
+                high = low ;
             }
         }
-        if( low > high ) std::swap( low , high ) ;
+//         if( low > high ) std::swap( low , high ) ;
     }
-    else{
+    else if(
+        bra == std::string::npos
+        &&
+        com == std::string::npos
+        &&
+        ket == std::string::npos
+    ){
         value = atof( s.c_str() ) ;
         low   = nan("") ;
         high  = nan("") ;
+    }
+    else{
+        low  = nan("") ;
+        high = nan("") ;
+        return nan("") ;
     }
     
     return value ;
