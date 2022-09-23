@@ -238,6 +238,10 @@ int main(int argc, char *argv[]){
     g_peakHeight->SetName("peakHeight") ;
     g_peakHeight->SetTitle("peakHeight") ;
 
+    TGraphErrors * g_integral = new TGraphErrors() ;
+    g_integral->SetName("integral") ;
+    g_integral->SetTitle("integral") ;
+
     TGraphErrors * g_fitquality = new TGraphErrors() ;                    
     g_fitquality->SetName("chi2ndf") ;                           
     g_fitquality->SetTitle("chi2ndf") ;
@@ -572,6 +576,35 @@ int main(int argc, char *argv[]){
             posError ,
             fitfunction->GetParError( 0 )
         ) ;
+
+        g_integral->SetPoint(
+            g_integral->GetN() ,
+            position ,
+            fitfunction->GetParameter( 0 )
+            * fitfunction->GetParameter( 2 )
+            * sqrt( 2. * TMath::Pi() )
+        ) ;
+
+        g_integral->SetPointError(
+            g_integral->GetN()-1 ,
+            posError ,
+            sqrt(
+                2. * TMath::Pi() *
+                (
+                    pow(
+                        fitfunction->GetParError( 0 )
+                        * fitfunction->GetParameter( 2 )
+                        , 2
+                    )
+                    +
+                    pow(
+                        fitfunction->GetParError( 2 )
+                        * fitfunction->GetParameter( 0 )
+                        , 2
+                    )
+                )
+            )
+        ) ;
     
         outfile->cd() ;
         hists[h]->Write() ;
@@ -589,6 +622,7 @@ int main(int argc, char *argv[]){
     g_fwhm->Write() ;
     g_centerDifference->Write() ;
     g_peakHeight->Write() ;
+    g_integral->Write() ;
     g_fitquality->Write() ;
     
     outfile->Write() ;
