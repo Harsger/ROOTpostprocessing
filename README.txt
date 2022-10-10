@@ -662,6 +662,9 @@ FORMAT <formatSpecifierList>
  ( see : https://www.cplusplus.com/reference/cstdio/scanf/ )
 MARKERSIZE <size>
  global size of drawn point-marker (default=1)
+PALETTE <number> (inverted)
+ number of ROOT color palette which should be chosen for plotting
+ optional 'inverted' (high/low color)
 LEGEND <text>
  adds <text> on top of legend
 LEGENDPOSITION (left/right) (top/bot)
