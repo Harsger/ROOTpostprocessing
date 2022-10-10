@@ -30,6 +30,7 @@ int main(int argc, char *argv[]){
     bool narrowCanvas = false ;
     
     TString scaleMode = "integral" ;
+    TString saveAS = "pdf" ;
     
     SpecifiedNumber colorPalette ;
     SpecifiedNumber statBox ;
@@ -227,6 +228,15 @@ int main(int argc, char *argv[]){
 
         if( parameter.at(r).at(0).compare("NARROWCANVAS") == 0 ){
             narrowCanvas = true ;
+            continue ;
+        }
+
+        if(
+            parameter.at(r).at(0).compare("SAVEAS") == 0
+            &&
+            parameter.at(r).size() > 1
+        ){
+            saveAS = parameter.at(r).at(1).c_str() ;
             continue ;
         }
         
@@ -709,7 +719,8 @@ int main(int argc, char *argv[]){
     cout << " writing ... " ;
     
     name = outname ;
-    name = name.ReplaceAll( ".root" , ".pdf" ) ;
+    saveAS = "." + saveAS ;
+    name = name.ReplaceAll( ".root" , saveAS ) ;
     can->Print(name) ; 
 
     cout << " done " << endl ;

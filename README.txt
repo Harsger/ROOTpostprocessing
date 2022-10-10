@@ -436,6 +436,7 @@ LEGEND <text>
  adds <text> on top of legend
 NARROWCANVAS
  same canvas aspect ratio as for superimposer (default)
+SAVEAS <filetype>
 REPLACENAN (<replacement>)
  search and replace bins with NaN content 
  default with zero, if specified with <replacement>
@@ -676,6 +677,7 @@ LEGEND <text>
 LEGENDPOSITION (left/right) (top/bot)
 BROADCANVAS
  same canvas aspect ratio as for overlayer (default)
+SAVEAS <filetype>
 REPLACENAN (<Xreplacement> <Yreplacement>)
  search and remove points with NaN values (X and Y) 
  if replacements are specified point will be overwritten

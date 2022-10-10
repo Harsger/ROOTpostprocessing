@@ -39,6 +39,7 @@ int main(int argc, char *argv[]){
     SpecifiedNumber fitting ;
     vector< vector<SpecifiedNumber> > startParameter ;
     double value , low , high ;
+    TString saveAS = "pdf" ;
 
     for(unsigned int r=0; r<parameter.size(); r++){
 
@@ -245,6 +246,15 @@ int main(int argc, char *argv[]){
                 parameter.at(r).at(2).compare("inverted") == 0
             )
                 colorPalette.specifier = "inverted" ;
+            continue ;
+        }
+
+        if(
+            parameter.at(r).at(0).compare("SAVEAS") == 0
+            &&
+            parameter.at(r).size() > 1
+        ){
+            saveAS = parameter.at(r).at(1).c_str() ;
             continue ;
         }
 
@@ -808,7 +818,8 @@ int main(int argc, char *argv[]){
     cout << " writing ... " ;
     
     name = outname ;
-    name = name.ReplaceAll( ".root" , ".pdf" ) ;
+    saveAS = "." + saveAS ;
+    name = name.ReplaceAll( ".root" , saveAS ) ;
     can->Print(name) ; 
 
     cout << " done " << endl ;
