@@ -7,6 +7,9 @@ int main(int argc, char *argv[]){
     if( argc < 2 ) return 1 ;
 
     TString filename = argv[1] ;
+    
+    bool toShow = true ;
+    if( argc > 2 ) toShow = false ;
 
     vector< vector<string> > parameter = getInput( filename.Data() );
 
@@ -774,7 +777,11 @@ int main(int argc, char *argv[]){
         }
     }
         
-    showing() ;
+    if( toShow ) showing() ;
+    else{
+        gPad->Modified() ;
+        gPad->Update() ;
+    }
 
     cout << " writing ... " ;
     

@@ -646,7 +646,10 @@ superimposer
  for style and color options see :
  https://root.cern.ch/doc/master/classTAttMarker.html
 
-  additional options in parameter-file :
+ if an additional commandline-argument is provided
+ plot is directly saved without further request
+
+ additional options in parameter-file :
 AXIS <xAxisTitle> <yAxisTitle>
  in separate lines AXISX and AXISY with space separated titles
 RANGE <xlow> <xhigh> <ylow> <yhigh>
