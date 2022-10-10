@@ -418,6 +418,8 @@ SCALEMODE <mode>
  mode can be: 'bare', 'max', 'integral' (default) (all without quotes)
  addtional 'ranged' (added without withspace etc.) can be specified
  in order to enable maximum or integral calculation within [<ylow>,<yhigh>]
+DIVISIONS <xDivisions> <yDivisions>
+ divisions of axis-lables
 PALETTE <number> (inverted)
  number of ROOT color palette which should be chosen for plotting
  optional 'inverted' (high/low color)
@@ -517,6 +519,8 @@ DELIMITER <string>
 LABELSOPTION <mode>
  X-axis labels can be manipulated according to 
  https://root.cern.ch/doc/v608/classTH1.html -> LabelsOption
+DIVISIONS <xDivisions> <yDivisions>
+ divisions of axis-lables
 BROADCANVAS
  same canvas aspect ratio as for overlayer (default)
 
@@ -660,6 +664,8 @@ NOERRORS
 FORMAT <formatSpecifierList>
  c formatting for scanf used for text-data-input
  ( see : https://www.cplusplus.com/reference/cstdio/scanf/ )
+DIVISIONS <xDivisions> <yDivisions>
+ divisions of axis-lables
 MARKERSIZE <size>
  global size of drawn point-marker (default=1)
 PALETTE <number> (inverted)

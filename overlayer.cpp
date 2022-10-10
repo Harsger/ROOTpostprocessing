@@ -26,6 +26,7 @@ int main(int argc, char *argv[]){
     bool useLogScale[2] = { false , false } ;
     SpecifiedNumber drawPoints ;
     double markerSize = 1. ;
+    SpecifiedNumber divisions[2] ;
     bool narrowCanvas = false ;
     
     TString scaleMode = "integral" ;
@@ -131,6 +132,22 @@ int main(int argc, char *argv[]){
             parameter.at(r).size() > 1
         ){
             scaleMode = parameter.at(r).at(1) ;
+            continue ;
+        }
+
+        if(
+            parameter.at(r).at(0).compare("DIVISIONS") == 0
+            &&
+            parameter.at(r).size() > 2
+        ){
+            if( parameter.at(r).at(1).compare("%") != 0 )
+                divisions[0] = SpecifiedNumber( atoi(
+                                                parameter.at(r).at(1).c_str()
+                                            ) ) ;
+            if( parameter.at(r).at(2).compare("%") != 0 )
+                divisions[1] = SpecifiedNumber( atoi(
+                                                parameter.at(r).at(2).c_str()
+                                            ) ) ;
             continue ;
         }
         
@@ -563,7 +580,13 @@ int main(int argc, char *argv[]){
             if( axisTitles[1].compare(neverUse) != 0 )
                 hists[h]->SetYTitle( axisTitles[1].c_str() ) ;
     
-            hists[h]->GetXaxis()->SetNdivisions(520) ;        
+            hists[h]->GetXaxis()->SetNdivisions(520) ;
+
+            if( divisions[0].setting )
+                hists[h]->GetXaxis()->SetNdivisions( divisions[0].number ) ;
+            if( divisions[1].setting )
+                hists[h]->GetYaxis()->SetNdivisions( divisions[1].number ) ;
+
             firstTOdraw = false ;
             
         }

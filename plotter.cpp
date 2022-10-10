@@ -37,6 +37,7 @@ int main(int argc, char *argv[]){
     vector<string> axisLabels ;
     bool setLabels = false ;
     SpecifiedNumber labeblsotpion ;
+    SpecifiedNumber divisions[2] ;
     map< unsigned int , vector<unsigned int> > pixelList ;
     bool exclude = true ;
     bool broadCanvas = false ;
@@ -231,6 +232,22 @@ int main(int argc, char *argv[]){
         ){
             labeblsotpion = SpecifiedNumber(0.);
             labeblsotpion.specifier = parameter.at(r).at(1) ;
+            continue ;
+        }
+
+        if(
+            parameter.at(r).at(0).compare("DIVISIONS") == 0
+            &&
+            parameter.at(r).size() > 2
+        ){
+            if( parameter.at(r).at(1).compare("%") != 0 )
+                divisions[0] = SpecifiedNumber( atoi(
+                                                parameter.at(r).at(1).c_str()
+                                            ) ) ;
+            if( parameter.at(r).at(2).compare("%") != 0 )
+                divisions[1] = SpecifiedNumber( atoi(
+                                                parameter.at(r).at(2).c_str()
+                                            ) ) ;
             continue ;
         }
 
@@ -707,6 +724,11 @@ int main(int argc, char *argv[]){
     g_extrema->SetLineColor( 0 ) ;
     g_extrema->GetYaxis()->SetNdivisions(520) ;
     if( broadCanvas ) g_extrema->GetXaxis()->SetNdivisions(525) ;
+
+    if( divisions[0].setting )
+        g_extrema->GetXaxis()->SetNdivisions( divisions[0].number ) ;
+    if( divisions[1].setting )
+        g_extrema->GetYaxis()->SetNdivisions( divisions[1].number ) ;
     
     if( setLabels ){
         for(unsigned int h=0; h<nHists; h++){

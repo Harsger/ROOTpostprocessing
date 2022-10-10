@@ -28,6 +28,7 @@ int main(int argc, char *argv[]){
     bool useLogScale[2] = { false , false } ;
     bool skipErrors = false ;
     SpecifiedNumber textDataFormat ;
+    SpecifiedNumber divisions[2] ;
     double markerSize = 1. ;
     SpecifiedNumber legendText ;
     SpecifiedNumber legendPosition ;
@@ -150,8 +151,24 @@ int main(int argc, char *argv[]){
             }
             continue ;
         }
-        
-        if( 
+
+        if(
+            parameter.at(r).at(0).compare("DIVISIONS") == 0
+            &&
+            parameter.at(r).size() > 2
+        ){
+            if( parameter.at(r).at(1).compare("%") != 0 )
+                divisions[0] = SpecifiedNumber( atoi(
+                                                parameter.at(r).at(1).c_str()
+                                            ) ) ;
+            if( parameter.at(r).at(2).compare("%") != 0 )
+                divisions[1] = SpecifiedNumber( atoi(
+                                                parameter.at(r).at(2).c_str()
+                                            ) ) ;
+            continue ;
+        }
+
+        if(
             parameter.at(r).at(0).compare("MARKERSIZE") == 0 
             &&
             parameter.at(r).size() > 1
@@ -596,6 +613,11 @@ int main(int argc, char *argv[]){
     }   
     if( broadCanvas ) extrema->GetXaxis()->SetNdivisions(525) ; 
     else              extrema->GetXaxis()->SetNdivisions(505) ; 
+
+    if( divisions[0].setting )
+        extrema->GetXaxis()->SetNdivisions( divisions[0].number ) ;
+    if( divisions[1].setting )
+        extrema->GetYaxis()->SetNdivisions( divisions[1].number ) ;
 
     TF1 * function ;
     unsigned int count ;
