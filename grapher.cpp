@@ -396,7 +396,22 @@ int main(int argc, char *argv[]){
             cout << " # problematic points : " << differentXcount << endl ;
 
         outfile->cd() ;
-        sourceGraph->Write() ;
+        if(
+            formula == "x"
+            &&
+            !parameterArguments
+            &&
+            adjustX.at(0) == 1. && adjustX.at(1) == 0.
+            &&
+            !toFlip
+            &&
+            !writeErrors[0] && !writeErrors[1]
+            &&
+            !setErrors[0] && !setErrors[1]
+        )
+            sourceGraph->Delete() ;
+        else
+            sourceGraph->Write() ;
         if( !parameterArguments ){
             for(r=0; r<nParameter; r++){
                 referenceGraphs.at(r)->Write() ;
