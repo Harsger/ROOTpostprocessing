@@ -263,6 +263,8 @@ SETERRORS (X/Y)
  and errors are assigned from the values of the reference-graphs 
  X or Y or both if not specified
  correct number of reference-graphs are required
+SKIPRAW
+ omit writing of source-graphs and reference-graphs
 
 ///////////////////////////////////////////////////////////////////////////////
 

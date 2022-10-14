@@ -23,6 +23,7 @@ int main(int argc, char *argv[]){
     bool setErrors[2]   = { false , false } ;
     bool parameterArguments = false ;
     SpecifiedNumber averageOver ;
+    bool writeRaw = true ;
 
     vector< vector<string> > filesNtitlesNreferences ;
 
@@ -132,6 +133,11 @@ int main(int argc, char *argv[]){
         
         if( parameter.at(r).at(0).compare("PARAMETERARGUMENTS") == 0 ){
             parameterArguments = true ;
+            continue ;
+        }
+
+        if( parameter.at(r).at(0).compare("SKIPRAW") == 0 ){
+            writeRaw = false ;
             continue ;
         }
 
@@ -487,6 +493,8 @@ int main(int argc, char *argv[]){
 
         outfile->cd() ;
         if(
+            !writeRaw
+            ||
             formula == "x"
             &&
             !parameterArguments
@@ -506,7 +514,7 @@ int main(int argc, char *argv[]){
             sourceGraph->Write() ;
         if( !parameterArguments ){
             for(r=0; r<nParameter; r++){
-                referenceGraphs.at(r)->Write() ;
+                if( writeRaw ) referenceGraphs.at(r)->Write() ;
                 referenceGraphs.at(r)->Delete() ;
             }
         }
