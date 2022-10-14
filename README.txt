@@ -248,6 +248,11 @@ PARAMETERARGUMENTS
 ADJUSTX <scaleX> <offsetX>
  X-values of data are adjusted (after comparison)
  <scaleX> is applied before <offsetX> ( X_new = <scaleX> * X_old + <offsetX> )
+AVERAGE <number>
+ average over <number> of consecutive points of result-graph (X and Y)
+ mean is writen as result, as well as standard-devation
+ (so total number of points is practically divided by <number>)
+ errors are also averaged
 FLIP
  exchange x- and y-values of result-graphs
 WRITEERRORS (X/Y)

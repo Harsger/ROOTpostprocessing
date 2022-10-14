@@ -22,6 +22,7 @@ int main(int argc, char *argv[]){
     bool writeErrors[2] = { false , false } ;
     bool setErrors[2]   = { false , false } ;
     bool parameterArguments = false ;
+    SpecifiedNumber averageOver ;
 
     vector< vector<string> > filesNtitlesNreferences ;
 
@@ -78,6 +79,22 @@ int main(int argc, char *argv[]){
                 adjustX.at(0) = atof( parameter.at(r).at(1).c_str() ) ;
             if( parameter.at(r).at(2).compare( "%" ) != 0 )
                 adjustX.at(1) = atof( parameter.at(r).at(2).c_str() ) ;
+            continue ;
+        }
+
+        if(
+            parameter.at(r).at(0).compare("AVERAGE") == 0
+            &&
+            parameter.at(r).size() > 1
+        ){
+            averageOver = SpecifiedNumber( atoi(
+                                                parameter.at(r).at(1).c_str()
+                                        ) ) ;
+            if( averageOver.number < 2 ){
+                cout << " WARNING : averaging must be over at leat two values"
+                     << " -> will be skipped " << endl ;
+                averageOver.setting = false ;
+            }
             continue ;
         }
 
@@ -395,6 +412,79 @@ int main(int argc, char *argv[]){
         if( differentXcount > 0 ) 
             cout << " # problematic points : " << differentXcount << endl ;
 
+        if( averageOver.setting ){
+            TGraphErrors * swapGraph = new TGraphErrors() ;
+            resultGraph->SetName(  "oldResult" ) ;
+            resultGraph->SetTitle( "oldResult" ) ;
+            swapGraph->SetName(  title ) ;
+            swapGraph->SetTitle( title ) ;
+            TGraphErrors * stdvGraph = new TGraphErrors() ;
+            name = title ;
+            name += "_stdv" ;
+            stdvGraph->SetName(  name ) ;
+            stdvGraph->SetTitle( name ) ;
+            unsigned int count = 0 ;
+            unsigned int toAverage = (unsigned int)averageOver.number ;
+            nPoints = resultGraph->GetN() ;
+            double mean[2][2] = { { 0. , 0. } , { 0. , 0. } } ;
+            double stdv = 0. ;
+            for(unsigned int p=0; p<nPoints; p++){
+                resultGraph->GetPoint( p , sX , sY ) ;
+                rX = resultGraph->GetErrorX( p ) ;
+                rY = resultGraph->GetErrorY( p ) ;
+                if(
+                    !(
+                        toDiscard( sX ) || toDiscard( sY )
+                        ||
+                        toDiscard( rX ) || toDiscard( rY )
+                    )
+                ){
+                    count++ ;
+                    mean[0][0] += sX ;
+                    mean[1][0] += sY ;
+                    mean[0][1] += rX ;
+                    mean[1][1] += rY ;
+                    stdv += ( sY * sY ) ;
+                }
+                if( count >= toAverage || p+1 == nPoints ){
+                    swapGraph->SetPoint(
+                                            swapGraph->GetN() ,
+                                            mean[0][0] / (double)count ,
+                                            mean[1][0] / (double)count
+                                       ) ;
+                    swapGraph->SetPointError(
+                                            swapGraph->GetN()-1 ,
+                                            mean[0][1] / (double)count ,
+                                            mean[1][1] / (double)count
+                                       ) ;
+                    stdvGraph->SetPoint(
+                                            stdvGraph->GetN() ,
+                                            mean[0][0] / (double)count ,
+                                            sqrt(
+                                                    (
+                                                        stdv
+                                                        - mean[1][0]
+                                                        * mean[1][0]
+                                                        / (double)count
+                                                    )
+                                                    / ( (double)count - 1. )
+                                            )
+                                    ) ;
+                    count = 0 ;
+                    mean[0][0] = 0. ;
+                    mean[1][0] = 0. ;
+                    mean[0][1] = 0. ;
+                    mean[1][1] = 0. ;
+                    stdv = 0. ;
+                }
+            }
+            resultGraph->Delete() ;
+            resultGraph = swapGraph ;
+            outfile->cd() ;
+            stdvGraph->Write() ;
+            stdvGraph->Delete() ;
+        }
+
         outfile->cd() ;
         if(
             formula == "x"
@@ -402,6 +492,8 @@ int main(int argc, char *argv[]){
             !parameterArguments
             &&
             adjustX.at(0) == 1. && adjustX.at(1) == 0.
+            &&
+            !averageOver.setting
             &&
             !toFlip
             &&
