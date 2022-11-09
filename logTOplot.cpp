@@ -158,7 +158,10 @@ int main(int argc, char *argv[]){
         }
     }
     
-    if( argc > 5 ) formatRequest = false ;
+    if( argc > 5 ){
+        formatRequest = false ;
+        if( string( argv[5] ).compare("skip") == 0 ) draw = false ;
+    }
     
     TString name = filename ;
     if( name.Contains(".") ) name = name( 0 , name.Last('.') ) ;
