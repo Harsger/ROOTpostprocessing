@@ -41,6 +41,7 @@ int main(int argc, char *argv[]){
         }
     }
 
+    TString parameterFileName = "" ;
     bool specificSpecifier = false ;
     vector< vector<string> > specifiersNquantities ;
     vector< vector<SpecifiedNumber> > markerNcolorNline ;
@@ -60,18 +61,18 @@ int main(int argc, char *argv[]){
     TString xAxisTitle = "" ;
     
     if( argc > 4 ){
-        string parameter = argv[4] ;
+        parameterFileName = argv[4] ;
         vector< vector<string> > specifierInput ;
-        if( parameter.compare("skip") == 0 ){ 
-            parameter = "" ;
+        if( parameterFileName == "skip" ){
+            parameterFileName = "" ;
             draw = false ;
         }
-        else if( parameter.compare("print") == 0 ){ 
-            parameter = "" ;
+        else if( parameterFileName == "print" ){
+            parameterFileName = "" ;
             formatRequest = false ;
         }
         else{ 
-            specifierInput = getInput( parameter ) ;
+            specifierInput = getInput( parameterFileName.Data() ) ;
             specificSpecifier = true ;
         }
         for(unsigned int s=0; s<specifierInput.size(); s++){
@@ -172,10 +173,33 @@ int main(int argc, char *argv[]){
         if( string( argv[5] ).compare("skip") == 0 ) draw = false ;
     }
     
+    TString title = "" ;
     TString name = filename ;
     if( name.Contains(".") ) name = name( 0 , name.Last('.') ) ;
     if( name.Contains("/") ) name = name( name.Last('/')+1 , name.Sizeof() ) ;
-    name += "_plots.root" ;
+    if( parameterFileName.Length() > 0 ){
+        name += "_" ;
+        title = parameterFileName ;
+    }
+    if( title.Contains(".") ) title = title( 0 , title.Last('.') ) ;
+    if( title.Contains("/") ) title = title(
+                                                title.Last('/')+1 ,
+                                                title.Sizeof()
+                                           ) ;
+    name += title ;
+    if( plotTime.setting ){
+        name += "_start" ;
+        title = argv[2] ;
+        title = title.ReplaceAll( "." , "d" ) ;
+        name += title ;
+    }
+    if( duration.setting ){
+        name += "_end" ;
+        title = argv[3] ;
+        title = title.ReplaceAll( "." , "d" ) ;
+        name += title ;
+    }
+    name += ".root" ;
     
     TFile * outfile = new TFile( name , "RECREATE" ) ;
     
@@ -446,11 +470,9 @@ int main(int argc, char *argv[]){
             
         }
         
-        if( !draw ){
-            if( abscissaInteger ){ 
-                if( unixtime < startTime || unixtime > endTime ) continue ; }
-            else{ if( xvalue   < startTime || xvalue   > endTime ) continue ; }
-        }
+        if( abscissaInteger ){
+              if( unixtime < startTime || unixtime > endTime ) continue ; }
+        else{ if( xvalue   < startTime || xvalue   > endTime ) continue ; }
         
         if( 
             plots.find( quantity ) == plots.end()  
@@ -590,7 +612,22 @@ int main(int argc, char *argv[]){
     
     for( auto q : plots ){
         for( auto s : q.second ){
-            s.second->Write() ;
+            bool toWrite = true ;
+            if( specificSpecifier ){
+                toWrite = false ;
+                for(unsigned int i=0; i<nSpecific; i++){
+                    if(
+                        specifiersNquantities.at(i).at(0) == s.first
+                        &&
+                        specifiersNquantities.at(i).at(1) == q.first
+                    ){
+                        toWrite = true ;
+                        break ;
+                    }
+                }
+            }
+            if( toWrite ) s.second->Write()  ;
+            else          s.second->Delete() ;
         }
     }
     
@@ -619,7 +656,6 @@ int main(int argc, char *argv[]){
     can->Divide(1,nQuant-nEmpty,0.001,0.001);
     
     TGraphErrors ** g_extrem = new TGraphErrors*[nQuant] ;
-    TString title ;
     
     unsigned int count = 0 ;
     for(unsigned int q=0; q<nQuant; q++){
