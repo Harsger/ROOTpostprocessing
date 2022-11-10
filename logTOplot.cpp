@@ -45,6 +45,7 @@ int main(int argc, char *argv[]){
     bool specificSpecifier = false ;
     vector< vector<string> > specifiersNquantities ;
     vector< vector<SpecifiedNumber> > markerNcolorNline ;
+    vector< string > labels ;
     vector<SpecifiedNumber> specVecDummy ;
     unsigned int nSpecific = 0 ;
     vector<string> quantities ;
@@ -158,6 +159,14 @@ int main(int argc, char *argv[]){
                 ) ) ;
             }
             else specifierColumns.push_back( SpecifiedNumber() ) ;
+            if(
+                specifierInput.at(s).size() > 6
+                &&
+                specifierInput.at(s).at(6).compare("%") != 0
+            ){
+                labels.push_back( specifierInput.at(s).at(6).c_str() ) ;
+            }
+            else labels.push_back( "" ) ;
         }
         nSpecific = specifiersNquantities.size() ;
         if( draw && formatRequest && nSpecific < 1 ){
@@ -622,6 +631,8 @@ int main(int argc, char *argv[]){
                         specifiersNquantities.at(i).at(1) == q.first
                     ){
                         toWrite = true ;
+                        if( labels.at(i).length() > 0 )
+                             s.second->SetTitle( labels.at(i).c_str() ) ;
                         break ;
                     }
                 }
@@ -715,9 +726,9 @@ int main(int argc, char *argv[]){
         TGaxis::SetMaxDigits( 3 ) ;
         
         title = quantities.at(q) ;
-        title += " [ " ;
+        title += " ( " ;
         title += quantityUnits[quantities.at(q)] ;
-        title += " ] " ;
+        title += " ) " ;
         g_extrem[q]->GetYaxis()->SetTitle( title ) ;
         
         g_extrem[q]->Draw("AP") ;
@@ -740,19 +751,6 @@ int main(int argc, char *argv[]){
                             
             if( p == NULL ) continue ;
 
-            title = p->GetName() ;
-            if( title.EndsWith( quantities.at(q).c_str() ) )
-                title = title( 
-                                0 , 
-                                title.Length() 
-                                - 
-                                quantities.at(q).length() 
-                            ) ;
-            if( title.EndsWith( "_" ) )
-                title = title( 0 , title.Length()-1 ) ;
-            p->SetName( title ) ;
-            p->SetTitle( title ) ;
-        
             TString toAdd = "" ;
             
             if( markerNcolorNline.at(s).at(0).setting )

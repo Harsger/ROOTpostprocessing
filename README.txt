@@ -380,7 +380,7 @@ logTOplot
  (e.g. 3h or 3m , where "s"=second , "m"=minute , "h"=hour , "d"=day)
  
  additional options per specifier :
-<markerStyle> <markerColor> <lineStyle> (<column>)
+<markerStyle> <markerColor> <lineStyle> <column> <label>
 
  other options in specifierListFile
 TABLE <unixtimeColumn>
