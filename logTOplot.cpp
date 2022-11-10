@@ -26,6 +26,7 @@ int main(int argc, char *argv[]){
     SpecifiedNumber plotTime , duration ;
     bool draw = true ;
     bool formatRequest = true ;
+    TString saveAS = "pdf" ;
     
     if( argc > 3 ){
         for(unsigned int a=2; a<4; a++){
@@ -101,6 +102,14 @@ int main(int argc, char *argv[]){
                 if( specifierInput.at(s).size() > 1 )
                     for(unsigned int c=1; c<specifierInput.at(s).size() ; c++)
                         xAxisTitle += " "+specifierInput.at(s).at(c) ;
+                continue ;
+            }
+            if(
+                specifierInput.at(s).at(0).compare("SAVEAS") == 0
+                &&
+                specifierInput.at(s).size() > 1
+            ){
+                saveAS = specifierInput.at(s).at(1).c_str() ;
                 continue ;
             }
             if( specifierInput.at(s).size() < 2 ) continue ;
@@ -767,7 +776,8 @@ int main(int argc, char *argv[]){
     if( formatRequest ) showing() ;    
 
     name = can->GetName() ;
-    name += ".pdf" ;
+    name += "." ;
+    name += saveAS ;
     can->Print( name ) ;
 
     cout << " closing ... " << flush ;
