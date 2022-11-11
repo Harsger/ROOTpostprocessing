@@ -2,15 +2,11 @@
 
 using namespace std;
 
-unsigned int secondsPERday = 86400 ; // 24 * 60 * 60
-
 int main(int argc, char *argv[]){
     
     if( argc < 2 ) return 1 ;
-        
-    gStyle->SetOptTitle(0) ;
-    gStyle->SetOptStat(0) ;
-    gStyle->SetOptFit(0) ;
+
+    plotOptions() ;
 
     gStyle->SetPadTopMargin(    0.05 ) ;
     gStyle->SetPadRightMargin(  0.03 ) ;
@@ -19,19 +15,6 @@ int main(int argc, char *argv[]){
 
     gStyle->SetTitleOffset( 1.2 , "x" ) ;
     gStyle->SetTitleOffset( 0.8 , "y" ) ;
-    
-    double text_size = 0.05 ;
-    int font = 42 ;
-
-    gStyle->SetLabelFont(font,"x");
-    gStyle->SetTitleFont(font,"x");
-    gStyle->SetLabelFont(font,"y");
-    gStyle->SetTitleFont(font,"y");
-
-    gStyle->SetLabelSize(text_size,"x") ;
-    gStyle->SetTitleSize(text_size,"x") ;
-    gStyle->SetLabelSize(text_size,"y") ;
-    gStyle->SetTitleSize(text_size,"y") ;
 
     TString filename = argv[1] ;
     
@@ -110,52 +93,60 @@ int main(int argc, char *argv[]){
         
     }
     
-    TFile * outfile = new TFile( outname , "RECREATE" ) ;
+    TString name ;
+    map<TString,TGraph*> plots ;
+    map<TString,bool> setAxisTitle ;
+    map<string,bool> options = {
+        { "show"  , false } ,
+        { "print" , false } ,
+        { "write" , false }
+    } ;
     
-    if( outfile == NULL ){
-        cout << " ERROR : can not create output \"" 
-             <<  outname << "\" => EXIT " << endl ;
+    if( argc > 2 ){
+        for(unsigned int a=2; a<argc; a++){
+            if( options.find( argv[a] ) != options.end() ){
+                options[argv[a]] = true ;
+                continue ;
+            }
+            plots[ argv[a] ] = new TGraph() ;
+            plots[ argv[a] ]->SetName(  argv[a] ) ;
+            plots[ argv[a] ]->SetTitle( argv[a] ) ;
+            setAxisTitle[ argv[a] ] = true ;
+        }
     }
     
+    TFile * outfile ;
     TTree * data ;
-    
-//     TBranch * b_unixtime ;
-//     TBranch * b_quantity ;
-//     TBranch * b_specifier ;
-//     TBranch * b_value ;
-//     TBranch * b_unit ;
-    
     unsigned int unixtime ;
     TString      quantity ;
     TString      specifier ;
     double       value ;
     TString      unit ;
     
-    data = new TTree( "data" , "housekeeping" );
+    if( options["write"] ){
+
+        outfile = new TFile( outname , "RECREATE" ) ;
+        if( outfile == NULL ){
+            cout << " ERROR : can not create output \""
+                <<  outname << "\" => EXIT " << endl ;
+        }
+
+        data = new TTree( "data" , "housekeeping" ) ;
+        data->Branch( "unixtime"  , &unixtime  ) ;
+        data->Branch( "quantity"  , &quantity  ) ;
+        data->Branch( "specifier" , &specifier ) ;
+        data->Branch( "value"     , &value     ) ;
+        data->Branch( "unit"      , &unit      ) ;
     
-    data->Branch( "unixtime"  , &unixtime  );
-    data->Branch( "quantity"  , &quantity  );
-    data->Branch( "specifier" , &specifier );
-    data->Branch( "value"     , &value     );
-    data->Branch( "unit"      , &unit      );
+    }
     
     unsigned int nFiles = dataFileNames.size() ;
-    
-    map<TString,TGraph*> plots ; 
-    map<TString,bool> setAxisTitle ;
-    vector<string> foundSpecifier ;
-    TString name ;
-    
-    if( argc > 2 ){
-        for(unsigned int a=2; a<argc; a++){
-            plots[ argv[a] ] = new TGraph() ;
-            name = "plot" ;
-            name += a-2 ;
-            plots[ argv[a] ]->SetName( name ) ;
-            plots[ argv[a] ]->SetTitle( argv[a] ) ;
-            setAxisTitle[ argv[a] ] = true ;
-        }
-    }
+    vector<TString> foundSpecifier ;
+    TString specNquant ;
+    bool fillTree = options["write"] ;
+    bool fillGraphs =
+        ( options["show"] || options["print"] || options["write"] )
+        && plots.size() > 0 && nFiles == 1 ;
     
     for(unsigned int f=0; f<nFiles; f++){
         
@@ -164,10 +155,10 @@ int main(int argc, char *argv[]){
             readname = filename ;
             if( ! readname.EndsWith("/") ) readname += "/" ;
             readname += dataFileNames.at(f) ;
+            cout << " " << f+1 << "/" << nFiles ;
+            cout << " : " << dataFileNames.at(f) ;
+            cout << flush ;
         }
-        
-        cout << " " << f+1 << "/" << nFiles << " : " << dataFileNames.at(f) ;
-        cout << flush ;
         
         vector< vector<string> > textData 
             = getInput( readname.Data() ) ;
@@ -176,28 +167,27 @@ int main(int argc, char *argv[]){
         
         cout << " => # rows : " << rows << endl ;
         
-        string specNquant ;
         
         for(unsigned int r=0; r<rows; r++){
             
             if( textData.at(r).size() < 5 ) continue;
             
-            unixtime = (unsigned int)( atof( textData.at(r).at(0).c_str() ) );
-            quantity = textData.at(r).at(1) ;
+            unixtime  = (unsigned int)( atof( textData.at(r).at(0).c_str() ) ) ;
+            quantity  = textData.at(r).at(1) ;
             specifier = textData.at(r).at(2) ;
-            value = atof( textData.at(r).at(3).c_str() ) ;
-            unit = textData.at(r).at(4) ;
+            value     = atof( textData.at(r).at(3).c_str() ) ;
+            unit      = textData.at(r).at(4) ;
             
-            data->Fill();
+            if( fillTree ) data->Fill() ;
             
-            specNquant = specifier.Data() ;
-            specNquant += " \t " ;
-            specNquant += quantity.Data() ;
+            specNquant = specifier ;
+            specNquant += " " ;
+            specNquant += quantity ;
             
             if( find( 
                         foundSpecifier.begin() , 
                         foundSpecifier.end() , 
-                        specNquant.c_str() 
+                        specNquant
                     ) 
                 == 
                 foundSpecifier.end() 
@@ -205,20 +195,24 @@ int main(int argc, char *argv[]){
                 foundSpecifier.push_back( specNquant ) ;
             }
             
-            if( argc > 2 && nFiles == 1 ){
-                if( plots.find( specifier ) == plots.end() ) continue ;
-                plots[ specifier ]->SetPoint( 
-                                                plots[ specifier ]->GetN() , 
+            if( fillGraphs ){
+
+                specNquant = specNquant.ReplaceAll( " " , "" ) ;
+                if( plots.find( specNquant ) == plots.end() ) continue ;
+                plots[ specNquant ]->SetPoint(
+                                                plots[ specNquant ]->GetN() ,
                                                 unixtime ,
                                                 value
                                             ) ;
-                if( setAxisTitle[ specifier ] ){
+                if( setAxisTitle[ specNquant ] ){
                     name = specifier ;
-                    name += " [" ;
+                    name += " " ;
+                    name += quantity ;
+                    name += " (" ;
                     name += unit ;
-                    name += "] " ;
-                    plots[ specifier ]->GetYaxis()->SetTitle( name ) ;
-                    setAxisTitle[ specifier ] = false ;
+                    name += ")" ;
+                    plots[ specNquant ]->GetYaxis()->SetTitle( name ) ;
+                    setAxisTitle[ specNquant ] = false ;
                 }
             }
             
@@ -226,20 +220,23 @@ int main(int argc, char *argv[]){
         
     }
     
-    outfile->cd();
-    
     std::sort( foundSpecifier.begin() , foundSpecifier.end() ) ;
-    
-    cout << " specifier \t quantity " << endl ;
+    cout << " specifier quantity " << endl ;
     for(unsigned int s=0; s<foundSpecifier.size(); s++)
         cout << " " << foundSpecifier.at(s) << endl ;
     cout << endl ;
     
-    cout << " writing ... " ;
+    if( options["write"] ){
+        cout << " writing ... " ;
+        outfile->cd() ;
+        data->Write() ;
+        if( !fillGraphs ){
+            outfile->Close() ;
+            cout << " closed ... " ;
+        }
+    }
     
-    data->Write();
-    
-    if( argc > 2 && nFiles == 1 ){
+    if( fillGraphs ){
     
         TApplication app("app", &argc, argv) ; 
         
@@ -247,24 +244,21 @@ int main(int argc, char *argv[]){
         
         for( auto p : plots ){
             
-            
-            can->SetName( p.first ) ;
+            can->SetName(  p.first ) ;
             can->SetTitle( p.first ) ;
-            
-            name = outname ;
-            name = name.ReplaceAll( ".root" , "_" ) ;
-            name += p.first ;
-            name += ".pdf" ;
             
             unsigned int dayStartTime = 
                 (unsigned int)( 
                     TMath::MaxElement( p.second->GetN() , p.second->GetX() )
-                ) / secondsPERday ;
-            dayStartTime *= secondsPERday ;
+                ) / secondsPER["d"] ;
+            dayStartTime *= secondsPER["d"] ;
             time_t startingTime = dayStartTime ;
             char dateArray[11] ;
             char dateFormat[] = "%d.%m.%Y" ;
-            strftime( dateArray , sizeof( dateArray ) , dateFormat , gmtime( &startingTime ) ) ;
+            strftime(
+                        dateArray , sizeof( dateArray ) ,
+                        dateFormat , gmtime( &startingTime )
+                    ) ;
             dayStartTime -= 7200 ;
             
             p.second->SetMarkerStyle(7) ;
@@ -272,30 +266,45 @@ int main(int argc, char *argv[]){
             p.second->GetXaxis()->SetTimeFormat("%H:%M%F1970-01-01 00:00:00") ;
 //             p.second->GetXaxis()->SetTimeOffset( 0 , "GMT" ) ;
             p.second->GetXaxis()->SetNdivisions(515);
-            p.second->Write() ;
             p.second->GetXaxis()->SetRangeUser(
                 dayStartTime ,
-                dayStartTime + secondsPERday 
+                dayStartTime + secondsPER["d"]
             );
             p.second->GetXaxis()->SetTitle( dateArray ) ;
             
+            if( options["write"] ){
+                outfile->cd() ;
+                p.second->Write() ;
+            }
+
             p.second->Draw("AP") ;
             
             gPad->SetGridx() ;
             gPad->SetGridy() ;
             
-//             gPad->Modified() ;
-//             gPad->Update() ;
-//             gPad->WaitPrimitive() ;
-            gPad->Print( name ) ;
+            if( options["show"] ){
+                if( options["print"] ) showing() ;
+                else                   padWaiting() ;
+            }
+
+            if( options["print"] ){
+                name = outname ;
+                name = name.ReplaceAll( ".root" , "_" ) ;
+                name += p.first ;
+                name += ".pdf" ;
+                gPad->Print( name ) ;
+            }
+
+            p.second->Delete() ;
             
         }
         
+        if( options["write"] ){
+            outfile->Close() ;
+            cout << " closed ... " ;
+        }
+
     }
-    
-    cout << " closing ... " ;
-    
-    outfile->Close();
     
     cout << " done " << endl ;
     

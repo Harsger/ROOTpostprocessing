@@ -340,13 +340,16 @@ SETERRORS
 housekeeper 
 
  arguments :
- /path/to/files(.dat) (<specifierList>)
+ /path/to/files(.dat) (<specifierList> show print write)
  
  output :
- root-file containing tree , PDF
+ available specifier , root-file containing tree and graphs , PDFs
  
  stores data from text-files in root tree 
- and (optional) plots TGraphs of values with specifier from list
+ and plots TGraphs of values with specifier from list
+ storage is performed if 'write' (without quotes) is given as argument
+ with 'show' (without quotes) plots are drawn sequentially
+ with 'print' (without quotes) plots are saved also as PDFs
  
  format of text-files has to be:
 <unixtime> <quantity> <specifier> <value> <unit>
