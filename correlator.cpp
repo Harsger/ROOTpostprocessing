@@ -47,6 +47,9 @@ int main(int argc, char *argv[]){
     bool calculateDifferences = false ;
     unsigned int diffBins ;
     double diffRange[2] ;
+    bool calculateRatio       = false ;
+    unsigned int ratioBins ;
+    double ratioRange[2] ;
 
     unsigned int count = 0 ;
     double value , low , high ;
@@ -64,6 +67,10 @@ int main(int argc, char *argv[]){
             else if( name.Contains("skip") ) print = false ;
             if(      name.Contains("HIST") ) toDraw = "HIST" ;
             else if( name.Contains("DIFF") ) toDraw = "DIFF" ;
+            else if( name.Contains("RATIO") ){
+                toDraw = "RATIO" ;
+                calculateRatio = true ;
+            }
         }
         if( argc > 7 ){
             for(unsigned int c=0; c<2; c++){
@@ -155,6 +162,20 @@ int main(int argc, char *argv[]){
             sameSource[1] = true ;
         }
 
+        if( calculateRatio ){
+            if( !calculateDifferences ){
+                cout << " WARNING : no ratio-range specified " << endl ;
+                toDraw = "GRAPH" ;
+                calculateRatio = false ;
+            }
+            else{
+                calculateDifferences = false ;
+                ratioBins = diffBins ;
+                ratioRange[0] = diffRange[0] ;
+                ratioRange[1] = diffRange[1] ;
+            }
+        }
+
     }
     else{
         
@@ -166,6 +187,7 @@ int main(int argc, char *argv[]){
             else if( name.Contains("skip") ) print = false ;
             if(      name.Contains("HIST") ) toDraw = "HIST" ;
             else if( name.Contains("DIFF") ) toDraw = "DIFF" ;
+            else if( name.Contains("RATIO") ) toDraw = "RATIO" ;
         }
         
         for(unsigned int r=0; r<parameter.size(); r++){
@@ -331,6 +353,18 @@ int main(int argc, char *argv[]){
                 diffRange[0] = atof( parameter.at(r).at(1).c_str() ) ;
                 diffRange[1] = atof( parameter.at(r).at(2).c_str() ) ;
                 diffBins     = atoi( parameter.at(r).at(3).c_str() ) ;
+                continue ;
+            }
+
+            if(
+                parameter.at(r).at(0).compare("RATIOS") == 0
+                &&
+                parameter.at(r).size() > 3
+            ){
+                calculateRatio = true ;
+                ratioRange[0] = atof( parameter.at(r).at(1).c_str() ) ;
+                ratioRange[1] = atof( parameter.at(r).at(2).c_str() ) ;
+                ratioBins     = atoi( parameter.at(r).at(3).c_str() ) ;
                 continue ;
             }
             
@@ -583,6 +617,12 @@ int main(int argc, char *argv[]){
                                 "differences" , "differences" ,
                                 diffBins , diffRange[0] , diffRange[1]
                               ) ;
+    TH1I * h_ratios ;
+    if( calculateRatio )
+        h_ratios = new TH1I(
+                                "ratios" , "ratios" ,
+                                ratioBins , ratioRange[0] , ratioRange[1]
+                              ) ;
   
     double a , b ;
 
@@ -681,6 +721,7 @@ int main(int argc, char *argv[]){
                 if( ranges[1][1].setting && b > ranges[1][1].number ) continue ;
                 g_correlation->SetPoint( g_correlation->GetN() , a , b ) ;
                 if( calculateDifferences ) h_differences->Fill( b - a ) ;
+                if( calculateRatio && a != 0. ) h_ratios->Fill( b / a ) ;
                 a = hists[0]->GetBinError( x , y )  ;
                 b = hists[1]->GetBinError( x , y ) ;
                 if( toDiscard( a ) || a == -1. ) a = 0. ;
@@ -821,6 +862,7 @@ int main(int argc, char *argv[]){
             if( ranges[1][1].setting && b > ranges[1][1].number ) continue ;
             g_correlation->SetPoint( g_correlation->GetN() , a , b ) ;
             if( calculateDifferences ) h_differences->Fill( b - a ) ;
+            if( calculateRatio && a != 0. ) h_ratios->Fill( b / a ) ;
             a = e[0] ;
             b = e[1] ;
             if( toDiscard( a ) || a == -1. ) a = 0. ;
@@ -861,6 +903,7 @@ int main(int argc, char *argv[]){
     h_correlation->Write() ;
     g_correlation->Write() ;
     if( calculateDifferences ) h_differences->Write() ;
+    if( calculateRatio )       h_ratios->Write() ;
         
     if( draw ){
 
@@ -873,6 +916,8 @@ int main(int argc, char *argv[]){
             ( toDraw == "GRAPH" && g_correlation->GetN() < 1 )
             ||
             ( toDraw == "DIFF"  && h_differences->GetEntries() < 1 )
+            ||
+            ( toDraw == "RATIO" && h_ratios->GetEntries() < 1 )
         ){
             cout << " WARNING : no compatible data found " << endl ;
             if( h_correlation->GetEntries() > 1 ){
@@ -912,6 +957,22 @@ int main(int argc, char *argv[]){
             gStyle->SetOptStat(1111110) ;
 
             h_differences->Draw() ;
+
+        }
+        else if( toDraw == "RATIO" ){
+
+            if( titlesDefined ){
+                h_ratios->GetXaxis()->SetTitle( axisTitles[0].c_str() ) ;
+                h_ratios->GetYaxis()->SetTitle( axisTitles[1].c_str() ) ;
+            }
+            else{
+                name = axisTitles[1] + " / " + axisTitles[0] ;
+                h_ratios->GetXaxis()->SetTitle( name ) ;
+                h_ratios->GetYaxis()->SetTitle( "#" ) ;
+            }
+            gStyle->SetOptStat(1111110) ;
+
+            h_ratios->Draw() ;
 
         }
         else{

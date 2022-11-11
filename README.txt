@@ -85,8 +85,8 @@ correlator
  standard-parameter-file
  
  optional arguments :
- <HIST/GRAPH(skip)> <divisions1[low1,high1]> <divisions2[low2,high2]>
- <maxDistance> <diffBining[diffLow,diffHigh]> <intervalList>
+ HIST/GRAPH/DIFF/RATIO(skip) <divisions1[low1,high1]> <divisions2[low2,high2]>
+ <maxDistance> <binning[low,high]> <intervalList>
  
  output :
  root-file containing histogram , PDF
@@ -102,32 +102,37 @@ correlator
  of resulting correlations
 
  either the correlation is plotted as 2D-histogram (via option HIST)
- or as graph (via option GRAPH, default)
+ or as scatter-plot (via option GRAPH, default)
+
  if 'skip' (without quotes) is specified additionally the plot is not saved
  if only 'skip' (without quotes) is specified no canvas is shown
- if 'DIFF' (without quotes) is specified instead of 'HIST' or 'GRAPH'
- a difference-histogram is filled with data2-data1, only if also
- <diffBining>, <diffHigh> and <diffBining> is specified
+
+ if 'DIFF' or 'RATIO' (both without quotes) is specified
+ a difference- or ratio-histogram is filled
+ with data2-data1 or data2/data1 (Y-values, respectively),
+ both only if also <binning>, <low> and <high> is specified
  (either as arguements or in the parameter-file)
- <intervalList> can contain any number of intervals (specified as [low,high])
- separated by spaces, which define the allowed X-values from the source-data
 
  low and high values define correlation-histogram range 
  and which values are plotted in correlation-graph
  the divisions specifiy the correlation-histogram-binning (default=2000)
  
- <maxDifference> is the allowed difference of the X-values between the graphs
+ <maxDistance> is the allowed difference of the X-values between the graphs
  without specification only X-value-combinations which match exactly are used
  if multiple values match no data is written, instead an error is given
  this can be omitted by specifying the value negative
  (same effect as USEFIRSTOCCURENCE in parameter-file)
+
+ <intervalList> can contain any number of intervals (specified as [low,high])
+ separated by spaces, which define the allowed X-values from the source-data
 
  additional options in parameter-file :
 MAXDISTANCE <maxDistance>
 USEFIRSTOCCURENCE
  if multiple X-values match the first occurence 
  in the second graph will be used
-DIFFERENCES <diffLow> <diffHigh> <diffBining>
+DIFFERENCES <low> <high> <binning>
+RATIOS      <low> <high> <binning>
 INTERVAL <lowLimit> <highLimit>
  can be specified multiple times
  only graph points with X-values within <lowLimit> and <highLimit>
@@ -514,7 +519,7 @@ AXIS <xAxisTitle> <yAxisTitle>
 RANGE <ylow> <yhigh> / <xlow> <xhigh> <ylow> <yhigh>
  (either only ylow and yhigh or all four)
 SKIP <listOfValuesToBeSkipped> <<lowLimit> ><highLimit>
- (low and high limit have to have '<' '>' preceding, respectivly)
+ (low and high limit have to have '<' '>' preceding, respectively)
 ROWS <rowsList>
 COLUMNS <columnsList>
  lists to use or to omit during calculation (bin-numbers required)
@@ -552,7 +557,7 @@ projector
  
  bin-values from specified 2D-histogram (ROOT::TH2 e.g. heat-maps) in the file,
  are shown (and saved as ROOT::TH1) and histogram is projected
- onto X and Y axis (column and row average, respectivly)
+ onto X and Y axis (column and row average, respectively)
  
  bins, columns and rows deviating the standard-devation times
  <thresholdfactor> from mean are written to text-files
