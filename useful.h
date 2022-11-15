@@ -269,6 +269,170 @@ class SpecifiedNumber{
         
 } ;
 
+class Extremum{
+public :
+
+    bool         high     ;
+    bool         set      ;
+    double       value    ;
+    double       position ;
+    unsigned int index    ;
+
+    Extremum(){
+        high = true ;
+        set  = false ;
+    }
+
+    Extremum( bool h ){
+        high = h ;
+        set  = false ;
+    }
+
+    Extremum( std::string s ){
+        if(      s == "max" || s == "high" ){ high = true  ; }
+        else if( s == "min" || s == "low"  ){ high = false ; }
+        else{                                 high = true  ; }
+        set = false ;
+    }
+
+    Extremum( unsigned int h ){
+        if(      h == 0 ){ high = false ; }
+        else if( h == 1 ){ high = true  ; }
+        else{              high = true  ; }
+        set = false ;
+    }
+
+    Extremum( bool h , double v , double p , unsigned int i ){
+        high     = h ;
+        value    = v ;
+        position = p ;
+        index    = i ;
+        set = true ;
+    }
+
+    void put( double v , double p , unsigned int i ){
+        value    = v ;
+        position = p ;
+        index    = i ;
+        set = true ;
+    }
+
+    bool overwrite( double v , double p , unsigned int i ){
+        if( !( set ) ){
+            this->put( v , p , i ) ;
+            return true ;
+        }
+        if( high ){
+            if( value < v ){
+                value    = v ;
+                position = p ;
+                index    = i ;
+                set = true ;
+                return true ;
+            }
+        }
+        else{
+            if( value > v ){
+                value    = v ;
+                position = p ;
+                index    = i ;
+                set = true ;
+                return true ;
+            }
+        }
+        return false ;
+    }
+
+} ;
+
+class Statistics{
+public :
+
+    double       mean   ;
+    double       stdv   ;
+    double       min    ;
+    double       max    ;
+    unsigned int number ;
+
+    double       accumulator ;
+    double       quadratic   ;
+
+    bool         set   ;
+    bool         ready ;
+
+    Statistics(){
+        mean        = 0. ;
+        stdv        = 0. ;
+        min         = 0. ;
+        max         = 0. ;
+        number      = 0  ;
+        accumulator = 0. ;
+        quadratic   = 0. ;
+        set   = false ;
+        ready = false ;
+    }
+
+    Statistics( double v ){
+        mean        = 0. ;
+        stdv        = 0. ;
+        min         = v ;
+        max         = v ;
+        number      = 1 ;
+        accumulator = v ;
+        quadratic   = v * v ;
+        set   = true  ;
+        ready = false ;
+    }
+
+    Statistics( double m , double s , double l , double h , unsigned int n ){
+        mean        = m  ;
+        stdv        = s  ;
+        min         = l  ;
+        max         = h  ;
+        number      = n  ;
+        accumulator = 0. ;
+        quadratic   = 0. ;
+        set   = false ;
+        ready = true  ;
+    }
+
+    double fill( double v ){
+        if( !( this->set ) ){
+            *this = Statistics( v ) ;
+            return v ;
+        }
+        number++ ;
+        accumulator +=   v       ;
+        quadratic   += ( v * v ) ;
+        double resetExtremum = 0. ;
+        if( min > v ){
+            resetExtremum = v - min ;
+            min = v ;
+        }
+        if( max < v ){
+            resetExtremum = v - max ;
+            max = v ;
+        }
+        return resetExtremum ;
+    }
+
+    bool calculate(){
+        if( number < 1 ) return false ;
+        mean = accumulator / (double)number ;
+        if( number < 2 ){
+            stdv = 0. ;
+            return true ;
+        }
+        stdv = sqrt(
+                        ( quadratic - mean * mean * (double)number )
+                        /
+                        ( (double)number - 1. )
+                    ) ;
+        return true ;
+    }
+
+} ;
+
 bool getStats(
     std::vector<double> * values ,
     double &mean ,
