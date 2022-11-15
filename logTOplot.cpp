@@ -2,6 +2,31 @@
 
 using namespace std;
 
+class Quantity{
+public :
+
+    string identifier ;
+    string name ;
+    string unit ;
+    SpecifiedNumber range[2] ;
+    bool logarithmic ;
+
+    Quantity(){
+        identifier = "" ;
+        name = "" ;
+        unit = "" ;
+        range[0] = SpecifiedNumber() ;
+        range[1] = SpecifiedNumber() ;
+        logarithmic = false ;
+    }
+
+    Quantity( string i ){
+        *this = Quantity() ;
+        this->identifier = i ;
+    }
+
+} ;
+
 int main(int argc, char *argv[]){
     
     if( argc < 2 ) return 1 ;
@@ -51,6 +76,11 @@ int main(int argc, char *argv[]){
     vector<string> quantities ;
     unsigned int nQuant = 0 ;
 
+    vector<Quantity> rangedQuantityPads ;
+    unsigned int nDefinedPads = 0 ;
+    vector<unsigned int> quantityPadMap ;
+    vector<unsigned int> specifierPadMap ;
+
     bool tableData = false ;
     vector<SpecifiedNumber> specifierColumns ;
     SpecifiedNumber delimiter ;
@@ -79,6 +109,59 @@ int main(int argc, char *argv[]){
         for(unsigned int s=0; s<specifierInput.size(); s++){
             if( specifierInput.at(s).at(0).rfind("#",0) == 0 )
                 continue ;
+            if(
+                specifierInput.at(s).at(0).compare("QUANTITY") == 0
+                &&
+                specifierInput.at(s).size() > 1
+            ){
+                rangedQuantityPads.push_back(
+                    Quantity( specifierInput.at(s).at(1)  )
+                ) ;
+                nDefinedPads = rangedQuantityPads.size() ;
+                if(
+                    specifierInput.at(s).size() > 2
+                    &&
+                    specifierInput.at(s).at(2) != "%"
+                )
+                    rangedQuantityPads.at(nDefinedPads-1).name =
+                        specifierInput.at(s).at(2) ;
+                if(
+                    specifierInput.at(s).size() > 3
+                    &&
+                    specifierInput.at(s).at(3) != "%"
+                )
+                    rangedQuantityPads.at(nDefinedPads-1).unit =
+                        specifierInput.at(s).at(3) ;
+                if(
+                    specifierInput.at(s).size() > 4
+                    &&
+                    specifierInput.at(s).at(4) != "%"
+                )
+                    rangedQuantityPads.at(nDefinedPads-1).range[0] =
+                        SpecifiedNumber(
+                            atof( specifierInput.at(s).at(4).c_str() )
+                        ) ;
+                if(
+                    specifierInput.at(s).size() > 5
+                    &&
+                    specifierInput.at(s).at(5) != "%"
+                )
+                    rangedQuantityPads.at(nDefinedPads-1).range[1] =
+                        SpecifiedNumber(
+                            atof( specifierInput.at(s).at(5).c_str() )
+                        ) ;
+                if(
+                    specifierInput.at(s).size() > 6
+                    &&
+                    (
+                        specifierInput.at(s).at(6) == "1"
+                        ||
+                        specifierInput.at(s).at(6) == "log"
+                    )
+                )
+                    rangedQuantityPads.at(nDefinedPads-1).logarithmic = true ;
+                continue ;
+            }
             if( specifierInput.at(s).at(0).compare("TABLE") == 0 ){
                 tableData = true ;
                 if( 
@@ -119,6 +202,7 @@ int main(int argc, char *argv[]){
                                                 specifierInput.at(s).at(0) ,
                                                 specifierInput.at(s).at(1) 
                                             } ) ;
+            specifierPadMap.push_back( rangedQuantityPads.size() ) ;
             specVecDummy.clear() ;
             if( 
                 specifierInput.at(s).size() > 2 
@@ -314,12 +398,19 @@ int main(int argc, char *argv[]){
     for(unsigned int s=0; s<nSpecific; s++){
         bool toAdd = true ;
         for(unsigned int q=0; q<quantities.size(); q++ ){
-            if( specifiersNquantities.at(s).at(1) == quantities.at(q) ){
+            if(
+                specifiersNquantities.at(s).at(1) == quantities.at(q)
+                &&
+                specifierPadMap.at(s)             == quantityPadMap.at(q)
+            ){
                 toAdd = false ;
                 break ;
             }
         }
-        if( toAdd ) quantities.push_back( specifiersNquantities.at(s).at(1) ) ;
+        if( toAdd ){
+            quantities.push_back( specifiersNquantities.at(s).at(1) ) ;
+            quantityPadMap.push_back( specifierPadMap.at(s) ) ;
+        }
     }
     nQuant = quantities.size() ;
         
@@ -595,7 +686,21 @@ int main(int argc, char *argv[]){
                 SpecifiedNumber() 
             } ) ;
     }
+
+    if( specifierPadMap.size() != nSpecific ){
+        specifierPadMap.clear() ;
+        for(unsigned int s=0; s<nQuant; s++){
+            specifierPadMap.push_back( 0 ) ;
+        }
+    }
     
+    if( quantityPadMap.size() != nQuant ){
+        quantityPadMap.clear() ;
+        for(unsigned int q=0; q<nQuant; q++){
+            quantityPadMap.push_back( 0 ) ;
+        }
+    }
+
     unsigned int nEmpty = 0 ;
     vector<bool> emptyQuantity ;
     for(unsigned int q=0; q<nQuant; q++){
@@ -668,6 +773,7 @@ int main(int argc, char *argv[]){
     
     TGraphErrors ** g_extrem = new TGraphErrors*[nQuant] ;
     
+    unsigned int padTOuse = 0 ;
     unsigned int count = 0 ;
     for(unsigned int q=0; q<nQuant; q++){
         
@@ -692,8 +798,19 @@ int main(int argc, char *argv[]){
         gPad->SetGridy() ;
         
         g_extrem[q] = new TGraphErrors() ;
-        g_extrem[q]->SetName( quantities.at(q).c_str() ) ;
-        g_extrem[q]->SetTitle( quantities.at(q).c_str() ) ;
+        padTOuse = 0 ;
+        title = quantities.at(q) ;
+        if(
+            quantityPadMap.at(q) > 0
+            &&
+            rangedQuantityPads.at(quantityPadMap.at(q)-1).identifier
+                == quantities.at(q)
+        ){
+            padTOuse = quantityPadMap.at(q) ;
+            title += padTOuse ;
+        }
+        g_extrem[q]->SetName(  title ) ;
+        g_extrem[q]->SetTitle( title ) ;
         
         g_extrem[q]->SetPoint( g_extrem[q]->GetN() , 
             startTime , extrema[0][quantities.at(q)].number
@@ -701,7 +818,36 @@ int main(int argc, char *argv[]){
 
         g_extrem[q]->SetPoint( g_extrem[q]->GetN() ,                            
             endTime   , extrema[1][quantities.at(q)].number
-        ); 
+        );
+
+        if( padTOuse > 0 ){
+            if( rangedQuantityPads.at(padTOuse-1).range[0].setting ){
+                g_extrem[q]->SetPoint(
+                    g_extrem[q]->GetN() ,
+                    startTime ,
+                    rangedQuantityPads.at(padTOuse-1).range[0].number
+                );
+            }
+            if( rangedQuantityPads.at(padTOuse-1).range[1].setting ){
+                g_extrem[q]->SetPoint(
+                    g_extrem[q]->GetN() ,
+                    endTime ,
+                    rangedQuantityPads.at(padTOuse-1).range[1].number
+                );
+            }
+            if(
+                rangedQuantityPads.at(padTOuse-1).range[0].setting
+                &&
+                rangedQuantityPads.at(padTOuse-1).range[1].setting
+            ){
+                g_extrem[q]->GetYaxis()->SetRangeUser(
+                    rangedQuantityPads.at(padTOuse-1).range[0].number ,
+                    rangedQuantityPads.at(padTOuse-1).range[1].number
+                ) ;
+            }
+            if( rangedQuantityPads.at(padTOuse-1).logarithmic )
+                gPad->SetLogy(1) ;
+        }
 
         g_extrem[q]->SetMarkerStyle(1) ;
         g_extrem[q]->SetMarkerColor(0) ;
@@ -725,11 +871,16 @@ int main(int argc, char *argv[]){
         TGaxis::SetExponentOffset( -0.05 , -0.05 , "y" ) ;
         TGaxis::SetMaxDigits( 3 ) ;
         
-        title = quantities.at(q) ;
-        title += " ( " ;
-        title += quantityUnits[quantities.at(q)] ;
-        title += " ) " ;
-        g_extrem[q]->GetYaxis()->SetTitle( title ) ;
+        name = quantities.at(q) ;
+        if( padTOuse > 0 && rangedQuantityPads.at(padTOuse-1).name != "" )
+            name = rangedQuantityPads.at(padTOuse-1).name ;
+        name += " ( " ;
+        if( padTOuse > 0 && rangedQuantityPads.at(padTOuse-1).unit != "" )
+            name += rangedQuantityPads.at(padTOuse-1).unit ;
+        else
+            name += quantityUnits[quantities.at(q)] ;
+        name += " ) " ;
+        g_extrem[q]->GetYaxis()->SetTitle( name ) ;
         
         g_extrem[q]->Draw("AP") ;
         
@@ -741,8 +892,12 @@ int main(int argc, char *argv[]){
         if( count < 2 ) onlyOne = true ;
  
         for(unsigned int s=0; s<nSpecific; s++){
-            
-            if( specifiersNquantities.at(s).at(1) != quantities.at(q) ) 
+
+            if(
+                specifiersNquantities.at(s).at(1) != quantities.at(q)
+                ||
+                specifierPadMap.at(s)             != quantityPadMap.at(q)
+            )
                 continue ;
             
             auto p = plots
@@ -799,7 +954,7 @@ int main(int argc, char *argv[]){
         while( ( obj = next() ) ){
             le = (TLegendEntry*)obj ;
             name = le->GetLabel() ;
-            if( name.CompareTo(quantities.at(q)) == 0 )
+            if( name.CompareTo( title ) == 0 )
                 legendEntries->RemoveAt( legendEntries->IndexOf( obj ) ) ;
         }
  

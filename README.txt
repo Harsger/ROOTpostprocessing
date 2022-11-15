@@ -372,23 +372,32 @@ logTOplot
  stores data from text-files or root-trees in graphs 
  and plots these in canvas against time
  
- format of text-files has to be the same as for housekeeper
+ format of text-files has to be the same as for housekeeper:
+<unixtime> <quantity> <specifier> <value> <unit>
 
  each row in the specifier-list-file has to be 
- a specifier and its corresponding unit, e.g. :
-<specifier1> <unit1>
-<specifier2> <unit1>
-<specifier3> <unit2>
-<specifier4> <unit2>
+ a specifier and its corresponding quantity, e.g. :
+<specifier1> <quantity1>
+<specifier2> <quantity1>
+<specifier3> <quantity2>
+<specifier4> <quantity2>
 ...
- specifier with the same unit are plotted in the same pad
- (only specifier-unit-combinations are plotted, which are found in data)
+ specifier with the same quantity are plotted in the same pad
+ (only specifier-quantity-combinations are plotted, which are found in data)
  
  timeOffset and duration should be given as number with unit
  (e.g. 3h or 3m , where "s"=second , "m"=minute , "h"=hour , "d"=day)
  
  additional options per specifier :
 <markerStyle> <markerColor> <lineStyle> <column> <label>
+
+ to adjust the plots and combine only certain specifier
+ into quantity-pads one can use:
+QUANTITY <quantity> (<name> <unit> <low> <high> <logarithmic>)
+ before specifiers with this quantity
+ optional : the Y-axis will show "name ( unit )" (without quotes)
+            and will be adjusted according to low and high,
+            logarithmic scaling will be applied if requested ('1' or 'log')
 
  other options in specifierListFile
 TABLE <unixtimeColumn>
