@@ -4,7 +4,10 @@ using namespace std;
 
 int main(int argc, char *argv[]){
 
-    if( argc < 2 ) return 1 ;
+    if( argc < 2 ){
+        printUsage( argv[0] ) ;
+        return 1 ;
+    }
 
     plotOptions() ;
     gStyle->SetPadRightMargin( 0.18 ) ;
@@ -212,7 +215,10 @@ int main(int argc, char *argv[]){
 
     unsigned int nHists = filesNhists.size() ;
     
-    if( nHists < 2 ) return 2 ;
+    if( nHists < 2 ){
+        cout << " ERROR : not enough histograms specified " << endl ;
+        return 2 ;
+    }
     
     TH2D** hists = new TH2D*[nHists] ;
     TString name ;

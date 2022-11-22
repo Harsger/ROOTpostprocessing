@@ -4,8 +4,8 @@ using namespace std;
 
 int main(int argc, char *argv[]){
 
-    if( argc < 3 ){ 
-        cout << " ERROR : filename and histname required " << endl ;
+    if( argc < 3 ){
+        printUsage( argv[0] ) ;
         return 1 ;
     }
 

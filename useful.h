@@ -746,3 +746,77 @@ std::vector<unsigned int> getSortedIndices(std::vector<double> order){
     return sorted;
   
 }
+
+void splitFilename(
+                    std::string fullname ,
+                    std::string &path ,
+                    std::string &file
+){
+    size_t found = fullname.rfind( "/" ) ;
+    if( found != std::string::npos ){
+        path = fullname.substr( 0 , found ) ;
+        file = fullname.substr( found + 1 ) ;
+    }
+    else{
+        path = "" ;
+        file = fullname ;
+    }
+}
+
+void printUsage( char argv0[] ){
+    std::string executable = argv0 ;
+    std::string path , file ;
+    splitFilename( executable , path , file ) ;
+    std::string readmePosition = path ;
+    if( file == executable ) readmePosition += "." ;
+    readmePosition += "/README.txt" ;
+    std::ifstream readmeFile( readmePosition.c_str() ) ;
+    if( !( readmeFile ) ){
+        std::cout << " ERROR : can not open README.txt " << std::endl ;
+        return ;
+    }
+    bool checkFile[2] = { false , false } ;
+    bool toPrint = false ;
+    std::string line ;
+    while( getline( readmeFile , line ) ){
+        if(
+            line.length() > 70
+            &&
+            line.find("///") == 0
+            &&
+            line.rfind("///") == line.length()-3
+        ){
+            if( toPrint ){
+                break ;
+            }
+            else{
+                checkFile[0] = true ;
+                continue ;
+            }
+        }
+        if( checkFile[0] ){
+            if( checkFile[1] ){
+                if( line.find( file ) == 0 ){
+                    toPrint = true ;
+                    std::cout << std::endl ;
+                }
+                else{
+                    checkFile[0] = false ;
+                    checkFile[1] = false ;
+                    continue ;
+                }
+            }
+            else{
+                checkFile[1] = true ;
+                continue ;
+            }
+        }
+        if( toPrint ){
+            std::cout << line << std::endl ;
+        }
+    }
+    readmeFile.close() ;
+    if( !( toPrint ) ){
+        std::cout << " ERROR : no entry for executable found " << std::endl ;
+    }
+}
