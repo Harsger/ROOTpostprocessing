@@ -551,7 +551,7 @@ BROADCANVAS
 
 ///////////////////////////////////////////////////////////////////////////////
  
-projector 
+projector
 
  arguments :
  /path/to/file.root histname 
@@ -582,7 +582,46 @@ projector
  (all without quotes), options can be combined in single string (no whitespaces)
 
 ///////////////////////////////////////////////////////////////////////////////
+
+pulseEvaluation
+
+ arguments :
+ parameter-file
+
+ optional arguments :
+ <plotOptions>
  
+ output :
+ root-file containing graphs with evaluation result of input-data like
+ - offset    (baseline, also from fit)
+ - maximum   (heighest values, also from fit)
+ - variation (standard-devation around baseline)
+ - risetime  (10% to 90%, also from fit)
+ - falltime  (90% to 10%, also from fit)
+ plotted against specified values per label (see parameter-file specifications)
+
+ if an argument is given at <plotOptions> fits will be shown
+ if 'ALL' (wihtout quotes) is specified individual peak-fits will be shown
+
+ options per measurement (=TGraphErrors-Data) in parameter-file :
+<name> <file> <graph> (<value1> <value2> ...)
+
+ required additional specifications in parameter-file :
+PERIODS <nPeriods>
+LABELS <label1> <label2> ...
+ for each label a value is required per measurement
+ for each graphs will be created per label combination
+
+ optional specifications in parameter-file :
+CORRELATE <result1> <result2>
+ creates additional correlation-plots from evaluation-data
+ (can be specified multiple times)
+PRINT <result1> <result2> ...
+ output on stdout
+ (can be specified multiple times)
+
+///////////////////////////////////////////////////////////////////////////////
+
 rootTOtext 
 
  arguments :
