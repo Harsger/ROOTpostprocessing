@@ -498,7 +498,8 @@ int main(int argc, char *argv[]){
     
     SpecifiedNumber dateString ;
     
-    time_t startingTime = (unsigned int)( startTime ) ;
+    double midTime = 0.5 * ( startTime + endTime ) ;
+    time_t displayTime = (unsigned int)( midTime ) ;
     char dateArray[11] ;
     const char * dateFormat ;
     string formatDate = "%d.%m.%Y" ;
@@ -509,9 +510,9 @@ int main(int argc, char *argv[]){
                 dateArray , 
                 sizeof( dateArray ) , 
                 dateFormat , 
-                gmtime( &startingTime ) 
+                gmtime( &displayTime )
             ) ;
-    dateString = SpecifiedNumber( startingTime ) ;
+    dateString = SpecifiedNumber( displayTime ) ;
     dateString.specifier = dateArray ;
                     
     cout << " second iteration : " ;
