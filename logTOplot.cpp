@@ -693,7 +693,7 @@ int main(int argc, char *argv[]){
 
     if( specifierPadMap.size() != nSpecific ){
         specifierPadMap.clear() ;
-        for(unsigned int s=0; s<nQuant; s++){
+        for(unsigned int s=0; s<nSpecific; s++){
             specifierPadMap.push_back( 0 ) ;
         }
     }
