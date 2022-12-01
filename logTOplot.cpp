@@ -273,26 +273,26 @@ int main(int argc, char *argv[]){
     TString name = filename ;
     if( name.Contains(".") ) name = name( 0 , name.Last('.') ) ;
     if( name.Contains("/") ) name = name( name.Last('/')+1 , name.Sizeof() ) ;
-    if( parameterFileName.Length() > 0 ){
-        name += "_" ;
-        title = parameterFileName ;
-    }
-    if( title.Contains(".") ) title = title( 0 , title.Last('.') ) ;
-    if( title.Contains("/") ) title = title(
-                                                title.Last('/')+1 ,
-                                                title.Sizeof()
-                                           ) ;
-    name += title ;
     if( plotTime.setting ){
         name += "_start" ;
         title = argv[2] ;
-        title = title.ReplaceAll( "." , "d" ) ;
+        title = title.ReplaceAll( "." , "p" ) ;
         name += title ;
     }
     if( duration.setting ){
         name += "_end" ;
         title = argv[3] ;
-        title = title.ReplaceAll( "." , "d" ) ;
+        title = title.ReplaceAll( "." , "p" ) ;
+        name += title ;
+    }
+    if( parameterFileName.Length() > 0 ){
+        name += "_" ;
+        title = parameterFileName ;
+        if( title.Contains(".") ) title = title( 0 , title.Last('.') ) ;
+        if( title.Contains("/") ) title = title(
+                                                    title.Last('/')+1 ,
+                                                    title.Sizeof()
+                                            ) ;
         name += title ;
     }
     name += ".root" ;
