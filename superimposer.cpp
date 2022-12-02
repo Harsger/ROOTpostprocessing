@@ -25,6 +25,7 @@ int main(int argc, char *argv[]){
     vector< vector<string> > filesNgraphsNtitles ;
     vector<string> strVecDummy ;
     vector< vector<SpecifiedNumber> > markerNcolorNline ;
+    vector< vector<SpecifiedNumber> > fitRanges ;
     vector<SpecifiedNumber> specVecDummy ;
     string axisTitles[2] = { neverUse , neverUse } ;
     SpecifiedNumber plotRanges[2][2] ;
@@ -325,6 +326,35 @@ int main(int argc, char *argv[]){
                 ) ) ;
             else specVecDummy.push_back( SpecifiedNumber() ) ;
             markerNcolorNline.push_back( specVecDummy ) ;
+            specVecDummy.clear() ;
+            if(
+                parameter.at(r).size() > 6
+                &&
+                parameter.at(r).at(6).compare("%") != 0
+                &&
+                parameter.at(r).at(6).rfind("[") == 0
+                &&
+                parameter.at(r).at(6).find("]")
+                    == parameter.at(r).at(6).length()-1
+                &&
+                parameter.at(r).at(6).find(",") != std::string::npos
+            ){
+                value = getNumberWithRange(
+                                            parameter.at(r).at(6) , low , high
+                                        ) ;
+                if( toDiscard( low ) )
+                    specVecDummy.push_back( SpecifiedNumber() ) ;
+                else
+                    specVecDummy.push_back( SpecifiedNumber( low ) ) ;
+                if( toDiscard( high ) )
+                    specVecDummy.push_back( SpecifiedNumber() ) ;
+                else
+                    specVecDummy.push_back( SpecifiedNumber( high ) ) ;
+            }
+            else{
+                specVecDummy = { SpecifiedNumber() , SpecifiedNumber() } ;
+            }
+            fitRanges.push_back( specVecDummy ) ;
             specVecDummy.clear() ;
                 
         }
@@ -643,10 +673,17 @@ int main(int argc, char *argv[]){
         if( fitting.setting ){
             name = "function" ;
             name += g ;
+            if( fitRanges.at(g).at(0).setting )
+                low = fitRanges.at(g).at(0).number ;
+            else
+                low = plotRanges[0][0].number ;
+            if( fitRanges.at(g).at(1).setting )
+                high = fitRanges.at(g).at(1).number ;
+            else
+                high = plotRanges[0][1].number ;
             function = new TF1(
                                 name.Data() , fitting.specifier.c_str() ,
-                                plotRanges[0][0].number ,
-                                plotRanges[0][1].number
+                                low , high
                               ) ;
 
             if( function->GetNpar() > 0. && startParameter.size() > 0. ){
