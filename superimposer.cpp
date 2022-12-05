@@ -795,28 +795,36 @@ int main(int argc, char *argv[]){
     if( drawGrid[0] ) gPad->SetGridx() ;
     if( drawGrid[1] ) gPad->SetGridy() ;
     
-    double legendEdges[4] = { 0.87 , 0.15 , 0.995 , 0.95 } ;
-    if( broadCanvas ) legendEdges[0] = 0.90 ;
+    double legendEdges[2][2] = { { 0.87 , 0.995 } , { 0.15 , 0.95 } } ;
+    if( broadCanvas ) legendEdges[0][0] = 0.90 ;
     if( legendPosition.setting ){
-        legendEdges[0] = 0.76 ;
-        legendEdges[2] = 0.96 ;
-        if(      legendPosition.specifier.find( "top") != std::string::npos ) 
-            legendEdges[1] = 0.55 ;
-        else if( legendPosition.specifier.find( "bot") != std::string::npos ) 
-            legendEdges[3] = 0.55 ;
-        if(      legendPosition.specifier.find("left") != std::string::npos ){
-            legendEdges[0] = 0.16 ;
-            legendEdges[2] = 0.36 ;
+        legendEdges[0][0] = 0.76 ;
+        legendEdges[0][1] = 0.96 ;
+        if( fitting.setting ){
+            legendEdges[0][0] = 0.48 ;
+            legendEdges[0][1] = 0.68 ;
             if( broadCanvas ){
-                legendEdges[0] = 0.09  ;
-                legendEdges[2] = 0.29 ;
+                legendEdges[0][0] = 0.59 ;
+                legendEdges[0][1] = 0.79 ;
+            }
+        }
+        if(      legendPosition.specifier.find( "top") != std::string::npos ) 
+            legendEdges[1][0] = 0.55 ;
+        else if( legendPosition.specifier.find( "bot") != std::string::npos ) 
+            legendEdges[1][1] = 0.55 ;
+        if(      legendPosition.specifier.find("left") != std::string::npos ){
+            legendEdges[0][0] = 0.16 ;
+            legendEdges[0][1] = 0.36 ;
+            if( broadCanvas ){
+                legendEdges[0][0] = 0.09 ;
+                legendEdges[0][1] = 0.29 ;
             }
         }
     }
     
     TLegend * legend = can->BuildLegend( 
-                                            legendEdges[0] , legendEdges[1] , 
-                                            legendEdges[2] , legendEdges[3] 
+                                        legendEdges[0][0] , legendEdges[1][0] ,
+                                        legendEdges[0][1] , legendEdges[1][1]
                                        ) ;
 //     legend->RecursiveRemove( extrema );
 //     legend->Draw() ;
@@ -848,6 +856,9 @@ int main(int argc, char *argv[]){
             { 0.71 , 0.99 } , { 0.12 , 0.97 }
         } ;
         if( broadCanvas ) boxRanges[0][0] = 0.81 ;
+        if( !( legendPosition.setting ) ) boxRanges[0][1] = 0.86 ;
+        if( broadCanvas && !( legendPosition.setting ) )
+            boxRanges[0][1] = 0.89 ;
         double margin = 0.007 ;
         double boxHeight =
                             (
