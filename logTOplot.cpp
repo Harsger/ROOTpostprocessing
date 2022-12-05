@@ -52,8 +52,9 @@ int main(int argc, char *argv[]){
     if( filename.EndsWith(".root") ) rootData = true ;
     
     SpecifiedNumber plotTime , duration ;
-    bool draw = true ;
-    bool formatRequest = true ;
+    bool show  = true ;
+    bool print = true ;
+    bool write = true ;
     TString saveAS = "pdf" ;
     
     if( argc > 3 ){
@@ -94,21 +95,11 @@ int main(int argc, char *argv[]){
     bool abscissaInteger = true ;
     TString xAxisTitle = "" ;
     
-    if( argc > 4 ){
+    if( argc > 4 && string( argv[4] ) != "%" ){
         parameterFileName = argv[4] ;
-        vector< vector<string> > specifierInput ;
-        if( parameterFileName == "skip" ){
-            parameterFileName = "" ;
-            draw = false ;
-        }
-        else if( parameterFileName == "print" ){
-            parameterFileName = "" ;
-            formatRequest = false ;
-        }
-        else{ 
-            specifierInput = getInput( parameterFileName.Data() ) ;
-            specificSpecifier = true ;
-        }
+        vector< vector<string> > specifierInput
+                                    = getInput( parameterFileName.Data() ) ;
+        specificSpecifier = true ;
         for(unsigned int s=0; s<specifierInput.size(); s++){
             if( specifierInput.at(s).at(0).rfind("#",0) == 0 )
                 continue ;
@@ -256,7 +247,7 @@ int main(int argc, char *argv[]){
             else labels.push_back( "" ) ;
         }
         nSpecific = specifiersNquantities.size() ;
-        if( draw && formatRequest && nSpecific < 1 ){
+        if( nSpecific < 1 ){
             cout << " ERROR :" 
                  << " no specifier found in specifier-file ( argv[4] ) " 
                  << endl;
@@ -264,12 +255,21 @@ int main(int argc, char *argv[]){
         }
     }
     
+    TString title = "" ;
     if( argc > 5 ){
-        formatRequest = false ;
-        if( string( argv[5] ).compare("skip") == 0 ) draw = false ;
+        for(unsigned int a=5; a<argc; a++) title += argv[a] ;
     }
     
-    TString title = "" ;
+    if( title != "" ){
+        show  = false ;
+        print = false ;
+        write = false ;
+        if( title.Contains("show") )  show  = true ;
+        if( title.Contains("print") ) print = true ;
+        if( title.Contains("write") ) write = true ;
+    }
+
+    title = "" ;
     TString name = filename ;
     if( name.Contains(".") ) name = name( 0 , name.Last('.') ) ;
     if( name.Contains("/") ) name = name( name.Last('/')+1 , name.Sizeof() ) ;
@@ -297,7 +297,8 @@ int main(int argc, char *argv[]){
     }
     name += ".root" ;
     
-    TFile * outfile = new TFile( name , "RECREATE" ) ;
+    TFile * outfile ;
+    if( write ) outfile = new TFile( name , "RECREATE" ) ;
     
     map< TString , map< TString , TGraphErrors * > > plots ;
     map< TString , SpecifiedNumber > extrema[2] ;
@@ -724,40 +725,44 @@ int main(int argc, char *argv[]){
         return 6 ;
     }
     
-    outfile->cd();
-    
-    cout << " writing ... " << flush ;
-    
-    for( auto q : plots ){
-        for( auto s : q.second ){
-            bool toWrite = true ;
-            if( specificSpecifier ){
-                toWrite = false ;
-                for(unsigned int i=0; i<nSpecific; i++){
-                    if(
-                        specifiersNquantities.at(i).at(0) == s.first
-                        &&
-                        specifiersNquantities.at(i).at(1) == q.first
-                    ){
-                        toWrite = true ;
-                        if( labels.at(i).length() > 0 )
-                             s.second->SetTitle( labels.at(i).c_str() ) ;
-                        break ;
+    if( write ){
+
+        outfile->cd();
+
+        cout << " writing ... " << flush ;
+
+        for( auto q : plots ){
+            for( auto s : q.second ){
+                bool toWrite = true ;
+                if( specificSpecifier ){
+                    toWrite = false ;
+                    for(unsigned int i=0; i<nSpecific; i++){
+                        if(
+                            specifiersNquantities.at(i).at(0) == s.first
+                            &&
+                            specifiersNquantities.at(i).at(1) == q.first
+                        ){
+                            toWrite = true ;
+                            if( labels.at(i).length() > 0 )
+                                s.second->SetTitle( labels.at(i).c_str() ) ;
+                            break ;
+                        }
                     }
                 }
+                if( toWrite ) s.second->Write()  ;
+                else          s.second->Delete() ;
             }
-            if( toWrite ) s.second->Write()  ;
-            else          s.second->Delete() ;
         }
+
     }
     
-    if( !draw ){
+    if( !( show || print ) ){
 
-        cout << " closing ... " << flush ;
-        
-        outfile->Close();
-        
-        cout << " done " << endl ;
+        if( write ){
+            cout << " closing ... " << flush ;
+            outfile->Close();
+            cout << " done " << endl ;
+        }
         
         return 0 ;
     
@@ -966,16 +971,22 @@ int main(int argc, char *argv[]){
 
     cout << " showing ... " << flush ;
     
-    if( formatRequest ) showing() ;    
+    if( show ){
+        if( print ) showing() ;
+        else        padWaiting() ;
+    }
 
-    name = can->GetName() ;
-    name += "." ;
-    name += saveAS ;
-    can->Print( name ) ;
+    if( print ){
+        name = can->GetName() ;
+        name += "." ;
+        name += saveAS ;
+        can->Print( name ) ;
+    }
 
-    cout << " closing ... " << flush ;
-    
-    outfile->Close();
+    if( write ){
+        cout << " closing ... " << flush ;
+        outfile->Close();
+    }
     
     cout << " done " << endl ;
     

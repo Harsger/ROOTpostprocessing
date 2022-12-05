@@ -364,10 +364,10 @@ housekeeper
 logTOplot 
 
  arguments :
- /path/to/file.dat (<timeOffset> <duration> <specifierListFile> <noRequest>)
+ /path/to/file.dat (<timeOffset> <duration> <specifierListFile> <outputOptions>)
  
  output :
- root-file containing canvas , PDF
+ root-file containing TGraphs , PDF
  
  stores data from text-files or root-trees in graphs 
  and plots these in canvas against time
@@ -386,7 +386,7 @@ logTOplot
  (only specifier-quantity-combinations are plotted, which are found in data)
  
  timeOffset and duration should be given as number with unit
- (e.g. 3h or 3m , where "s"=second , "m"=minute , "h"=hour , "d"=day)
+ (e.g. 3h or 5m , where "s"=second , "m"=minute , "h"=hour , "d"=day)
  
  additional options per specifier :
 <markerStyle> <markerColor> <lineStyle> <column> <label>
@@ -402,20 +402,19 @@ QUANTITY <quantity> (<name> <unit> <low> <high> <logarithmic>)
  other options in specifierListFile
 TABLE <unixtimeColumn>
  if TABLE is used data will be treated as text in columns
- with specifier in columns given (see additional options per specifier)
+ with specifier in given columns (see additional options per specifier)
 DELIMITER <sign>
  for table-data delimiter is used to separate columns
 XNOTINTEGER <xAxisTitle>
  for the x-axis double is used instead of unsigned int
+SAVEAS <filetype>
 
- if 'skip' (without quotes) is given at position of <specifierListFile> 
- no canvas is drawn and no PDF is created
- with this X-axis-range of output graphs can be controlled via 
- <timeOffset> and <duration> (otherwise full data-set is stored)
- 
- if 'print' (without quotes) is given at position of <specifierListFile> 
- PDF is created without further request from the user
- same procedure if more arguements are given after an <specifierListFile>
+ <outputOptions> can be a one or a combination of :
+ - 'show'  : canvas is drawn and shown on screen
+ - 'print' : canvas is saved
+ - 'write' : graphs are saved in a root-file
+ if at least one option is given others are set to false
+ (all are true by default)
 
 ///////////////////////////////////////////////////////////////////////////////
 
