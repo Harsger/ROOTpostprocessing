@@ -723,6 +723,9 @@ AXIS <xAxisTitle> <yAxisTitle>
 RANGE <xlow> <xhigh> <ylow> <yhigh>
 LOG <logarithmicX> <logarithmicY> 
  (specified by '0' [->false] or '1' [->true], without quotes)
+GRID <Xgridlines> <Ygridlines>
+ (specified by '0' [->false] or '1' [->true], without quotes,
+  default : X=false , Y=true )
 NOERRORS
  omits error-bars (during drawing)
 FORMAT <formatSpecifierList>

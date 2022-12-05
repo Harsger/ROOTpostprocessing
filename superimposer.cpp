@@ -30,6 +30,7 @@ int main(int argc, char *argv[]){
     string axisTitles[2] = { neverUse , neverUse } ;
     SpecifiedNumber plotRanges[2][2] ;
     bool useLogScale[2] = { false , false } ;
+    bool drawGrid[2] = { false , true } ;
     bool skipErrors = false ;
     SpecifiedNumber textDataFormat ;
     SpecifiedNumber divisions[2] ;
@@ -138,6 +139,26 @@ int main(int argc, char *argv[]){
             continue ;
         }
         
+        if(
+            parameter.at(r).at(0).compare("GRID") == 0
+            &&
+            parameter.at(r).size() > 1
+        ){
+            if( parameter.at(r).at(1).compare("1") == 0 )
+                drawGrid[0] = true ;
+            if(
+                parameter.at(r).size() > 2
+                &&
+                parameter.at(r).at(2).compare("%") != 0
+            ){
+                if( parameter.at(r).at(2).compare("1") == 0 )
+                    drawGrid[1] = true ;
+                else
+                    drawGrid[1] = false ;
+            }
+            continue ;
+        }
+
         if( parameter.at(r).at(0).compare("NOERRORS") == 0 ){
             skipErrors = true ;
             continue ;
@@ -771,8 +792,8 @@ int main(int argc, char *argv[]){
         
     }
     
-//     gPad->SetGridx() ;
-    gPad->SetGridy() ;
+    if( drawGrid[0] ) gPad->SetGridx() ;
+    if( drawGrid[1] ) gPad->SetGridy() ;
     
     double legendEdges[4] = { 0.87 , 0.15 , 0.995 , 0.95 } ;
     if( broadCanvas ) legendEdges[0] = 0.90 ;
