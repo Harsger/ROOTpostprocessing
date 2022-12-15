@@ -84,11 +84,13 @@ int main(int argc, char *argv[]){
     
     TFile * input = new TFile(filename,"READ") ;
     if( input->IsZombie() ){
+        gSystem->RedirectOutput( 0 , 0 ) ;
         cout << " ERROR : opening " << input->GetName() << endl ;
         return 2 ;
     }
     
     if( input->Get(dataname) == NULL ){
+        gSystem->RedirectOutput( 0 , 0 ) ;
         cout << " ERROR : reading " << dataname 
                           << " in " << input->GetName() << endl ;
         return 3 ;
