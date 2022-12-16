@@ -656,7 +656,7 @@ setData
  - FILL   <Xvalue> (<Yvalue>/ <weight>) 
  - WEIGHT <Xvalue> (<Yvalue>) <weight>
  - POINT (<index>) <Xvalue> <Yvalue> (<Xerror> <Yerror>)
- - REMOVE <index>/<xValue[xLow,xHigh]> ( <yValue[yLow,yHigh]> )
+ - REMOVE NAN/<index>/<xValue[xLow,xHigh]> ( <yValue[yLow,yHigh]> )
  difference between FILL and WEIGHT is by adding (for FILL)
  or setting (for WEIGHT) the respective bin-value
  for these two modes (FILL and WEIGHT) Xvalue and Yvalue can specify

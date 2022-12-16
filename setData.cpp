@@ -298,6 +298,33 @@ int main(int argc, char *argv[]){
             }
             graph->RemovePoint( index ) ;
         }
+        else if( firstArgument == "NAN" ){
+            unsigned int nPoints = graph->GetN() ;
+            double xNy[2][2] ;
+            bool withErrors = false ;
+            unsigned int errorIndex = 1 ;
+            if( dataClass.Contains("Errors") ){
+                withErrors = true ;
+                errorIndex = 2 ;
+            }
+            for(int p=0; p<nPoints; p++){
+                graph->GetPoint( p , xNy[0][0] , xNy[1][0] ) ;
+                if( withErrors ){
+                    xNy[0][1] = graph->GetErrorX( p ) ;
+                    xNy[1][1] = graph->GetErrorY( p ) ;
+                }
+                for(unsigned int e=0; e<errorIndex; e++){
+                    for(unsigned int a=0; a<2; a++){
+                        if( toDiscard( xNy[a][e] ) ){
+                            graph->RemovePoint( p ) ;
+                            p-- ;
+                            nPoints-- ;
+                            break ;
+                        }
+                    }
+                }
+            }
+        }
         else if( 
             mode( 6 , 1 ) == "X" 
             || 
