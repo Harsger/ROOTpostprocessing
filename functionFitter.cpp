@@ -100,7 +100,7 @@ int main(int argc, char *argv[]){
     TString dataClass = data->ClassName() ;
     
     TF1 * function = new TF1( 
-                                "function" , 
+                                "fittedFunction" ,
                                 functionString , 
                                 atof( lowLimit.Data() ) ,
                                 atof( highLimit.Data() ) 
