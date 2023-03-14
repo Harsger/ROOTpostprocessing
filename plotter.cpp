@@ -642,13 +642,13 @@ int main(int argc, char *argv[]){
     
     gStyle->SetOptStat(0) ;
 
-    gStyle->SetPadTopMargin(    0.05 ) ;
-    gStyle->SetPadRightMargin(  0.05 ) ;
+    gStyle->SetPadTopMargin(    0.06 ) ;
+    gStyle->SetPadRightMargin(  0.10 ) ;
     gStyle->SetPadBottomMargin( 0.12 ) ;
-    gStyle->SetPadLeftMargin(   0.14 ) ;
+    gStyle->SetPadLeftMargin(   0.15 ) ;
 
     gStyle->SetTitleOffset( 1.1 , "x" ) ;
-    gStyle->SetTitleOffset( 1.4 , "y" ) ;
+    gStyle->SetTitleOffset( 1.6 , "y" ) ;
     
     if( broadCanvas ){
         gStyle->SetPadRightMargin( 0.03 ) ;
@@ -656,6 +656,8 @@ int main(int argc, char *argv[]){
         gStyle->SetTitleOffset( 1.2 , "x" ) ;
         gStyle->SetTitleOffset( 0.6 , "y" ) ;
     }
+
+    TGaxis::SetMaxDigits(3) ;
     
     TApplication app("app", &argc, argv) ;     
     
