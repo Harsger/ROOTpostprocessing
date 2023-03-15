@@ -651,7 +651,7 @@ int main(int argc, char *argv[]){
     gStyle->SetTitleOffset( 1.6 , "y" ) ;
     
     if( broadCanvas ){
-        gStyle->SetPadRightMargin( 0.03 ) ;
+        gStyle->SetPadRightMargin( 0.04 ) ;
         gStyle->SetPadLeftMargin(  0.06 ) ;
         gStyle->SetTitleOffset( 1.2 , "x" ) ;
         gStyle->SetTitleOffset( 0.6 , "y" ) ;
