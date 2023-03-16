@@ -378,6 +378,9 @@ void plotOptions(){
     gStyle->SetLabelSize(text_size,"z") ;
     gStyle->SetTitleSize(text_size,"z") ;
     
+    gStyle->SetPadTickX(1);
+    gStyle->SetPadTickY(1);
+
     gROOT->ForceStyle() ;
     
 }
