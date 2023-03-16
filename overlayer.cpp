@@ -317,12 +317,11 @@ int main(int argc, char *argv[]){
         if( colorPalette.specifier.compare("inverted") == 0 )
             TColor::InvertPalette();
     }
-        
-//     gStyle->SetOptStat(0) ;
+
     if( statBox.setting ) gStyle->SetOptStat( statBox.number ) ;
     else gStyle->SetOptStat(0) ;
 
-    gStyle->SetPadTopMargin(    0.03 ) ;
+    gStyle->SetPadTopMargin(    0.06 ) ;
     gStyle->SetPadRightMargin(  0.11 ) ;
     gStyle->SetPadBottomMargin( 0.12 ) ;
     gStyle->SetPadLeftMargin(   0.06 ) ;
@@ -330,11 +329,14 @@ int main(int argc, char *argv[]){
     gStyle->SetTitleOffset( 1.2 , "x" ) ;
     gStyle->SetTitleOffset( 0.6 , "y" ) ;
     
+    TGaxis::SetMaxDigits(3) ;
+    TGaxis::SetExponentOffset( 0.016 , -0.07 , "x" ) ;
+
     if( narrowCanvas ){
         gStyle->SetPadRightMargin( 0.14 ) ;
-        gStyle->SetPadLeftMargin(  0.13 ) ;
+        gStyle->SetPadLeftMargin(  0.15 ) ;
         gStyle->SetTitleOffset( 1.1 , "x" ) ;
-        gStyle->SetTitleOffset( 1.4 , "y" ) ;
+        gStyle->SetTitleOffset( 1.6 , "y" ) ;
     }
     
     TH1D** hists = new TH1D*[nHists] ;
@@ -618,9 +620,8 @@ int main(int argc, char *argv[]){
     gPad->SetGridx() ;
     gPad->SetGridy() ;
     
-    double legendEdges[2][2] = { { 0.90 , 0.995 } , { 0.15 , 0.95 } } ;
-    if( narrowCanvas )
-        legendEdges[0][0] = 0.87 ;
+    double legendEdges[2][2] = { { 0.893 , 0.997 } , { 0.12 , 0.94 } } ;
+    if( narrowCanvas ) legendEdges[0][0] = 0.863 ;
     TLegend * legend = can->BuildLegend( 
                                         legendEdges[0][0] , legendEdges[1][0] , 
                                         legendEdges[0][1] , legendEdges[1][1]  
@@ -631,11 +632,11 @@ int main(int argc, char *argv[]){
     if( boxPosition.setting ){
         
         double boxRanges[2][2] = {
-            { 0.075 , 0.885 } , { 0.15 , 0.99 }
+            { 0.09 , 0.86 } , { 0.15 , 0.91 }
         } ;
         if( narrowCanvas ){ 
-            boxRanges[0][0] = 0.16 ;
-            boxRanges[0][1] = 0.85 ;
+            boxRanges[0][0] = 0.18 ;
+            boxRanges[0][1] = 0.83 ;
         }
         double margins[2] = { 0.003 , 0.007 } ;
         double boxDimensions[2] = { 0.12 , 0.16 } ;
@@ -664,7 +665,6 @@ int main(int argc, char *argv[]){
             boxStarts[1] = boxRanges[1][0] + boxDimensions[1] ;
         }
         else if( boxPosition.specifier.compare("left")  == 0 ){
-            boxRanges[1][1] = 0.95 ;
             boxStarts[1]    = boxRanges[1][1] ;
             boxDimensions[1] =  (
                                     ( boxRanges[1][1] - boxRanges[1][0] ) 
@@ -675,7 +675,6 @@ int main(int argc, char *argv[]){
             stepSizes[1] = boxDimensions[1] + margins[1] ;
         }
         else if( boxPosition.specifier.compare("right") == 0 ){
-            boxRanges[1][1] = 0.95 ;
             boxStarts[1]    = boxRanges[1][1] ;
             boxDimensions[1] =  (
                                     ( boxRanges[1][1] - boxRanges[1][0] ) 
