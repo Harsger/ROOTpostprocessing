@@ -604,26 +604,33 @@ int main(int argc, char *argv[]){
     
     gStyle->SetOptStat(0) ;
 
-    gStyle->SetPadTopMargin(    0.03 ) ;
+    gStyle->SetPadTopMargin(    0.06 ) ;
     gStyle->SetPadRightMargin(  0.14 ) ;
     gStyle->SetPadBottomMargin( 0.12 ) ;
-    gStyle->SetPadLeftMargin(   0.13 ) ;
+    gStyle->SetPadLeftMargin(   0.15 ) ;
 
     gStyle->SetTitleOffset( 1.1 , "x" ) ;
-    gStyle->SetTitleOffset( 1.4 , "y" ) ;
-    
+    gStyle->SetTitleOffset( 1.6 , "y" ) ;
+
     if( broadCanvas ){
         gStyle->SetPadRightMargin( 0.11 ) ;
         gStyle->SetPadLeftMargin(  0.06 ) ;
         gStyle->SetTitleOffset( 1.2 , "x" ) ;
         gStyle->SetTitleOffset( 0.6 , "y" ) ;
     }
-    if( legendPosition.setting ) gStyle->SetPadRightMargin( 0.03 ) ;
+    if( legendPosition.setting ){
+        if( broadCanvas) gStyle->SetPadRightMargin( 0.04 ) ;
+        else             gStyle->SetPadRightMargin( 0.10 ) ;
+    }
     if( fitting.setting ){
         gStyle->SetOptFit(1) ;
-        gStyle->SetPadRightMargin( 0.3 ) ;
-        if( broadCanvas) gStyle->SetPadRightMargin( 0.2 ) ;
+        if( broadCanvas) gStyle->SetPadRightMargin( 0.22 ) ;
+        else             gStyle->SetPadRightMargin( 0.28 ) ;
     }
+
+    TGaxis::SetMaxDigits(3) ;
+    if( fitting.setting || !( legendPosition.setting ) )
+        TGaxis::SetExponentOffset( 0.016 , -0.07 , "x" ) ;
     
     TApplication app("app", &argc, argv) ; 
     
@@ -795,29 +802,35 @@ int main(int argc, char *argv[]){
     if( drawGrid[0] ) gPad->SetGridx() ;
     if( drawGrid[1] ) gPad->SetGridy() ;
     
-    double legendEdges[2][2] = { { 0.87 , 0.995 } , { 0.15 , 0.95 } } ;
-    if( broadCanvas ) legendEdges[0][0] = 0.90 ;
+    double legendEdges[2][2] = { { 0.863 , 0.997 } , { 0.12 , 0.94 } } ;
+    if( broadCanvas ) legendEdges[0][0] = 0.893 ;
     if( legendPosition.setting ){
-        legendEdges[0][0] = 0.76 ;
-        legendEdges[0][1] = 0.96 ;
-        if( fitting.setting ){
-            legendEdges[0][0] = 0.48 ;
-            legendEdges[0][1] = 0.68 ;
-            if( broadCanvas ){
-                legendEdges[0][0] = 0.59 ;
-                legendEdges[0][1] = 0.79 ;
-            }
+        legendEdges[0][0] = 0.18 ;
+        legendEdges[0][1] = 0.87 ;
+        legendEdges[1][0] = 0.15 ;
+        legendEdges[1][1] = 0.91 ;
+        if( broadCanvas ){
+            legendEdges[0][0] = 0.09 ;
+            legendEdges[0][1] = 0.93 ;
         }
-        if(      legendPosition.specifier.find( "top") != std::string::npos ) 
-            legendEdges[1][0] = 0.55 ;
-        else if( legendPosition.specifier.find( "bot") != std::string::npos ) 
-            legendEdges[1][1] = 0.55 ;
-        if(      legendPosition.specifier.find("left") != std::string::npos ){
-            legendEdges[0][0] = 0.16 ;
-            legendEdges[0][1] = 0.36 ;
-            if( broadCanvas ){
-                legendEdges[0][0] = 0.09 ;
-                legendEdges[0][1] = 0.29 ;
+        if( fitting.setting ){
+            if( broadCanvas ) legendEdges[0][1] = 0.75 ;
+            else              legendEdges[0][1] = 0.69 ;
+        }
+        if(      legendPosition.specifier.find(  "top") != std::string::npos )
+            legendEdges[1][0] = 0.53 ;
+        else if( legendPosition.specifier.find(  "bot") != std::string::npos )
+            legendEdges[1][1] = 0.53 ;
+        if(      legendPosition.specifier.find( "left") != std::string::npos ){
+            if( broadCanvas ) legendEdges[0][1] = 0.21 ;
+            else              legendEdges[0][1] = 0.30 ;
+        }
+        else if( legendPosition.specifier.find("right") != std::string::npos ){
+            if( broadCanvas ) legendEdges[0][0] = 0.81 ;
+            else              legendEdges[0][0] = 0.75 ;
+            if( fitting.setting ){
+                if( broadCanvas ) legendEdges[0][0] = 0.63 ;
+                else              legendEdges[0][0] = 0.57 ;
             }
         }
     }
@@ -853,12 +866,13 @@ int main(int argc, char *argv[]){
         TPaveStats * box ;
 
         double boxRanges[2][2] = {
-            { 0.71 , 0.99 } , { 0.12 , 0.97 }
+            { 0.723 , 0.997 } , { 0.12 , 0.94 }
         } ;
-        if( broadCanvas ) boxRanges[0][0] = 0.81 ;
-        if( !( legendPosition.setting ) ) boxRanges[0][1] = 0.86 ;
-        if( broadCanvas && !( legendPosition.setting ) )
-            boxRanges[0][1] = 0.89 ;
+        if( broadCanvas ) boxRanges[0][0] = 0.783 ;
+        if( !( legendPosition.setting ) ){
+            if( broadCanvas ) boxRanges[0][1] = 0.89 ;
+            else              boxRanges[0][1] = 0.86 ;
+        }
         double margin = 0.007 ;
         double boxHeight =
                             (
