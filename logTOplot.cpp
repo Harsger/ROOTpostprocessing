@@ -915,7 +915,7 @@ int main(int argc, char *argv[]){
                             
             if( p == NULL ) continue ;
 
-            if( labels.at(s).length() > 0 )
+            if( labels.size() == nSpecific && labels.at(s).length() > 0 )
                 p->SetTitle( labels.at(s).c_str() ) ;
             else
                 p->SetTitle( specifiersNquantities.at(s).at(0).c_str() ) ;
