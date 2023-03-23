@@ -42,7 +42,7 @@ int main(int argc, char *argv[]){
         skipShowing = true ;
                   
     TApplication app("app", &argc, argv) ;    
-    plotOptions() ;
+    plotOptions( false , true ) ;
     
     if( values["colorPalette"].setting ){
         if( values["colorPalette"].number < 0 ){
@@ -57,10 +57,6 @@ int main(int argc, char *argv[]){
         gStyle->SetOptStat( values["statBox"].number ) ;
         
     gStyle->SetPadRightMargin(  0.18 ) ;
-
-    gStyle->SetTitleOffset( 1.0 , "x" ) ;
-    gStyle->SetTitleOffset( 1.2 , "y" ) ;
-    gStyle->SetTitleOffset( 1.4 , "z" ) ;
     
     TFile * input = new TFile(filename,"READ") ;
     if( input->IsZombie() ){

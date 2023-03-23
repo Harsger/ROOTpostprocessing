@@ -58,18 +58,17 @@ int main(int argc, char *argv[]){
     }
 
     TApplication app("app", &argc, argv) ;    
-    plotOptions() ;
+    plotOptions( false , true ) ;
     
-    if( show ) gStyle->SetOptStat(1110) ;
+    if( show || print ){
+        gStyle->SetOptStat(1111110) ;
+        gStyle->SetPadRightMargin( 0.20 ) ;
+    }
     else gStyle->SetOptStat(0) ;
-    
-    gStyle->SetPadTopMargin(    0.04 ) ;
-    gStyle->SetPadRightMargin(  0.03 ) ;
-    gStyle->SetPadBottomMargin( 0.10 ) ;
-    gStyle->SetPadLeftMargin(   0.08 ) ;
 
-    gStyle->SetTitleOffset( 1.0 , "x" ) ;
-    gStyle->SetTitleOffset( 0.8 , "y" ) ;
+    gStyle->SetPadLeftMargin(  0.11 ) ;
+
+    gStyle->SetTitleOffset( 1.2 , "y" ) ;
     
     TFile * input = new TFile(filename,"READ") ;
     if( input->IsZombie() ){
@@ -143,7 +142,7 @@ int main(int argc, char *argv[]){
     TString proName = name ;
     proName = proName.ReplaceAll( "_noisyBins.txt" , "" ) ;
     
-    TCanvas * can = new TCanvas( proName , proName , 1000 , 500 ) ; 
+    TCanvas * can = new TCanvas( proName , proName , 1000 , 600 ) ;
     
     TH1I * spectrum = new TH1I( 
                                     "spectrum" , "spectrum" , 
@@ -217,6 +216,18 @@ int main(int argc, char *argv[]){
         lineHigh->Draw() ;
     }
         
+    if( show || print ){ 
+        gPad->Modified() ;
+        gPad->Update() ;
+        TPaveStats * box = (TPaveStats*)spectrum->FindObject("stats") ;
+        box->SetX1NDC( 0.803 ) ;
+        box->SetX2NDC( 0.997 ) ;
+        box->SetY1NDC( 0.120 ) ;
+        box->SetY2NDC( 0.940 ) ;
+        gPad->Modified() ;
+        gPad->Update() ;
+    }
+
     if( show ){ 
         if( print ) showing() ;
         else        padWaiting() ;
@@ -296,7 +307,7 @@ int main(int argc, char *argv[]){
         proName = proName.ReplaceAll( "noisy" , "" ) ;
         proName = proName.ReplaceAll( ".txt" , "" ) ;
         
-        can = new TCanvas( proName , proName , 1000 , 500 ) ; 
+        can = new TCanvas( proName , proName , 1000 , 600 ) ;
         
         projection->GetYaxis()->SetTitle( zTitle ) ;
         projection->Draw("HIST") ;
@@ -316,6 +327,18 @@ int main(int argc, char *argv[]){
             highLine->Draw("same") ;
         }
         
+        if( show || print ){ 
+            gPad->Modified() ;
+            gPad->Update() ;
+            TPaveStats * box = (TPaveStats*)projection->FindObject("stats") ;
+            box->SetX1NDC( 0.803 ) ;
+            box->SetX2NDC( 0.997 ) ;
+            box->SetY1NDC( 0.120 ) ;
+            box->SetY2NDC( 0.940 ) ;
+            gPad->Modified() ;
+            gPad->Update() ;
+        }
+
         if( show ){ 
             if( print ) showing() ;
             else        padWaiting() ;

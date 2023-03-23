@@ -8,16 +8,6 @@ int main(int argc, char *argv[]){
         printUsage( argv[0] ) ;
         return 1 ;
     }
-    
-    plotOptions() ;
-
-    gStyle->SetPadTopMargin(    0.055 ) ;
-    gStyle->SetPadRightMargin(  0.08 ) ;
-    gStyle->SetPadBottomMargin( 0.10 ) ;
-    gStyle->SetPadLeftMargin(   0.14 ) ;
-
-    gStyle->SetTitleOffset( 1.0 , "x" ) ;
-    gStyle->SetTitleOffset( 1.4 , "y" ) ;
 
     TString filename = argv[1] ;
     TString filesNdata[2][2] ;
@@ -440,6 +430,10 @@ int main(int argc, char *argv[]){
             outname = outname( outname.Last('/')+1 , outname.Sizeof() ) ;
         
     }
+
+    bool shiftXexponent = false ;
+    if( toDraw == "HIST" ) shiftXexponent = true ;
+    plotOptions( false , shiftXexponent ) ;
 
     for(unsigned int t=0; t<2; t++){
         for(unsigned int f=0; f<2; f++){
@@ -936,7 +930,7 @@ int main(int argc, char *argv[]){
         TApplication app("app", &argc, argv) ; 
         name = outname ;
         name = name.ReplaceAll( ".root" , "" ) ;
-        TCanvas * can = new TCanvas( name , name , 700 , 600 ) ;
+        TCanvas * can = new TCanvas( name , name , 800 , 600 ) ;
         
         if( toDraw == "HIST" ){
 

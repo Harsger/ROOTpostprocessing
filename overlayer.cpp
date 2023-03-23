@@ -310,7 +310,10 @@ int main(int argc, char *argv[]){
     
     TApplication app("app", &argc, argv) ; 
     
-    plotOptions() ;
+    plotOptions( !( narrowCanvas ) , true ) ;
+
+    if( narrowCanvas ) gStyle->SetPadRightMargin(  0.14 ) ;
+    else               gStyle->SetPadRightMargin(  0.11 ) ;
     
     if( colorPalette.setting ){
         gStyle->SetPalette( colorPalette.number ) ;
@@ -320,24 +323,6 @@ int main(int argc, char *argv[]){
 
     if( statBox.setting ) gStyle->SetOptStat( statBox.number ) ;
     else gStyle->SetOptStat(0) ;
-
-    gStyle->SetPadTopMargin(    0.06 ) ;
-    gStyle->SetPadRightMargin(  0.11 ) ;
-    gStyle->SetPadBottomMargin( 0.12 ) ;
-    gStyle->SetPadLeftMargin(   0.06 ) ;
-
-    gStyle->SetTitleOffset( 1.2 , "x" ) ;
-    gStyle->SetTitleOffset( 0.6 , "y" ) ;
-    
-    TGaxis::SetMaxDigits(3) ;
-    TGaxis::SetExponentOffset( 0.016 , -0.07 , "x" ) ;
-
-    if( narrowCanvas ){
-        gStyle->SetPadRightMargin( 0.14 ) ;
-        gStyle->SetPadLeftMargin(  0.15 ) ;
-        gStyle->SetTitleOffset( 1.1 , "x" ) ;
-        gStyle->SetTitleOffset( 1.6 , "y" ) ;
-    }
     
     TH1D** hists = new TH1D*[nHists] ;
     TString name , title ;

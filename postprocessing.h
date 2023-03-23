@@ -346,7 +346,11 @@ void project(
     
 }
 
-void plotOptions(){
+void plotOptions( 
+                    bool broadCanvas = false ,
+                    bool shiftXexponent = false ,
+                    unsigned int maxAxisDigits = 3
+                ){
         
     gROOT->SetStyle("Plain") ;
     
@@ -355,14 +359,22 @@ void plotOptions(){
     gStyle->SetOptStat(11110) ;
     gStyle->SetOptFit(0) ;
 
-    gStyle->SetPadTopMargin(    0.05 ) ;
-    gStyle->SetPadRightMargin(  0.16 ) ;
-    gStyle->SetPadBottomMargin( 0.10 ) ;
-    gStyle->SetPadLeftMargin(   0.12 ) ;
+    gStyle->SetPadTopMargin(    0.06 ) ;
+    gStyle->SetPadRightMargin(  0.10 ) ;
+    gStyle->SetPadBottomMargin( 0.12 ) ;
+    gStyle->SetPadLeftMargin(   0.15 ) ;
 
-    gStyle->SetTitleOffset( 1.3 , "x" ) ;
-    gStyle->SetTitleOffset( 0.7 , "y" ) ;
-    gStyle->SetTitleOffset( 2.0 , "z" ) ;
+    gStyle->SetTitleOffset( 1.1 , "x" ) ;
+    gStyle->SetTitleOffset( 1.6 , "y" ) ;
+    gStyle->SetTitleOffset( 1.4 , "z" ) ;
+
+    if( broadCanvas ){
+        gStyle->SetPadRightMargin(  0.04 ) ;
+        gStyle->SetPadLeftMargin(   0.06 ) ;
+        gStyle->SetTitleOffset( 0.6 , "y" ) ;
+    }
+    if( shiftXexponent ) TGaxis::SetExponentOffset( 0.016 , -0.07 , "x" ) ;
+    TGaxis::SetMaxDigits( maxAxisDigits ) ;
 
     gStyle->SetLabelFont(font,"x");
     gStyle->SetTitleFont(font,"x");

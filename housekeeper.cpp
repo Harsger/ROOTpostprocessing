@@ -9,15 +9,7 @@ int main(int argc, char *argv[]){
         return 1 ;
     }
 
-    plotOptions() ;
-
-    gStyle->SetPadTopMargin(    0.05 ) ;
-    gStyle->SetPadRightMargin(  0.03 ) ;
-    gStyle->SetPadBottomMargin( 0.12 ) ;
-    gStyle->SetPadLeftMargin(   0.08 ) ;
-
-    gStyle->SetTitleOffset( 1.2 , "x" ) ;
-    gStyle->SetTitleOffset( 0.8 , "y" ) ;
+    plotOptions( true ) ;
 
     TString filename = argv[1] ;
     
@@ -243,10 +235,15 @@ int main(int argc, char *argv[]){
     
         TApplication app("app", &argc, argv) ; 
         
-        TCanvas * can = new TCanvas( "can" , "can" , 1500 , 500 ) ;
+        TCanvas * can = new TCanvas( "can" , "can" , 1400 , 400 ) ;
         
         for( auto p : plots ){
             
+            if( p.second->GetN() < 1 ){
+                p.second->Delete() ;
+                continue ;
+            }
+
             can->SetName(  p.first ) ;
             can->SetTitle( p.first ) ;
             

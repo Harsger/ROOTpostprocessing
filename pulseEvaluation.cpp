@@ -70,7 +70,6 @@ int main(int argc, char *argv[]){
     }
     TApplication app("app", &argc, argv) ;    
     plotOptions() ;
-    gStyle->SetPadRightMargin( 0.03 ) ;
     
     TString name , title , mode ;
     vector< vector<string> > parameter = getInput( parameterFileName );

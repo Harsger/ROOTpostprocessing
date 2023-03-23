@@ -126,28 +126,22 @@ int main(int argc, char *argv[]){
         }
     }
 
-    plotOptions() ;
+    plotOptions( false , true ) ;
 
     gStyle->SetOptTitle(1) ;
     gStyle->SetTitleX(0.5) ;
     gStyle->SetTitleAlign(23) ;
     gStyle->SetOptFit( 1 ) ;
     gStyle->SetOptStat( 1001100 ) ;
-    gStyle->SetStatX( 0.995 ) ;
-    gStyle->SetStatY( 0.90  ) ;
-    gStyle->SetStatW( 0.115 );
-    gStyle->SetStatH( 0.30  );
 
     gStyle->SetCanvasDefW( 1000 ) ;
     gStyle->SetCanvasDefH(  600 ) ;
    
-    gStyle->SetPadTopMargin(    0.10 ) ; 
-    gStyle->SetPadRightMargin(  0.22 ) ;
-    gStyle->SetPadBottomMargin( 0.11 ) ;
-    gStyle->SetPadLeftMargin(   0.11 ) ;
+    gStyle->SetPadTopMargin(   0.12 ) ;
+    gStyle->SetPadRightMargin( 0.30 ) ;
+    gStyle->SetPadLeftMargin(  0.11 ) ;
 
-    gStyle->SetTitleOffset( 1.0 , "x" ) ; 
-    gStyle->SetTitleOffset( 1.2 , "y" ) ; 
+    gStyle->SetTitleOffset( 1.2 , "y" ) ;
 
     unsigned int nHists = filesNhists.size() ;
     TH1D** hists = new TH1D*[nHists] ;
@@ -467,6 +461,13 @@ int main(int argc, char *argv[]){
             
             lineLow->Draw() ;
             lineHigh->Draw() ;
+
+            TPaveStats * box = (TPaveStats*)hists[h]->FindObject("stats") ;
+
+            box->SetX1NDC( 0.703 ) ;
+            box->SetX2NDC( 0.997 ) ;
+            box->SetY1NDC( 0.120 ) ;
+            box->SetY2NDC( 0.880 ) ;
             
             gPad->Modified() ;
             gPad->Update() ;
