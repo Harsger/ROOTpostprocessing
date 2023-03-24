@@ -23,6 +23,9 @@ overlayer
 peakFitter
 plotter
 projector
+setData
+shower
+slicer
 superimposer
 textTOtree
 
@@ -663,6 +666,35 @@ setData
  bin-numbers if 'BIN' (without quotes) is appended to the <mode>
  HIST creates new histograms (either one- or two-dimensional)
  POINT creates graph if no graph with specified name is found
+
+///////////////////////////////////////////////////////////////////////////////
+
+shower
+
+ arguments :
+ /path/to/file.root graphname
+
+ optional arguments :
+ <xDivisions[xLow,xHigh](log)(grid)>
+ <yDivisions[yLow,yHigh](log)(grid)>
+ <markerStyle[markerColor,markerSize]>
+ <lineStyle[lineColor,lineWidth]>
+ <xTitle>
+ <yTitle>
+ (skip)
+
+ output :
+ PDF
+
+ shows specified graph (ROOT::TGraphErrors) from file
+ for marker-style-options see
+     https://root.cern.ch/doc/master/classTAttMarker.html
+ for line-style-options see
+     https://root.cern.ch/doc/master/classTAttLine.html
+ if at last (or as any positional-argument) 'skip' is specified
+ no canvas is drawn, but graph is directly saved as PDF
+
+ values can be omitted using '%' (without quotes)
 
 ///////////////////////////////////////////////////////////////////////////////
  
