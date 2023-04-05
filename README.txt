@@ -557,6 +557,41 @@ BROADCANVAS
  same canvas aspect ratio as for overlayer (default)
 
 ///////////////////////////////////////////////////////////////////////////////
+
+printer
+
+ arguments :
+ /path/to/file.root histname
+
+ optional arguments :
+ <xDivisions[xLow,xHigh](log)(grid)>
+ <yDivisions[yLow,yHigh](log)(grid)>
+ <statBox>
+ <lineStyle[lineColor,lineWidth]>
+ <drawingOption>
+ <markerStyle[markerColor,markerSize]>
+ (skip)
+
+ output :
+ PDF
+
+ shows specified histogram (ROOT::TH1) from file
+ for stat-box-settings see
+     https://root.cern.ch/doc/master/classTPaveStats.html
+ for line-style-options see
+     https://root.cern.ch/doc/master/classTAttLine.html
+ for drawing-options see
+     https://root.cern.ch/doc/master/classTHistPainter.html
+     or
+     https://root.cern.ch/root/htmldoc/guides/users-guide/Histograms.html
+ for marker-style-options see
+     https://root.cern.ch/doc/master/classTAttMarker.html
+ if at last (or as any positional-argument) 'skip' is specified
+ no canvas is drawn, but graph is directly saved as PDF
+
+ values can be omitted using '%' (without quotes)
+
+///////////////////////////////////////////////////////////////////////////////
  
 projector
 
