@@ -10,6 +10,7 @@ public :
     string unit ;
     SpecifiedNumber range[2] ;
     bool logarithmic ;
+    unsigned int nDivisions ;
 
     Quantity(){
         identifier = "" ;
@@ -18,6 +19,7 @@ public :
         range[0] = SpecifiedNumber() ;
         range[1] = SpecifiedNumber() ;
         logarithmic = false ;
+        nDivisions = 520 ;
     }
 
     Quantity( string i ){
@@ -154,6 +156,13 @@ int main(int argc, char *argv[]){
                     )
                 )
                     rangedQuantityPads.at(nDefinedPads-1).logarithmic = true ;
+                if(
+                    specifierInput.at(s).size() > 7
+                    &&
+                    specifierInput.at(s).at(7) != "%"
+                )
+                    rangedQuantityPads.at(nDefinedPads-1).nDivisions =
+                        atoi( specifierInput.at(s).at(7).c_str() ) ;
                 continue ;
             }
             if( specifierInput.at(s).at(0).compare("TABLE") == 0 ){
@@ -856,6 +865,9 @@ int main(int argc, char *argv[]){
             }
             if( rangedQuantityPads.at(padTOuse-1).logarithmic )
                 gPad->SetLogy(1) ;
+            g_extrem[q]->GetYaxis()->SetNdivisions(
+                rangedQuantityPads.at(padTOuse-1).nDivisions
+            ) ;
         }
 
         g_extrem[q]->SetMarkerStyle(1) ;
