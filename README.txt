@@ -401,7 +401,7 @@ QUANTITY <quantity> (<name> <unit> <low> <high> <logarithmic> <nDivisions>)
  optional : the Y-axis will show "name ( unit )" (without quotes)
             and will be adjusted according to low and high,
             logarithmic scaling will be applied if requested ('1' or 'log')
-            default <nDivisions> is 520
+            default <nDivisions> is 515
 
  other options in specifierListFile
 TABLE <unixtimeColumn>

@@ -19,7 +19,7 @@ public :
         range[0] = SpecifiedNumber() ;
         range[1] = SpecifiedNumber() ;
         logarithmic = false ;
-        nDivisions = 520 ;
+        nDivisions = 515 ;
     }
 
     Quantity( string i ){
@@ -43,10 +43,10 @@ int main(int argc, char *argv[]){
     gStyle->SetPadTopMargin(    0.022 ) ;
     gStyle->SetPadRightMargin(  0.085 ) ;
     gStyle->SetPadBottomMargin( 0.020 ) ;
-    gStyle->SetPadLeftMargin(   0.055 ) ;
+    gStyle->SetPadLeftMargin(   0.080 ) ;
 
     gStyle->SetTitleOffset( 1.1 , "x" ) ;
-    gStyle->SetTitleOffset( 0.6 , "y" ) ;
+    gStyle->SetTitleOffset( 0.9 , "y" ) ;
 
     TString filename = argv[1] ;
     
@@ -921,7 +921,7 @@ int main(int argc, char *argv[]){
         g_extrem[q]->GetXaxis()->SetNdivisions( nXdivisions ) ;
         g_extrem[q]->GetXaxis()->SetRangeUser( startTime , endTime ) ;
         g_extrem[q]->GetYaxis()->CenterTitle() ;
-        TGaxis::SetExponentOffset( -0.05 , -0.05 , "y" ) ;
+        TGaxis::SetExponentOffset( -0.08 , -0.05 , "y" ) ;
         TGaxis::SetMaxDigits( 3 ) ;
         
         name = quantities.at(q) ;
