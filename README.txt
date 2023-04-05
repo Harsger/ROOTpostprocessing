@@ -396,11 +396,12 @@ logTOplot
 
  to adjust the plots and combine only certain specifier
  into quantity-pads one can use:
-QUANTITY <quantity> (<name> <unit> <low> <high> <logarithmic>)
+QUANTITY <quantity> (<name> <unit> <low> <high> <logarithmic> <nDivisions>)
  before specifiers with this quantity
  optional : the Y-axis will show "name ( unit )" (without quotes)
             and will be adjusted according to low and high,
             logarithmic scaling will be applied if requested ('1' or 'log')
+            default <nDivisions> is 520
 
  other options in specifierListFile
 TABLE <unixtimeColumn>
@@ -408,7 +409,11 @@ TABLE <unixtimeColumn>
  with specifier in given columns (see additional options per specifier)
 DELIMITER <sign>
  for table-data delimiter is used to separate columns
-XNOTINTEGER <xAxisTitle>
+XTITLE <xAxisTitle>
+XAXIS <nDivisions> <xLabelFormat>
+ set the divisions for x-axis-labels (default: 525) and their format
+ default label-format is "%H:%M%F1970-01-01 00:00:00" (without quotes)
+XNOTINTEGER
  for the x-axis double is used instead of unsigned int
 SAVEAS <filetype>
 

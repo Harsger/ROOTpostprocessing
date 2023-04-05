@@ -96,6 +96,8 @@ int main(int argc, char *argv[]){
     
     bool abscissaInteger = true ;
     TString xAxisTitle = "" ;
+    SpecifiedNumber xLabelFormat ;
+    unsigned int nXdivisions = 525 ;
     
     if( argc > 4 && string( argv[4] ) != "%" ){
         parameterFileName = argv[4] ;
@@ -185,11 +187,38 @@ int main(int argc, char *argv[]){
                 delimiter.specifier = specifierInput.at(s).at(1) ;
                 continue ;
             }
+            if(
+                specifierInput.at(s).at(0).compare("XTITLE") == 0
+                &&
+                specifierInput.at(s).size() > 1
+            ){
+                for(unsigned int c=1; c<specifierInput.at(s).size() ; c++){
+                    xAxisTitle += specifierInput.at(s).at(c) ;
+                    if( c < specifierInput.at(s).size()-1 )
+                        xAxisTitle += " " ;
+                }
+                continue ;
+            }
+            if( specifierInput.at(s).at(0).compare("XAXIS") == 0 ){
+                if(
+                    specifierInput.at(s).size() > 1
+                    &&
+                    specifierInput.at(s).at(1) != "%"
+                )
+                    nXdivisions = atoi( specifierInput.at(s).at(1).c_str() ) ;
+                if( specifierInput.at(s).size() > 2 ){
+                    xLabelFormat =
+                        SpecifiedNumber( specifierInput.at(s).size()-2 ) ;
+                    for(unsigned int c=2; c<specifierInput.at(s).size() ; c++){
+                        xLabelFormat.specifier += specifierInput.at(s).at(c) ;
+                        if( c < specifierInput.at(s).size()-1 )
+                            xLabelFormat.specifier += " " ;
+                    }
+                }
+                continue ;
+            }
             if( specifierInput.at(s).at(0).compare("XNOTINTEGER") == 0 ){
                 abscissaInteger = false ;
-                if( specifierInput.at(s).size() > 1 )
-                    for(unsigned int c=1; c<specifierInput.at(s).size() ; c++)
-                        xAxisTitle += " "+specifierInput.at(s).at(c) ;
                 continue ;
             }
             if(
@@ -882,11 +911,14 @@ int main(int argc, char *argv[]){
                 g_extrem[q]->GetXaxis()->SetTimeFormat(
                     "%d.%m.%F1970-01-01 00:00:00"
                 ) ;
+            if( xLabelFormat.setting )
+                g_extrem[q]->GetXaxis()
+                           ->SetTimeFormat( xLabelFormat.specifier.c_str() ) ;
             g_extrem[q]->GetXaxis()->SetTitle( dateString.specifier.c_str() ) ;
         }
-        else
+        if( xAxisTitle != "" )
             g_extrem[q]->GetXaxis()->SetTitle( xAxisTitle ) ;
-        g_extrem[q]->GetXaxis()->SetNdivisions(525) ;
+        g_extrem[q]->GetXaxis()->SetNdivisions( nXdivisions ) ;
         g_extrem[q]->GetXaxis()->SetRangeUser( startTime , endTime ) ;
         g_extrem[q]->GetYaxis()->CenterTitle() ;
         TGaxis::SetExponentOffset( -0.05 , -0.05 , "y" ) ;
