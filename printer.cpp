@@ -188,6 +188,9 @@ int main(int argc, char *argv[]){
                                 ) ;
     if( axis[0].logarithmic ) can->SetLogx() ; 
     if( axis[1].logarithmic ) can->SetLogy() ; 
+
+    double under , over ;
+    getOutflow( hist , plotRanges[0][0] , plotRanges[0][1] , under , over ) ;
     
     if( values["plotOptions"].setting )
         hist->Draw( values["plotOptions"].specifier.c_str() ) ;
@@ -198,6 +201,9 @@ int main(int argc, char *argv[]){
     hist->GetYaxis()->SetNdivisions( axis[1].divisions ) ; 
     if( axis[0].grid ) gPad->SetGridx() ;
     if( axis[1].grid ) gPad->SetGridy() ;
+
+    hist->SetBinContent( 0       , under ) ;
+    hist->SetBinContent( nBins+1 , over  ) ;
    
     if( values["statBox"].setting ){
         gPad->Modified() ;
