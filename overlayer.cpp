@@ -27,6 +27,7 @@ int main(int argc, char *argv[]){
     string axisTitles[2] = { neverUse , neverUse } ;
     SpecifiedNumber plotRange[2][2] ;
     bool useLogScale[2] = { false , false } ;
+    bool drawGrid[2] = { false , true } ;
     SpecifiedNumber drawPoints ;
     double markerSize = 1. ;
     SpecifiedNumber divisions[2] ;
@@ -130,6 +131,26 @@ int main(int argc, char *argv[]){
             continue ;
         }
         
+        if(
+            parameter.at(r).at(0).compare("GRID") == 0
+            &&
+            parameter.at(r).size() > 1
+        ){
+            if( parameter.at(r).at(1).compare("1") == 0 )
+                drawGrid[0] = true ;
+            if(
+                parameter.at(r).size() > 2
+                &&
+                parameter.at(r).at(2).compare("%") != 0
+            ){
+                if( parameter.at(r).at(2).compare("1") == 0 )
+                    drawGrid[1] = true ;
+                else
+                    drawGrid[1] = false ;
+            }
+            continue ;
+        }
+
         if( 
             parameter.at(r).at(0).compare("SCALEMODE") == 0 
             &&
@@ -602,8 +623,8 @@ int main(int argc, char *argv[]){
                   
     }
     
-    gPad->SetGridx() ;
-    gPad->SetGridy() ;
+    if( drawGrid[0] ) gPad->SetGridx() ;
+    if( drawGrid[1] ) gPad->SetGridy() ;
     
     double legendEdges[2][2] = { { 0.893 , 0.997 } , { 0.12 , 0.94 } } ;
     if( narrowCanvas ) legendEdges[0][0] = 0.863 ;
