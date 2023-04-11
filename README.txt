@@ -445,6 +445,9 @@ AXIS <xAxisTitle> <yAxisTitle>
 RANGE <xlow> <xhigh> <ylow> <yhigh>
 LOG <logarithmicX> <logarithmicY> 
  (specified by '0' [->false] or '1' [->true], without quotes)
+GRID <Xgridlines> <Ygridlines>
+ (specified by '0' [->false] or '1' [->true], without quotes,
+  default : X=false , Y=true )
 SCALEMODE <mode>
  mode can be: 'bare', 'max', 'integral' (default) (all without quotes)
  addtional 'ranged' (added without withspace etc.) can be specified
@@ -534,6 +537,11 @@ AXIS <xAxisTitle> <yAxisTitle>
  in separate lines AXISX and AXISY with space separated titles
 RANGE <ylow> <yhigh> / <xlow> <xhigh> <ylow> <yhigh>
  (either only ylow and yhigh or all four)
+LOG <logarithmicX> <logarithmicY>
+ (specified by '0' [->false] or '1' [->true], without quotes)
+GRID <Xgridlines> <Ygridlines>
+ (specified by '0' [->false] or '1' [->true], without quotes,
+  default : X=false , Y=true )
 SKIP <listOfValuesToBeSkipped> <<lowLimit> ><highLimit>
  (low and high limit have to have '<' '>' preceding, respectively)
 ROWS <rowsList>

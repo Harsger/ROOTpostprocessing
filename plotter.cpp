@@ -33,6 +33,8 @@ int main(int argc, char *argv[]){
     vector<double> doVecDummy ;
     vector<double> toSkip ;
     SpecifiedNumber lowLimit , highLimit , plotRange[2][2] ;
+    bool useLogScale[2] = { false , false } ;
+    bool drawGrid[2] = { false , true } ;
     map< string , map< unsigned int , bool > > useRowsNcolumns ;
     map< string , vector<int> > givenRowsNcolumns ;
     SpecifiedNumber delimiter ;
@@ -235,6 +237,38 @@ int main(int argc, char *argv[]){
         ){
             labeblsotpion = SpecifiedNumber(0.);
             labeblsotpion.specifier = parameter.at(r).at(1) ;
+            continue ;
+        }
+
+        if(
+            parameter.at(r).at(0).compare("LOG") == 0
+            &&
+            parameter.at(r).size() > 2
+        ){
+            if( parameter.at(r).at(1).compare("1") == 0 )
+                useLogScale[0] = true ;
+            if( parameter.at(r).at(2).compare("1") == 0 )
+                useLogScale[1] = true ;
+            continue ;
+        }
+
+        if(
+            parameter.at(r).at(0).compare("GRID") == 0
+            &&
+            parameter.at(r).size() > 1
+        ){
+            if( parameter.at(r).at(1).compare("1") == 0 )
+                drawGrid[0] = true ;
+            if(
+                parameter.at(r).size() > 2
+                &&
+                parameter.at(r).at(2).compare("%") != 0
+            ){
+                if( parameter.at(r).at(2).compare("1") == 0 )
+                    drawGrid[1] = true ;
+                else
+                    drawGrid[1] = false ;
+            }
             continue ;
         }
 
@@ -656,7 +690,11 @@ int main(int argc, char *argv[]){
                                     canvasSizes[0] , canvasSizes[1] 
                                ) ; 
                                
-    can->SetGridy() ;
+    if( drawGrid[0] ) can->SetGridx() ;
+    if( drawGrid[1] ) can->SetGridy() ;
+
+    if( useLogScale[0] ) can->SetLogx() ;
+    if( useLogScale[1] ) can->SetLogy() ;
     
     if( unspecifiedHistname == nHists ){
         name = preNsuffix[1][0] ;
