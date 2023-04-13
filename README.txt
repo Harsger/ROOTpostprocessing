@@ -661,6 +661,8 @@ PERIODS <nPeriods>
 LABELS <label1> <label2> ...
  for each label a value is required per measurement
  for each graphs will be created per label combination
+RANGE low high nBins
+ range and binning for the y-values of the data-graphs
 
  optional specifications in parameter-file :
 CORRELATE <result1> <result2>

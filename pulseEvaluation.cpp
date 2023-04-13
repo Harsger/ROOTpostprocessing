@@ -599,17 +599,22 @@ int main(int argc, char *argv[]){
                 ) ;
             }
             
-            for(unsigned int s=0; s<2; s++){
+            for(unsigned int s=0; s<3; s++){
             
                 title = mode ;
                 if( s == 1 ){ 
                     title += "baseline" ;
                     y = m.baseline.position ;
                 }
+                else if( s == 2 ){
+                    title += "difference" ;
+                    y = m.results["maximum"].mean - m.results["offset"].mean ;
+                }
                 else{
                     title += "delta" ;
                     y = m.results["maxfit"].mean - m.results["offfit"].mean ;
                 }
+                title += "_" ;
                 title += name ;
                 if( resultGraphs.find( title ) == resultGraphs.end() ){
                     resultGraphs[title] = new TGraphErrors() ;
