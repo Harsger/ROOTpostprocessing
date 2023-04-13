@@ -201,11 +201,12 @@ int main(int argc, char *argv[]){
     name += ".root" ;
     TFile * outfile = new TFile( name , "RECREATE" ) ;
     map< TString , TGraphErrors* > resultGraphs ;
+    map< TString , TGraph2D* > resultMaps ;
     
     TFile * infile ;
     TGraphErrors * data ;
     unsigned int nPoints ;
-    double x , y ;
+    double x , y , z ;
     
     double timeOffset , sampleDuration , periodTime ;
     unsigned int pointsPERperiod , currentPeriod , startIndex , stopIndex ;
@@ -628,6 +629,56 @@ int main(int argc, char *argv[]){
             }
             
         }
+
+        if( nLab == 2 ){
+
+            x = atof( m.settings.at( 0 ).c_str() ) ;
+            y = atof( m.settings.at( 1 ).c_str() ) ;
+            mode  = "_VS_" ;
+            mode += labels.at(1) ;
+            mode += "_VS_" ;
+            mode += labels.at(0) ;
+
+            for( auto &r : m.results ){
+                title  = r.first ;
+                title += mode ;
+                if( resultMaps.find( title ) == resultMaps.end() ){
+                    resultMaps[title] = new TGraph2D() ;
+                    resultMaps[title]->SetName(  title ) ;
+                    resultMaps[title]->SetTitle( title ) ;
+                }
+                resultMaps[title]->SetPoint(
+                    resultMaps[title]->GetN() , x , y , r.second.mean
+                ) ;
+            }
+
+            for(unsigned int s=0; s<3; s++){
+
+                if( s == 1 ){
+                    title = "baseline" ;
+                    z = m.baseline.position ;
+                }
+                else if( s == 2 ){
+                    title = "difference" ;
+                    z = m.results["maximum"].mean - m.results["offset"].mean ;
+                }
+                else{
+                    title = "delta" ;
+                    z = m.results["maxfit"].mean - m.results["offfit"].mean ;
+                }
+                title += mode ;
+                if( resultMaps.find( title ) == resultMaps.end() ){
+                    resultMaps[title] = new TGraph2D() ;
+                    resultMaps[title]->SetName(  title ) ;
+                    resultMaps[title]->SetTitle( title ) ;
+                }
+                resultMaps[title]->SetPoint(
+                    resultMaps[title]->GetN() , x , y , z
+                ) ;
+
+            }
+
+        }
         
     }
 
@@ -639,6 +690,10 @@ int main(int argc, char *argv[]){
         g.second->Write() ;
     }
     
+    for( auto &g : resultMaps ){
+        g.second->Write() ;
+    }
+
     for( auto &c : correlations ){
         c.second->Write() ;
     }
