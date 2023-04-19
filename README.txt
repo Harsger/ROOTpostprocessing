@@ -19,6 +19,7 @@ grapher
 hister
 housekeeper
 logTOplot
+mapper
 overlayer
 peakFitter
 plotter
@@ -423,6 +424,34 @@ SAVEAS <filetype>
  - 'write' : graphs are saved in a root-file
  if at least one option is given others are set to false
  (all are true by default)
+
+///////////////////////////////////////////////////////////////////////////////
+
+mapper
+
+ arguments :
+ /path/to/datafile.txt
+
+ optional arguments :
+ <xDivisions[xLow,xHigh](log)(grid)>
+ <yDivisions[yLow,yHigh](log)(grid)>
+ <zDivisions[yLow,yHigh](log)>
+ <[colorPalette,nContours]>
+ <xTitle>
+ <yTitle>
+ <zTitle>
+
+ output :
+ PDF
+
+ shows 3D-data from text-file as points in x-y-plane
+ with the third coordinate colored (z-axis)
+
+ colorPalette can be chosen from
+    https://root.cern.ch/doc/master/classTColor.html#C06
+ using negativ values (i.e. minus in front) will invert the palette
+
+ values can be omitted using '%' (without quotes)
 
 ///////////////////////////////////////////////////////////////////////////////
 

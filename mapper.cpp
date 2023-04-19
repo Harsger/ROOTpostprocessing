@@ -1,0 +1,226 @@
+#include "postprocessing.h"
+
+using namespace std;
+
+int main(int argc, char *argv[]){
+
+    if( argc < 2 ){
+        printUsage( argv[0] ) ;
+        return 1 ;
+    }
+
+    TString filename = argv[1] ;
+    
+    TString axisTitle[3] = { "" , "" , "" } ;
+    int colorPalette = -100 ;
+    unsigned int nContours = 20 ;
+    SpecifiedNumber plotRanges[3][3] ; 
+    bool useLogScale[3] = { false , false , false } ;
+    bool drawGrid[3]    = { false , false , false } ;
+
+    for(unsigned int c=0; c<3; c++)
+        if( argc > 2+c && argv[2+c] != "%" ) axisTitle[c] = argv[2+c] ;
+   
+    TString name ; 
+    double x , y , z ;
+    if( argc > 5 && argv[5] != "%" ){
+        name = argv[5] ;
+        z = getNumberWithRange( name.Data() , x , y ) ;
+        if( !( toDiscard(x) ) ) colorPalette = (int)x ;
+        if( !( toDiscard(y) ) ) nContours    = (unsigned int)y ;
+    }
+   
+    for(unsigned int c=0; c<3; c++){
+        if( argc > 6+c && argv[6+c] != "%" ){
+            name = argv[6+c] ;
+            if( name.Contains("log") ){
+                useLogScale[c] = true ;
+                name = name.ReplaceAll( "log" , "" ) ;
+            }
+            if( name.Contains("grid") ){
+                drawGrid[c] = true ;
+                name = name.ReplaceAll( "grid" , "" ) ;
+            }
+            z = getNumberWithRange( name.Data() , x , y ) ;
+            if( !( toDiscard(x) ) ) plotRanges[c][0] = SpecifiedNumber( x ) ;
+            if( !( toDiscard(y) ) ) plotRanges[c][1] = SpecifiedNumber( y ) ;
+            if( !( toDiscard(z) ) ) plotRanges[c][2] = SpecifiedNumber( z ) ;
+        }
+    }
+
+    vector< vector<string> > data = getInput( filename.Data() ) ;
+    unsigned int nRows = data.size() ;
+ 
+    if( nRows < 1 ){
+        cout << " ERROR : data is empty " << endl ;
+        return 2 ;
+    }
+
+    string path , base ;
+    splitFilename( filename.Data() , path , base ) ;
+    TString outname = base ;
+    if( outname.Contains(".") ) outname = outname( 0 , outname.Last('.') ) ;
+
+    TApplication app("app", &argc, argv) ; 
+    plotOptions( false , true ) ;
+    gStyle->SetOptStat(0) ;
+    gStyle->SetPadRightMargin(0.18) ;
+    
+    gStyle->SetPalette( abs( colorPalette ) ) ; 
+    if( colorPalette < 0 ) TColor::InvertPalette() ;
+    gStyle->SetNumberContours( nContours ) ;
+
+    auto paletteList = TColor::GetPalette() ;
+    unsigned int nColors = TColor::GetNumberOfColors() ;
+    int colorList[ nContours ] ;
+    for(unsigned int c=0; c<nContours; c++)
+        colorList[c] = paletteList.At( 
+            (unsigned int)( nColors * (double)c/(double)nContours ) 
+        ) ;
+
+    map< int , TGraphErrors* > graphMap ;
+
+    double value[3] ;
+
+    if(
+        !( plotRanges[0][0].setting ) || !( plotRanges[0][1].setting )
+        ||
+        !( plotRanges[1][0].setting ) || !( plotRanges[2][1].setting )
+        ||
+        !( plotRanges[2][0].setting ) || !( plotRanges[2][1].setting )
+    ){
+        bool toInitialize[3][2] ;
+        for(unsigned int c=0; c<3; c++)
+            for(unsigned int r=0; r<2; r++)
+                toInitialize[c][r] = true ;
+        for(unsigned int r=0; r<nRows; r++){
+            if( data.at(r).size() < 3 ) continue ;
+            for(unsigned int c=0; c<3; c++){
+                value[c] = atof( data.at(r).at(c).c_str() ) ;
+                for(int p=-1; p<2; p+=2){
+                    if( 
+                        !( plotRanges[c][(p+1)/2].setting ) 
+                        && 
+                        (
+                            plotRanges[c][(p+1)/2].number*p < value[c]*p
+                            ||
+                            toInitialize[c][(p+1)/2]
+                        )
+                    ){
+                        plotRanges[c][(p+1)/2].number = value[c] ;
+                        toInitialize[c][(p+1)/2] = false ;
+                    }
+                }
+            }
+        }
+        for(unsigned int c=0; c<3; c++){
+            getLimits( 
+                        plotRanges[c][0].number , plotRanges[c][1].number ,
+                        value[0]                , value[1]
+                    ) ;
+            for(unsigned int r=0; r<2; r++)
+                if( !( plotRanges[c][r].setting ) )
+                    plotRanges[c][r].number = value[r] ;
+        }
+    }
+
+    for(unsigned int c=0; c<3; c++){
+        if( useLogScale[c] && plotRanges[c][0].number <= 0. ){
+            cout << " ERROR : negativ plotting-range" ;
+            cout <<         " not possible with log-scale " ;
+            cout <<         " ( axis " << c << " ) " << endl ;
+            return 3 ;
+        }
+    }
+    
+    double 
+            offset   = plotRanges[2][0].number , 
+            distance = plotRanges[2][1].number - plotRanges[2][0].number ;
+    if( useLogScale[2] ){
+        offset   = TMath::Log10( offset   ) ;
+        distance = TMath::Log10( distance ) ;
+    }
+    double toCompare ;
+    int colorNumber ;
+    for(unsigned int r=0; r<nRows; r++){
+        if( data.at(r).size() < 3 ) continue ;
+        for(unsigned int c=0; c<3; c++)
+            value[c] = atof( data.at(r).at(c).c_str() ) ;
+        toCompare = value[2] ;
+        if( useLogScale[2] ) toCompare = TMath::Log10( toCompare ) ;
+        colorNumber = (int)(
+            ( toCompare - offset ) / distance * (double)( nContours - 1 )
+        )+1 ;
+        if( colorNumber < 0 ) continue ;
+        if( colorNumber > nContours-1 ) colorNumber = nContours - 1 ;
+        if( graphMap.find( colorNumber ) == graphMap.end() ){
+            graphMap[ colorNumber ] = new TGraphErrors() ;
+            name = "" ;
+            name += colorNumber ;
+            graphMap[ colorNumber ]->SetName(  name ) ;
+            graphMap[ colorNumber ]->SetTitle( name ) ;
+            graphMap[ colorNumber ]->SetMarkerStyle(8) ;
+            graphMap[ colorNumber ]
+                        ->SetMarkerColor( colorList[ colorNumber ] ) ;
+            graphMap[ colorNumber ]
+                        ->SetLineColor(   colorList[ colorNumber ] ) ;
+        }
+        graphMap[ colorNumber ]->SetPoint(
+            graphMap[ colorNumber ]->GetN() , value[0] , value[1]
+        ) ;
+    }
+
+    TH2D * valueMap = new TH2D( 
+        "valueMap" , "valueMap" , 
+        nRows , plotRanges[0][0].number , plotRanges[0][1].number ,
+        nRows , plotRanges[1][0].number , plotRanges[1][1].number 
+    ) ;
+    valueMap->GetXaxis()->SetTitle( axisTitle[0] ) ;
+    valueMap->GetYaxis()->SetTitle( axisTitle[1] ) ;
+    valueMap->GetZaxis()->SetTitle( axisTitle[2] ) ;
+    if( plotRanges[0][2].setting )
+        valueMap->GetXaxis()->SetNdivisions( plotRanges[0][2].number ) ;
+    if( plotRanges[1][2].setting )
+        valueMap->GetYaxis()->SetNdivisions( plotRanges[1][2].number ) ;
+    if( plotRanges[2][2].setting )
+        valueMap->GetZaxis()->SetNdivisions( plotRanges[2][2].number ) ;
+    valueMap->SetMinimum( plotRanges[2][0].number ) ;
+    valueMap->SetMaximum( plotRanges[2][1].number ) ;
+    valueMap->SetEntries(1) ;
+
+    TCanvas * can = new TCanvas( 
+                                    outname , outname , 
+                                    800 , 600 
+                                ) ;
+
+    if( drawGrid[0] ) can->SetGridx();
+    if( drawGrid[1] ) can->SetGridy();
+
+    if( useLogScale[0] ) can->SetLogx() ; 
+    if( useLogScale[1] ) can->SetLogy() ; 
+    if( useLogScale[2] ) can->SetLogz() ; 
+
+    valueMap->Draw("COLZ") ;
+    for( auto g : graphMap )
+        g.second->Draw("Psame") ;
+
+    showing() ;
+
+    outname += "_valueMap.pdf" ;
+    
+    cout << " writing ... " ;
+ 
+    can->Print( outname ) ;
+    
+    can->Close() ;
+
+    cout << " done " << endl ;
+
+    valueMap->Delete() ;
+    for( auto g : graphMap )
+        g.second->Delete() ;
+
+    return 0 ;
+
+}
+
