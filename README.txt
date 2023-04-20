@@ -475,7 +475,7 @@ mapper
  <xTitle>
  <yTitle>
  <zTitle>
- <[colorPalette,nContours]>
+ <markerSize[colorPalette,nContours]>
  <xDivisions[xLow,xHigh](log)(grid)>
  <yDivisions[yLow,yHigh](log)(grid)>
  <zDivisions[yLow,yHigh](log)>

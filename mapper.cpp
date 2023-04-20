@@ -12,6 +12,7 @@ int main(int argc, char *argv[]){
     TString filename = argv[1] ;
     
     TString axisTitle[3] = { "" , "" , "" } ;
+    double markerSize = 1. ;
     int colorPalette = -100 ;
     unsigned int nContours = 20 ;
     SpecifiedNumber plotRanges[3][3] ; 
@@ -28,6 +29,7 @@ int main(int argc, char *argv[]){
         z = getNumberWithRange( name.Data() , x , y ) ;
         if( !( toDiscard(x) ) ) colorPalette = (int)x ;
         if( !( toDiscard(y) ) ) nContours    = (unsigned int)y ;
+        if( !( toDiscard(z) ) ) markerSize   = z ;
     }
    
     for(unsigned int c=0; c<3; c++){
@@ -167,6 +169,7 @@ int main(int argc, char *argv[]){
             graphMap[ colorNumber ]->SetName(  name ) ;
             graphMap[ colorNumber ]->SetTitle( name ) ;
             graphMap[ colorNumber ]->SetMarkerStyle(8) ;
+            graphMap[ colorNumber ]->SetMarkerSize( markerSize ) ;
             graphMap[ colorNumber ]
                         ->SetMarkerColor( colorList[ colorNumber ] ) ;
             graphMap[ colorNumber ]
