@@ -32,12 +32,15 @@ textTOtree
 
 most of these require parameter-files as argument
 
+arguments on commandline are specified by position
+some of these can be omitted using '%' (without quotes)
+
 ///////////////////////////////////////////////////////////////////////////////
 
 format of standard-parameter-files is :
 
 FILE </path/to> <.ending>
-HIST <prefix> <suffix>
+HIST/GRAPH <prefix> <suffix>
 <file1> <hist1>
 <file2> <hist2>
 <file3> <hist3>
@@ -45,14 +48,17 @@ HIST <prefix> <suffix>
 
 uppercase words are specific
 strings or values without <> 
-values can be omitted using '%' (without quotes)
+most values can be omitted using '%' (without quotes)
 
 ///////////////////////////////////////////////////////////////////////////////
 
 comparator
 
  arguments :
- standard-parameter-file (<skipPlotting>)
+ standard-parameter-file
+
+ optional argument :
+ <skipPlotting>
  
  output :
  root-file containing histograms , PDF
@@ -84,19 +90,29 @@ ROWS , COLUMNS , PIXELS
 correlator 
 
  arguments :
- <file1> <hist/graph1> <file2> <hist/graph2> 
- or
+
  standard-parameter-file
+
+ or :
+
+ <file1>
+ <hist/graph1>
+ <file2>
+ <hist/graph2>
  
- optional arguments :
- HIST/GRAPH/DIFF/RATIO(skip) <divisions1[low1,high1]> <divisions2[low2,high2]>
- <maxDistance> <binning[low,high]> <intervalList>
+ optional arguments without parameter-file ('or'-case) :
+ HIST/GRAPH/DIFF/RATIO(skip)
+ <divisions1[low1,high1]>
+ <divisions2[low2,high2]>
+ <maxDistance>
+ <binning[low,high]>
+ <intervalList>
  
  output :
  root-file containing histogram , PDF
  
  takes two 2D-histograms (ROOT::TH2) or graphs and 
- plots corresponding (bin- or X-)values agianst each other
+ plots corresponding (bin- or Y-)values agianst each other
  
  parameter-file-format :
 <file1> <hist/graph1> (<low1> <high1> <divisions1>)
@@ -152,7 +168,8 @@ INTERVAL <lowLimit> <highLimit>
 differentiator
 
  arguments :
- <file> <graph/hist>
+ /path/to/file.root
+ <graph/hist>
  
  output :
  root-file containing graphs
@@ -169,10 +186,16 @@ differentiator
 drawer 
 
  arguments :
- /path/to/file.root histname
+ /path/to/file.root
+ histname
  
  optional arguments :
- <lowLimit> <highLimit> <nContours> <colorPalette> <statBox> (skip)
+ <lowLimit>
+ <highLimit>
+ <nContours>
+ <colorPalette>
+ <statBox>
+ (skip)
  
  output :
  PDF
@@ -194,10 +217,15 @@ drawer
 functionFitter
 
  arguments :
- <file> <graph/hist> <lowLimit> <highLimit> <function> 
+ /path/to/file.root
+ <graph/hist>
+ <lowLimit>
+ <highLimit>
+ <function>
  
  optional arguments :
- <startParameterList> print/skip(_auto)
+ <startParameterList>
+ print/skip(_auto)
  
  output :
  fit-parameter (std-out) , PDF ,
@@ -289,7 +317,7 @@ hister
  combines or manipulates these according defined function or specifications 
  values are matched by bin number
 
- arguments in parameter-file per output-graph :
+ arguments in parameter-file per output-histogram :
 <resultsHistName1> <rawData1> (<additionalSpecifications1>)
 <resultsHistName2> <rawData2> (<additionalSpecifications2>)
  the <additionalSpecifications> should contain 
@@ -349,7 +377,11 @@ SETERRORS
 housekeeper 
 
  arguments :
- /path/to/files(.dat) (<specifierList> show print write)
+ /path/to/files(.dat)
+
+ optional arguments :
+ <specifierList>
+ show print write
  
  output :
  available specifier , root-file containing tree and graphs , PDFs
@@ -359,6 +391,7 @@ housekeeper
  storage is performed if 'write' (without quotes) is given as argument
  with 'show' (without quotes) plots are drawn sequentially
  with 'print' (without quotes) plots are saved also as PDFs
+ output options can be combined (by adding them as arguments in any order)
  
  format of text-files has to be:
 <unixtime> <quantity> <specifier> <value> <unit>
@@ -368,7 +401,13 @@ housekeeper
 logTOplot 
 
  arguments :
- /path/to/file.dat (<timeOffset> <duration> <specifierListFile> <outputOptions>)
+ /path/to/file.dat
+
+ optional arguments :
+ <timeOffset>
+ <duration>
+ <specifierListFile>
+ <outputOptions>
  
  output :
  root-file containing TGraphs , PDF
@@ -430,7 +469,7 @@ SAVEAS <filetype>
 mapper
 
  arguments :
- /path/to/datafile.txt
+ /path/to/file.txt
 
  optional arguments :
  <xDivisions[xLow,xHigh](log)(grid)>
@@ -598,7 +637,8 @@ BROADCANVAS
 printer
 
  arguments :
- /path/to/file.root histname
+ /path/to/file.root
+ histname
 
  optional arguments :
  <xDivisions[xLow,xHigh](log)(grid)>
@@ -633,12 +673,14 @@ printer
 projector
 
  arguments :
- /path/to/file.root histname 
+ /path/to/file.root
+ histname
  
  optional arguments :
- <thresholdfactor> 
- or
- <lowThresh> <highThresh> <nBins> (<writeOptions>)
+ <lowThresh>
+ <highThresh>
+ <nBins>
+ <writeOptions>
  
  output :
  root-file containing histograms , PDFs , text-files
@@ -709,7 +751,8 @@ rootTOtext
  /path/to/file.root  
  
  optional arguments :
- <rootObjectName>/WRITE (WRITE)
+ <rootObjectName>/WRITE
+ WRITE
  
  output :
  text-files containing data from histograms and graphs
@@ -727,7 +770,10 @@ rootTOtext
 setData 
 
  arguments :
- /path/to/file.root <objectName> <mode> <argumentList>
+ /path/to/file.root
+ <objectName>
+ <mode>
+ <argumentList>
  
  output :
  root-file containing histogram or graph as specified
@@ -751,7 +797,8 @@ setData
 shower
 
  arguments :
- /path/to/file.root graphname
+ /path/to/file.root
+ graphname
 
  optional arguments :
  <xDivisions[xLow,xHigh](log)(grid)>
@@ -780,10 +827,12 @@ shower
 slicer 
 
  arguments :
- /path/to/file.root histname 
+ /path/to/file.root
+ histname
  
  optional arguments :
- <X/x/Y/y> <slicesList>
+ <X/x/Y/y>
+ <slicesList>
  
  output :
  root-file containing histograms
@@ -811,13 +860,13 @@ slicer
 superimposer 
 
  arguments :
- standard parameter-file
- 
- takes ROOT::TGraphs (or text-files) and superimposes the points in one plot
+ standard-parameter-file
  
  output :
  root-file containing canvas , PDF
  
+ takes ROOT::TGraphs (or text-files) and superimposes the points in one plot
+
  options per graph in parameter-file :
 <file1> <graph1> <title1> (<markerStyle> <markerColor> <lineStyle>)
 
