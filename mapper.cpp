@@ -73,10 +73,18 @@ int main(int argc, char *argv[]){
     auto paletteList = TColor::GetPalette() ;
     unsigned int nColors = TColor::GetNumberOfColors() ;
     int colorList[ nContours ] ;
-    for(unsigned int c=0; c<nContours; c++)
-        colorList[c] = paletteList.At( 
-            (unsigned int)( nColors * (double)c/(double)nContours ) 
-        ) ;
+    int colorNumber ;
+    for(unsigned int c=0; c<nContours; c++){
+        colorNumber = (int)(
+                            (double)(c+1)
+                            /
+                            (double)nContours
+                            *
+                            (double)nColors
+                        ) ;
+        if( colorNumber > nColors-1 ) colorNumber = nColors-1 ;
+        colorList[c] = paletteList.At( colorNumber ) ;
+    }
 
     map< int , TGraphErrors* > graphMap ;
 
@@ -141,7 +149,6 @@ int main(int argc, char *argv[]){
         distance = TMath::Log10( distance ) ;
     }
     double toCompare ;
-    int colorNumber ;
     for(unsigned int r=0; r<nRows; r++){
         if( data.at(r).size() < 3 ) continue ;
         for(unsigned int c=0; c<3; c++)
@@ -149,10 +156,10 @@ int main(int argc, char *argv[]){
         toCompare = value[2] ;
         if( useLogScale[2] ) toCompare = TMath::Log10( toCompare ) ;
         colorNumber = (int)(
-            ( toCompare - offset ) / distance * (double)( nContours - 1 )
-        )+1 ;
+            ( toCompare - offset ) / distance * (double)( nContours-1 )
+        ) ;
         if( colorNumber < 0 ) continue ;
-        if( colorNumber > nContours-1 ) colorNumber = nContours - 1 ;
+        if( colorNumber > nContours-1 ) colorNumber = nContours-1 ;
         if( graphMap.find( colorNumber ) == graphMap.end() ){
             graphMap[ colorNumber ] = new TGraphErrors() ;
             name = "" ;
