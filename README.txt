@@ -472,13 +472,13 @@ mapper
  /path/to/file.txt
 
  optional arguments :
- <xDivisions[xLow,xHigh](log)(grid)>
- <yDivisions[yLow,yHigh](log)(grid)>
- <zDivisions[yLow,yHigh](log)>
- <[colorPalette,nContours]>
  <xTitle>
  <yTitle>
  <zTitle>
+ <[colorPalette,nContours]>
+ <xDivisions[xLow,xHigh](log)(grid)>
+ <yDivisions[yLow,yHigh](log)(grid)>
+ <zDivisions[yLow,yHigh](log)>
 
  output :
  PDF
