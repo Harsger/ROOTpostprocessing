@@ -50,9 +50,44 @@ int main(int argc, char *argv[]){
         }
     }
 
-    vector< vector<string> > data = getInput( filename.Data() ) ;
-    unsigned int nRows = data.size() ;
- 
+    vector< vector<double> > data ;
+    vector<double> singleRow ;
+    unsigned int nRows ;
+
+    if( argc > 9 && filename.EndsWith(".root") ){
+        TString graphname = argv[9] ;
+        TFile * input = new TFile( filename , "READ" ) ;
+        if( input->IsZombie() ){
+            cout << " ERROR : can not read root-file " << endl ;
+            return 2 ;
+        }
+        if( input->Get( graphname ) == NULL ){
+            cout << " ERROR : reading " << graphname ;
+            cout << " in " << filename << endl ;
+            return 3 ;
+        }
+        TGraph2D * dataPoints = (TGraph2D*)( input->Get( graphname ) ) ;
+        nRows = dataPoints->GetN() ;
+        for(unsigned int r=0; r<nRows; r++){
+            dataPoints->GetPoint( r , x , y , z ) ;
+            data.push_back( { x , y , z } ) ;
+        }
+        dataPoints->Delete() ;
+        input->Close() ;
+    }
+    else{
+        vector< vector<string> > textData = getInput( filename.Data() ) ;
+        nRows = textData.size() ;
+        for(unsigned int r=0; r<nRows; r++){
+            if( textData.at(r).size() < 3 ) continue ;
+            for(unsigned int c=0; c<3; c++)
+                singleRow.push_back( atof( textData.at(r).at(c).c_str() ) ) ;
+            data.push_back( singleRow ) ;
+            singleRow.clear() ;
+        }
+    }
+
+    nRows = data.size() ;
     if( nRows < 1 ){
         cout << " ERROR : data is empty " << endl ;
         return 2 ;
@@ -90,8 +125,6 @@ int main(int argc, char *argv[]){
 
     map< int , TGraphErrors* > graphMap ;
 
-    double value[3] ;
-
     if(
         !( plotRanges[0][0].setting ) || !( plotRanges[0][1].setting )
         ||
@@ -104,20 +137,19 @@ int main(int argc, char *argv[]){
             for(unsigned int r=0; r<2; r++)
                 toInitialize[c][r] = true ;
         for(unsigned int r=0; r<nRows; r++){
-            if( data.at(r).size() < 3 ) continue ;
             for(unsigned int c=0; c<3; c++){
-                value[c] = atof( data.at(r).at(c).c_str() ) ;
                 for(int p=-1; p<2; p+=2){
                     if( 
                         !( plotRanges[c][(p+1)/2].setting ) 
                         && 
                         (
-                            plotRanges[c][(p+1)/2].number*p < value[c]*p
+                            plotRanges[c][(p+1)/2].number*p
+                                < data.at(r).at(c)*p
                             ||
                             toInitialize[c][(p+1)/2]
                         )
                     ){
-                        plotRanges[c][(p+1)/2].number = value[c] ;
+                        plotRanges[c][(p+1)/2].number = data.at(r).at(c) ;
                         toInitialize[c][(p+1)/2] = false ;
                     }
                 }
@@ -126,11 +158,10 @@ int main(int argc, char *argv[]){
         for(unsigned int c=0; c<3; c++){
             getLimits( 
                         plotRanges[c][0].number , plotRanges[c][1].number ,
-                        value[0]                , value[1]
+                        x                       , y
                     ) ;
-            for(unsigned int r=0; r<2; r++)
-                if( !( plotRanges[c][r].setting ) )
-                    plotRanges[c][r].number = value[r] ;
+            if( !( plotRanges[c][0].setting ) ) plotRanges[c][0].number = x ;
+            if( !( plotRanges[c][1].setting ) ) plotRanges[c][1].number = y ;
         }
     }
 
@@ -152,10 +183,7 @@ int main(int argc, char *argv[]){
     }
     double toCompare ;
     for(unsigned int r=0; r<nRows; r++){
-        if( data.at(r).size() < 3 ) continue ;
-        for(unsigned int c=0; c<3; c++)
-            value[c] = atof( data.at(r).at(c).c_str() ) ;
-        toCompare = value[2] ;
+        toCompare = data.at(r).at(2) ;
         if( useLogScale[2] ) toCompare = TMath::Log10( toCompare ) ;
         colorNumber = (int)(
             ( toCompare - offset ) / distance * (double)( nContours-1 )
@@ -176,7 +204,8 @@ int main(int argc, char *argv[]){
                         ->SetLineColor(   colorList[ colorNumber ] ) ;
         }
         graphMap[ colorNumber ]->SetPoint(
-            graphMap[ colorNumber ]->GetN() , value[0] , value[1]
+            graphMap[ colorNumber ]->GetN() ,
+            data.at(r).at(0) , data.at(r).at(1)
         ) ;
     }
 

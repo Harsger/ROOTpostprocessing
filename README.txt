@@ -479,6 +479,7 @@ mapper
  <xDivisions[xLow,xHigh](log)(grid)>
  <yDivisions[yLow,yHigh](log)(grid)>
  <zDivisions[yLow,yHigh](log)>
+ graphname
 
  output :
  PDF
@@ -490,7 +491,9 @@ mapper
     https://root.cern.ch/doc/master/classTColor.html#C06
  using negativ values (i.e. minus in front) will invert the palette
 
- values can be omitted using '%' (without quotes)
+ if graphname is given and filename ends with '.root' (without quotes)
+ file is treated as root-file and a TGraph2D-object with graphname is searched
+ from this the data-points are shown
 
 ///////////////////////////////////////////////////////////////////////////////
 
