@@ -763,19 +763,24 @@ int main(int argc, char *argv[]){
             graphs[g]->SetMarkerColor( 
                 (unsigned int)markerNcolorNline.at(g).at(1).number 
             ) ;
-            graphs[g]->SetLineColor( 
-                (unsigned int)markerNcolorNline.at(g).at(1).number 
-            ) ;
         }
-        else toAdd += " PMC PLC " ;
+        else toAdd += " PMC " ;
         
         if( markerNcolorNline.at(g).at(2).setting ){ 
             graphs[g]->SetLineStyle( 
                 (unsigned int)markerNcolorNline.at(g).at(2).number 
             ) ;
             name = "PLsame" ;
+            if( markerNcolorNline.at(g).at(1).setting )
+                graphs[g]->SetLineColor(
+                    (unsigned int)markerNcolorNline.at(g).at(1).number
+                ) ;
+            else toAdd += " PLC " ;
         }
-        else name = "Psame" ;
+        else{
+            name = "Psame" ;
+            graphs[g]->SetLineColor( 0 ) ;
+        }
         
         name += toAdd ;
         if( skipErrors ) name += " X " ;
