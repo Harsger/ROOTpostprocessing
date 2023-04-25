@@ -20,11 +20,12 @@ int main(int argc, char *argv[]){
     bool drawGrid[3]    = { false , false , false } ;
 
     for(unsigned int c=0; c<3; c++)
-        if( argc > 2+c && argv[2+c] != "%" ) axisTitle[c] = argv[2+c] ;
+        if( argc > 2+c && string( argv[2+c] ) != "%" )
+            axisTitle[c] = argv[2+c] ;
    
     TString name ; 
     double x , y , z ;
-    if( argc > 5 && argv[5] != "%" ){
+    if( argc > 5 && string( argv[5] ) != "%" ){
         name = argv[5] ;
         z = getNumberWithRange( name.Data() , x , y ) ;
         if( !( toDiscard(x) ) ) colorPalette = (int)x ;
@@ -33,7 +34,7 @@ int main(int argc, char *argv[]){
     }
    
     for(unsigned int c=0; c<3; c++){
-        if( argc > 6+c && argv[6+c] != "%" ){
+        if( argc > 6+c && string( argv[6+c] ) != "%" ){
             name = argv[6+c] ;
             if( name.Contains("log") ){
                 useLogScale[c] = true ;
