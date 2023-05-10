@@ -19,7 +19,8 @@ int main(int argc, char *argv[]){
         "highLimit" ,
         "nContours" ,
         "colorPalette" ,
-        "statBox" 
+        "statBox" ,
+        "nDivisions"
     } ;
     map< string , SpecifiedNumber > values ;
     
@@ -99,7 +100,15 @@ int main(int argc, char *argv[]){
         gStyle->SetNumberContours( 
             (unsigned int)( values["nContours"].number ) 
         ) ; 
-        hist->GetZaxis()->SetNdivisions(520) ;
+        hist->GetZaxis()->SetNdivisions(
+            (unsigned int)( values["nContours"].number ) + 500
+        ) ;
+    }
+
+    if( values["nDivisions"].setting ){
+        hist->GetZaxis()->SetNdivisions(
+            (unsigned int)( values["nDivisions"].number ) + 500
+        ) ;
     }
     
     hist->Draw("COLZ") ;

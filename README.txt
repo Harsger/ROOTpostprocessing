@@ -195,6 +195,7 @@ drawer
  <nContours>
  <colorPalette>
  <statBox>
+ <nDivisions>
  (skip)
  
  output :
@@ -202,11 +203,13 @@ drawer
  
  shows specified 2D-histogram (ROOT::TH2 e.g. heatmap) from file,
  if <lowLimit> and/or <highLimit> is specified Z-range is adjusted
- <nContours> specify number of color countours for Z-axis
+ <nContours> specify number of color contours for Z-axis
  <colorPalette> can be chosen from
     https://root.cern.ch/doc/master/classTColor.html#C06 -> Color palettes
  <statBox> is drawn with entries according to 
     https://root.cern.ch/doc/master/classTPaveStats.html
+ <nDivisions> specify number of divisions for Z-axis
+              (otherwise taken from <nContours>)
  if at last (or as any positional-argument) 'skip' is specified 
  no canvas is drawn, but histogram is directly saved as PDF
  
