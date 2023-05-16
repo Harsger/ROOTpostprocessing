@@ -588,6 +588,7 @@ int main(int argc, char *argv[]){
         name = "" ;
         if( spectrumPoints.at(h).setting || drawPoints.setting ){
             hists[h]->SetMarkerSize( markerSize ) ; 
+            hists[h]->SetLineColor( 0 ) ;
             name = "P" ;
         }
         else name = "H" ;
