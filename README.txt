@@ -813,6 +813,7 @@ shower
  <lineStyle[lineColor,lineWidth]>
  <xTitle>
  <yTitle>
+ <dataFormat>
  (skip)
 
  output :
@@ -823,6 +824,12 @@ shower
      https://root.cern.ch/doc/master/classTAttMarker.html
  for line-style-options see
      https://root.cern.ch/doc/master/classTAttLine.html
+
+ dataFormat should be specified according to c formatting for scanf
+     https://www.cplusplus.com/reference/cstdio/scanf/
+ also 'ROW' or 'COLUMN' (both without quotes) can be used for data,
+ which will be plotted against number of occurence
+
  if at last (or as any positional-argument) 'skip' is specified
  no canvas is drawn, but graph is directly saved as PDF
 

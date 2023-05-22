@@ -56,7 +56,8 @@ int main(int argc, char *argv[]){
         "markerStyle" ,
         "lineStyle" ,
         "xTitle" ,
-        "yTitle" 
+        "yTitle" ,
+        "dataFormat"
     } ;
     map< string , SpecifiedNumber > values ;
     
@@ -83,19 +84,78 @@ int main(int argc, char *argv[]){
     plotOptions() ;
     gStyle->SetOptStat(0) ;
     
-    TFile * input = new TFile(filename,"READ") ;
-    if( input->IsZombie() ){
-        cout << " ERROR : opening " << filename << endl ;
-        return 2 ;
-    }
+    TGraphErrors * graph ;
     
-    if( input->Get(graphname) == NULL ){
-        cout << " ERROR : reading " << graphname 
-                << " in " << input->GetName() << endl ;
-        return 3 ;
+    if( filename.EndsWith(".root") ){
+        TFile * input = new TFile(filename,"READ") ;
+        if( input->IsZombie() ){
+            cout << " ERROR : opening " << filename << endl ;
+            return 2 ;
+        }
+        if( input->Get(graphname) == NULL ){
+            cout << " ERROR : reading " << graphname
+                    << " in " << input->GetName() << endl ;
+            input->Close() ;
+            return 3 ;
+        }
+        graph = (TGraphErrors*)input->Get(graphname) ;
+        input->Close() ;
     }
-    TGraphErrors * graph = (TGraphErrors*)input->Get(graphname) ;
-    input->Close() ;
+    else{
+        if(
+            values["dataFormat"].setting
+            &&
+            (
+                values["dataFormat"].specifier != "ROW"
+                &&
+                values["dataFormat"].specifier != "COLUMN"
+            )
+        )
+            graph = new TGraphErrors(
+                                        filename ,
+                                        values["dataFormat"].specifier.c_str()
+                                    ) ;
+        else{
+            graph = new TGraphErrors( filename ) ;
+            if( graph->GetN() < 1 )
+                graph = new TGraphErrors( filename , "%lg,%lg" ) ;
+            if(
+                graph->GetN() < 1
+                ||
+                values["dataFormat"].specifier == "ROW"
+                ||
+                values["dataFormat"].specifier == "COLUMN"
+            ){
+                vector< vector<string> > data = getInput( filename.Data() ) ;
+                if( data.size() > 1 ){
+                    unsigned int nRows = data.size() ;
+                    graph = new TGraphErrors() ;
+                    for(unsigned int r=0; r<nRows; r++){
+                        graph->SetPoint(
+                                            r , r ,
+                                            atof( data.at(r).at(0).c_str() )
+                                       ) ;
+                    }
+                }
+                else if( data.size() > 0 && data.at(0).size() > 1 ){
+                    unsigned int nColumns = data.at(0).size() ;
+                    graph = new TGraphErrors() ;
+                    for(unsigned int c=0; c<nColumns; c++){
+                        graph->SetPoint(
+                                            c , c ,
+                                            atof( data.at(0).at(c).c_str() )
+                                       ) ;
+                    }
+                }
+            }
+            graph->SetName(  graphname );
+            graph->SetTitle( graphname );
+        }
+        if( graph->GetN() < 1 ){
+            cout << " ERROR : no data found in " << filename << endl ;
+            return 4 ;
+        }
+    }
 
     TString name = filename ;
     if( name.Contains(".") ) 
