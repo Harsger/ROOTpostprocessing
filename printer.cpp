@@ -58,7 +58,9 @@ int main(int argc, char *argv[]){
         "yTitle" ,
         "lineStyle" ,
         "plotOptions" ,
-        "markerStyle"
+        "markerStyle" ,
+        "dataFormat",
+        "binning"
     } ;
     map< string , SpecifiedNumber > values ;
     
@@ -90,20 +92,87 @@ int main(int argc, char *argv[]){
     }
     else gStyle->SetOptStat( 0 ) ;
     
-    TFile * input = new TFile(filename,"READ") ;
-    if( input->IsZombie() ){
-        cout << " ERROR : opening " << filename << endl ;
-        return 2 ;
-    }
+    TH1D * hist ;
     
-    if( input->Get(histname) == NULL ){
-        cout << " ERROR : reading " << histname 
-                << " in " << input->GetName() << endl ;
-        return 3 ;
+    if( filename.EndsWith(".root") ){
+        TFile * input = new TFile(filename,"READ") ;
+        if( input->IsZombie() ){
+            cout << " ERROR : opening " << filename << endl ;
+            return 2 ;
+        }
+        if( input->Get(histname) == NULL ){
+            cout << " ERROR : reading " << histname
+                              << " in " << input->GetName() << endl ;
+            return 3 ;
+        }
+        hist = (TH1D*)input->Get(histname) ;
+        hist->SetDirectory(0) ;
+        input->Close() ;
+        if( values["binning"].setting && values["binning"].number >= 2 )
+            hist->Rebin( (unsigned int)values["binning"].number ) ;
     }
-    TH1D * hist = (TH1D*)input->Get(histname) ;
-    hist->SetDirectory(0) ;
-    input->Close() ;
+    else{
+        if( !( values["xAxis"].setting ) || !( values["binning"].setting ) ){
+            cout << " ERROR : x-axis range and binning required " << endl ;
+            return 4 ;
+        }
+        AxisSettings axe(
+                            values["xTitle"].specifier ,
+                            values["xAxis" ].specifier
+                        ) ;
+        hist = new TH1D(
+                            histname , histname ,
+                            atoi( values["binning"].specifier.c_str() ) ,
+                            axe.low , axe.high
+                        ) ;
+        vector< vector<string> > data = getInput( filename.Data() ) ;
+        unsigned int nData = data.size() ;
+        if( nData < 1 ){
+            cout << " ERROR : data empty " << endl ;
+            return 5 ;
+        }
+        TString dataFormat = values["dataFormat"].specifier ;
+        bool rowNOTcolumn   = false ;
+        bool weightNOTvalue = false ;
+        bool allEntries     = false ;
+        if( dataFormat.Contains("ROW")    ) rowNOTcolumn   = true ;
+        if( dataFormat.Contains("WEIGHT") ) weightNOTvalue = true ;
+        if( dataFormat.Contains("ALL")    ) allEntries     = true ;
+        unsigned int sliceDefault = 0 ;
+        TString sliceNumber = dataFormat ;
+        sliceNumber = sliceNumber.ReplaceAll( "COLUMN" , "" ) ;
+        sliceNumber = sliceNumber.ReplaceAll( "ROW"    , "" ) ;
+        sliceNumber = sliceNumber.ReplaceAll( "VALUE"  , "" ) ;
+        sliceNumber = sliceNumber.ReplaceAll( "WEIGHT" , "" ) ;
+        sliceNumber = sliceNumber.ReplaceAll( "ALL"    , "" ) ;
+        if( sliceNumber.Length() > 0 )
+            sliceDefault = atoi( sliceNumber.Data() ) ;
+        double value ;
+        if( rowNOTcolumn && !( allEntries )  ){
+            if( nData > sliceDefault ) nData = data.at(sliceDefault).size() ;
+            else{
+                cout << " ERROR : data provides not enough rows " << endl ;
+                return 5 ;
+            }
+        }
+        for(unsigned int d=0; d<nData; d++){
+            if( allEntries ){
+                sliceDefault = data.at(d).size() ;
+                for(unsigned int c=0; c<sliceDefault; c++)
+                    hist->Fill( atof( data.at(d).at(c).c_str() ) ) ;
+                continue ;
+            }
+            if( rowNOTcolumn )
+                value = atof( data.at(sliceDefault).at(d).c_str() ) ;
+            else{
+                if( data.at(d).size() > sliceDefault )
+                    value = atof( data.at(d).at(sliceDefault).c_str() ) ;
+                else continue ;
+            }
+            if( weightNOTvalue ) hist->SetBinContent( d , value ) ;
+            else                 hist->Fill( value ) ;
+        }
+    }
 
     TString name = filename ;
     if( name.Contains(".") ) 

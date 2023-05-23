@@ -643,7 +643,7 @@ BROADCANVAS
 printer
 
  arguments :
- /path/to/file.root
+ /path/to/file.root or .txt
  histname
 
  optional arguments :
@@ -653,12 +653,15 @@ printer
  <lineStyle[lineColor,lineWidth]>
  <drawingOption>
  <markerStyle[markerColor,markerSize]>
+ <dataFormat>
+ <binning>
  (skip)
 
  output :
  PDF
 
- shows specified histogram (ROOT::TH1) from file
+ shows specified histogram (ROOT::TH1) from file or text-data
+
  for stat-box-settings see
      https://root.cern.ch/doc/master/classTPaveStats.html
  for line-style-options see
@@ -669,6 +672,21 @@ printer
      https://root.cern.ch/root/htmldoc/guides/users-guide/Histograms.html
  for marker-style-options see
      https://root.cern.ch/doc/master/classTAttMarker.html
+
+ if file is text-data (not ending with .root)
+ following specifications are required :
+     [xLow,xHigh]
+     <dataFormat>
+     <binning>
+ data-format can be combination of (without quotes):
+  - 'VALUE' or 'WEIGHT' to specify whether histogram is filled or
+     bin contents are set according to order of occurence
+  - 'COLUMN' or 'ROW' to specify in which order the data appears in the file
+  - a number specifying which column or row should be selected
+ if 'ALL' (without quotes) is specified, full text-data is filled
+
+ if binning is specified for root-data histogram is rebinned
+
  if at last (or as any positional-argument) 'skip' is specified
  no canvas is drawn, but graph is directly saved as PDF
 
