@@ -1134,7 +1134,7 @@ int main(int argc, char *argv[]){
             }
             for(unsigned int r=binRange[1][0]; r<binRange[1][1]; r++){
                 for(unsigned int c=binRange[0][0]; c<binRange[0][1]; c++){
-                    for(unsigned int d=0; d<nData; d++){
+                    for(unsigned int d=1; d<nData; d++){
                         function->SetParameter( 
                             d-1 , (double)hists2D[d]->GetBinContent( c , r ) 
                         ) ;
