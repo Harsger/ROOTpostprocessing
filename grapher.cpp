@@ -251,6 +251,23 @@ int main(int argc, char *argv[]){
                 sourceGraph = new TGraphErrors( name ) ;
                 if( sourceGraph->GetN() < 1 )
                     sourceGraph = new TGraphErrors( name , "%lg,%lg" ) ;
+                if( sourceGraph->GetN() < 1 ){
+                    vector< vector<string> > data = getInput( name.Data() ) ;
+                    if( data.size() > 1 ){
+                        unsigned int nRows = data.size() ;
+                        sourceGraph = new TGraphErrors() ;
+                        for(unsigned int r=0; r<nRows; r++){
+                            sourceGraph->SetPoint(
+                                                r , r ,
+                                                atof( data.at(r).at(0).c_str() )
+                                           ) ;
+                        }
+                    }
+                }
+                if( sourceGraph->GetN() < 1 ){
+                    cout << " ERROR : no data found in " << name << endl ;
+                    continue ;
+                }
             }
         }
         name  = title ;
@@ -303,6 +320,23 @@ int main(int argc, char *argv[]){
                     fillGraph = new TGraphErrors( name ) ;
                     if( fillGraph->GetN() < 1 )
                         fillGraph = new TGraphErrors( name , "%lg,%lg" ) ;
+                    if( fillGraph->GetN() < 1 ){
+                        vector< vector<string> > data =
+                                                    getInput( name.Data() ) ;
+                        if( data.size() > 1 ){
+                            unsigned int nRows = data.size() ;
+                            fillGraph = new TGraphErrors() ;
+                            for(unsigned int r=0; r<nRows; r++){
+                                fillGraph->SetPoint(
+                                    r , r , atof( data.at(r).at(0).c_str() )
+                                ) ;
+                            }
+                        }
+                    }
+                    if( fillGraph->GetN() < 1 ){
+                        cout << " ERROR : no data found in " << name << endl ;
+                        continue ;
+                    }
                 }
             }
             name  = title ;
