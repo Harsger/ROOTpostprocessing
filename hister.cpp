@@ -262,7 +262,7 @@ int main(int argc, char *argv[]){
         
         cout << " " << name << endl ;
         
-        nSpecifier = dataSpecifier.size() ;
+        nSpecifier = dataSpecifier.at(d).size() ;
         
         if( name.EndsWith(".root") && nSpecifier > 2 ){
             
@@ -966,7 +966,8 @@ int main(int argc, char *argv[]){
     else if( parameterArguments && function->GetNpar() > 0 ){
         if( dimensions == 1 ){
             for(unsigned int d=0; d<nData; d++){
-                if( dataSpecifier.at(d).size() < function->GetNpar() + 3 ){
+                nSpecifier = dataSpecifier.at(d).size() ;
+                if( nSpecifier < function->GetNpar() + 3 ){
                     cout << " ERROR : not enough parameters provided for "
                          << dataSpecifier.at(d).at(0) << endl ;
                     continue ;
@@ -974,7 +975,7 @@ int main(int argc, char *argv[]){
                 getStats( 
                     (TH2D*)hists1D[d] , mean , stdv , min , max , median , number 
                 ) ;
-                for(unsigned int a=3; a<dataSpecifier.at(d).size(); a++){
+                for(unsigned int a=3; a<nSpecifier; a++){
                     if(      dataSpecifier.at(d).at(a) == "MEAN"   )
                         function->SetParameter( a-3 , mean ) ;
                     else if( dataSpecifier.at(d).at(a) == "STDV"   )
@@ -1020,7 +1021,8 @@ int main(int argc, char *argv[]){
         }
         else if( dimensions == 2 ){
             for(unsigned int d=0; d<nData; d++){
-                if( dataSpecifier.at(d).size() < function->GetNpar() + 3 ){
+                nSpecifier = dataSpecifier.at(d).size() ;
+                if( nSpecifier < function->GetNpar() + 3 ){
                     cout << " ERROR : not enough parameters provided for "
                          << dataSpecifier.at(d).at(0) << endl ;
                     continue ;
@@ -1028,7 +1030,7 @@ int main(int argc, char *argv[]){
                 getStats( 
                     hists2D[d] , mean , stdv , min , max , median , number 
                 ) ;
-                for(unsigned int a=3; a<dataSpecifier.at(d).size(); a++){
+                for(unsigned int a=3; a<nSpecifier; a++){
                     if(      dataSpecifier.at(d).at(a) == "MEAN"   )
                         function->SetParameter( a-3 , mean ) ;
                     else if( dataSpecifier.at(d).at(a) == "STDV"   )
@@ -1226,7 +1228,8 @@ int main(int argc, char *argv[]){
         TString( preNsuffix[0][1] ).EndsWith( ".root" ) 
     ){
         for(unsigned int d=0; d<nData; d++){
-            if(  dataSpecifier.at(d).size() < 5  ) continue ;
+            nSpecifier = dataSpecifier.at(d).size() ;
+            if( nSpecifier < 5  ) continue ;
             name =  preNsuffix[0][0] ;
             if( dataSpecifier.at(d).at(3) != "%" ) 
                 name += dataSpecifier.at(d).at(3) ;
