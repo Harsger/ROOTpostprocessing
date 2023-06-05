@@ -264,8 +264,13 @@ int main(int argc, char *argv[]){
         
         nSpecifier = dataSpecifier.at(d).size() ;
         
-        if( name.EndsWith(".root") && nSpecifier > 2 ){
+        if( name.EndsWith(".root") ){
             
+            if( nSpecifier < 3 ){
+                cout << " ERROR : histogram name required " << endl ;
+                continue ;
+            }
+
             infile = new TFile( name , "READ" ) ;
             if( infile->IsZombie() ){
                 cout << " ERROR : opening " << name << endl ;
