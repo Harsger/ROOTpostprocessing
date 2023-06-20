@@ -20,7 +20,10 @@ int main(int argc, char *argv[]){
         "nContours" ,
         "colorPalette" ,
         "statBox" ,
-        "nDivisions"
+        "nDivisions" ,
+        "Xtitle" ,
+        "Ytitle" ,
+        "Ztitle"
     } ;
     map< string , SpecifiedNumber > values ;
     
@@ -30,6 +33,10 @@ int main(int argc, char *argv[]){
             string argument = argv[p+3] ; 
             if( argument == "%" ) continue ;
             if( argument == "skip" ) skipShowing = true ;
+            if( parameter.at(p).find("title") != std::string::npos ){
+                values[parameter.at(p)] = SpecifiedNumber( argument.size() ) ;
+                values[parameter.at(p)].specifier = argument ;
+            }
             else 
                 values[parameter.at(p)] = 
                                 SpecifiedNumber( atof( argument.c_str() ) ) ;
@@ -110,6 +117,13 @@ int main(int argc, char *argv[]){
             (unsigned int)( values["nDivisions"].number ) + 500
         ) ;
     }
+
+    if( values["Xtitle"].setting )
+        hist->GetXaxis()->SetTitle( values["Xtitle"].specifier.c_str() ) ;
+    if( values["Ytitle"].setting )
+        hist->GetYaxis()->SetTitle( values["Ytitle"].specifier.c_str() ) ;
+    if( values["Ztitle"].setting )
+        hist->GetZaxis()->SetTitle( values["Ztitle"].specifier.c_str() ) ;
     
     hist->Draw("COLZ") ;
         

@@ -196,6 +196,9 @@ drawer
  <colorPalette>
  <statBox>
  <nDivisions>
+ <Xtitle>
+ <Ytitle>
+ <Ztitle>
  (skip)
  
  output :
