@@ -186,10 +186,10 @@ int main(int argc, char *argv[]){
     for(unsigned int r=0; r<nRows; r++){
         toCompare = data.at(r).at(2) ;
         if( useLogScale[2] ) toCompare = TMath::Log10( toCompare ) ;
+        if( toCompare < offset ) continue ;
         colorNumber = (int)(
             ( toCompare - offset ) / distance * (double)( nContours )
         ) ;
-        if( colorNumber < 0 ) continue ;
         if( colorNumber > nContours-1 ) colorNumber = nContours-1 ;
         if( graphMap.find( colorNumber ) == graphMap.end() ){
             graphMap[ colorNumber ] = new TGraphErrors() ;
