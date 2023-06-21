@@ -240,7 +240,7 @@ int main(int argc, char *argv[]){
     if( useLogScale[1] ) can->SetLogy() ; 
     if( useLogScale[2] ) can->SetLogz() ; 
 
-    valueMap->Draw("COLZ") ;
+    valueMap->Draw("COLZ1") ;
     for( auto g : graphMap )
         g.second->Draw("Psame") ;
 
