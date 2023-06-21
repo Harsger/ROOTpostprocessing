@@ -187,7 +187,7 @@ int main(int argc, char *argv[]){
         toCompare = data.at(r).at(2) ;
         if( useLogScale[2] ) toCompare = TMath::Log10( toCompare ) ;
         colorNumber = (int)(
-            ( toCompare - offset ) / distance * (double)( nContours-1 )
+            ( toCompare - offset ) / distance * (double)( nContours )
         ) ;
         if( colorNumber < 0 ) continue ;
         if( colorNumber > nContours-1 ) colorNumber = nContours-1 ;
