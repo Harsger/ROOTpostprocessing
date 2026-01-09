@@ -514,67 +514,6 @@ bool almostEqual( double a , double b ){
     return std::abs( ( a - b ) / 0.5 / ( a + b )  ) < 1e-8 ;
 }
 
-// double approach( double limit , double start , double step , bool higher ){
-//     
-//     step = std::abs( step ) ;
-//     
-//     double value = start ;
-//     
-//     if( higher ){
-//         
-//         if( almostEqual( start , limit ) )
-//             value += step ;
-//         else if( start > limit ){
-//             while( 
-//                 value - step > limit 
-//                 &&
-//                 ! almostEqual( value - step , limit )
-//             ){
-//                 value -= step ;
-//             }
-//         }
-//         else{ 
-//             while( 
-//                 value + step < limit 
-//                 ||
-//                 almostEqual( value + step , limit )
-//             ){
-//                 value += step ;
-//             }
-//             value += step ;
-//         }
-//         
-//     }
-//     else{
-//         
-//         if( almostEqual( start , limit ) )
-//             value -= step ;
-//         else if( start > limit ){
-//             while( 
-//                 value - step > limit 
-//                 ||
-//                 almostEqual( value - step , limit )
-//             ){
-//                 value -= step ;
-//             }
-//             value -= step ;
-//         }
-//         else{ 
-//             while( 
-//                 value + step < limit 
-//                 &&
-//                 ! almostEqual( value + step , limit )
-//             ){
-//                 value += step ;
-//             }
-//         }
-//         
-//     }
-//     
-//     return value ;
-//     
-// }
-
 double approach( double limit , double start , double step , bool higher ){
     
     step = std::abs( step ) ;
@@ -684,68 +623,6 @@ void getLimits( double min , double max , double &low , double &high ){
     }
     
 }
-
-//std::vector<unsigned int> getSortedIndices(std::vector<double> order){
-//   
-//    std::vector<unsigned int> sorted;
-//    unsigned int nPoints = order.size();
-//    double lower = 0;
-//    double lowest = 0;
-//    unsigned int index = 0;
-//    
-//    if( nPoints < 1 ) return sorted;
-//
-//    for(unsigned int l=0; l<nPoints; l++){
-//
-//        if( sorted.size() < 1 ) lowest = order.at(0);
-//        else{ 
-//            lower = order.at( sorted.at(l-1) );
-//            unsigned int newone = 0;
-//            bool found = false;
-//            for(unsigned int p=0; p<nPoints; p++){
-//                bool inlist = false;
-//                for(unsigned int s=0; s<sorted.size(); s++){
-//                    if( sorted.at(s) == p ){ 
-//                        inlist = true;
-//                        break;
-//                    }
-//                }
-//                if( !inlist){ 
-//                    newone = p;
-//                    found = true;
-//                    break;
-//                }
-//            }
-//            if( !found ){
-//                std::cout << " WARNING : no index found " << std::endl;
-//                break;
-//            }
-//            else{ 
-//                lowest = order.at(newone);
-//                index = newone;
-//            }
-//        }
-//
-//        for(unsigned int p=0; p<nPoints; p++){
-//
-//            if( sorted.size() < 1 && order.at(p) < lowest ){
-//                lowest = order.at(p);
-//                index = p;
-//            }
-//            if( order.at(p) < lowest && order.at(p) > lower  ){ 
-//                index = p;
-//                lowest = order.at(p);
-//            }
-//
-//        }
-//
-//        sorted.push_back( index );
-//
-//    }
-//    
-//    return sorted;
-//  
-//}
 
 std::vector<unsigned int> getSortedIndices( std::vector<double> data ){
 
